@@ -1,3 +1,6 @@
+import { PrimaryButton } from '../primitives/PrimaryButton';
+import { SectionContainer } from '../primitives/SectionContainer';
+
 type HeroVisaSearchProps = {
   title: string;
   subtitle: string;
@@ -18,7 +21,7 @@ export function HeroVisaSearch({
   primaryCta
 }: HeroVisaSearchProps) {
   return (
-    <section className="hero-search">
+    <SectionContainer className="hero-search">
       <h1>{title}</h1>
       <p>{subtitle}</p>
       <div className="hero-search-controls">
@@ -40,8 +43,8 @@ export function HeroVisaSearch({
             ))}
           </select>
         </label>
-        <button type="button" className="btn btn-primary">{primaryCta}</button>
+        <PrimaryButton>{primaryCta}</PrimaryButton>
       </div>
-    </section>
+    </SectionContainer>
   );
 }
