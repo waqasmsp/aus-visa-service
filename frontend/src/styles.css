@@ -312,6 +312,8 @@ body {
 .hero-country-flag {
   width: 1.25rem;
   text-align: center;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+  line-height: 1;
 }
 
 .hero-country-caret {
