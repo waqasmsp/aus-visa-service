@@ -1,7 +1,7 @@
 export type CountryOption = {
   code: string;
   name: string;
-  flagEmoji?: string;
+  flagCode?: string;
 };
 
 export const landingContent = {
@@ -15,16 +15,16 @@ export const landingContent = {
     originCountryLabel: 'I am from',
     destinationCountryLabel: 'I want to go to',
     originCountryOptions: [
-      { code: 'US', name: 'United States', flagEmoji: '🇺🇸' },
-      { code: 'IN', name: 'India', flagEmoji: '🇮🇳' },
-      { code: 'GB', name: 'United Kingdom', flagEmoji: '🇬🇧' },
-      { code: 'CA', name: 'Canada', flagEmoji: '🇨🇦' }
+      { code: 'US', name: 'United States', flagCode: 'US' },
+      { code: 'IN', name: 'India', flagCode: 'IN' },
+      { code: 'GB', name: 'United Kingdom', flagCode: 'GB' },
+      { code: 'CA', name: 'Canada', flagCode: 'CA' }
     ] satisfies CountryOption[],
     destinationCountryOptions: [
-      { code: 'AU', name: 'Australia', flagEmoji: '🇦🇺' },
-      { code: 'NZ', name: 'New Zealand', flagEmoji: '🇳🇿' },
-      { code: 'SG', name: 'Singapore', flagEmoji: '🇸🇬' },
-      { code: 'AE', name: 'United Arab Emirates', flagEmoji: '🇦🇪' }
+      { code: 'AU', name: 'Australia', flagCode: 'AU' },
+      { code: 'NZ', name: 'New Zealand', flagCode: 'NZ' },
+      { code: 'SG', name: 'Singapore', flagCode: 'SG' },
+      { code: 'AE', name: 'United Arab Emirates', flagCode: 'AE' }
     ] satisfies CountryOption[],
     primaryCta: 'Find My Visa',
     illustrationAlt: 'Illustrated travel planning cards and paper plane.'

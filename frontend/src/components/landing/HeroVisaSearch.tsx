@@ -21,14 +21,72 @@ type CountryComboboxProps = {
   placeholder: string;
 };
 
+function getFlagAssetUrl(flagCode?: string) {
+  if (!flagCode) {
+    return undefined;
+  }
+
+  return `https://flagcdn.com/w40/${flagCode.toLowerCase()}.png`;
+}
+
+function GlobeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3 12h18M12 3a15 15 0 0 0 0 18M12 3a15 15 0 0 1 0 18" fill="none" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+function CountryFlag({ country, brokenFlags, onFlagError }: {
+  country: CountryOption;
+  brokenFlags: Set<string>;
+  onFlagError: (flagCode: string) => void;
+}) {
+  const flagCode = country.flagCode?.toLowerCase();
+  const isFlagUnavailable = !flagCode || brokenFlags.has(flagCode);
+
+  if (isFlagUnavailable) {
+    return (
+      <span className="hero-country-flag" aria-hidden="true">
+        <GlobeIcon />
+      </span>
+    );
+  }
+
+  return (
+    <span className="hero-country-flag" aria-hidden="true">
+      <img
+        src={getFlagAssetUrl(flagCode)}
+        alt=""
+        loading="lazy"
+        onError={() => onFlagError(flagCode)}
+      />
+    </span>
+  );
+}
+
 function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) {
   const [selected, setSelected] = useState<CountryOption | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [brokenFlags, setBrokenFlags] = useState<Set<string>>(new Set());
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
   const labelId = useId();
   const listboxId = useId();
+
+  const onFlagError = (flagCode: string) => {
+    setBrokenFlags((current) => {
+      if (current.has(flagCode)) {
+        return current;
+      }
+
+      const updated = new Set(current);
+      updated.add(flagCode);
+      return updated;
+    });
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -122,7 +180,7 @@ function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) 
           onKeyDown={onTriggerKeyDown}
         >
           <span className="hero-country-option">
-            <span className="hero-country-flag" aria-hidden="true">{selected?.flagEmoji ?? '🌐'}</span>
+            <CountryFlag country={selected ?? { code: '', name: placeholder }} brokenFlags={brokenFlags} onFlagError={onFlagError} />
             <span>{selected?.name ?? placeholder}</span>
           </span>
           <span className="hero-country-caret" aria-hidden="true">▾</span>
@@ -154,10 +212,9 @@ function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) 
                   }}
                 >
                   <span className="hero-country-option">
-                    <span className="hero-country-flag" aria-hidden="true">{option.flagEmoji ?? '🌐'}</span>
+                    <CountryFlag country={option} brokenFlags={brokenFlags} onFlagError={onFlagError} />
                     <span>{option.name}</span>
                   </span>
-                  {!option.flagEmoji && <span className="hero-country-fallback">Flag unavailable</span>}
                 </li>
               );
             })}
