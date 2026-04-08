@@ -241,6 +241,7 @@ body {
   margin: 0;
   padding-left: 1.25rem;
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
 }
 
@@ -288,21 +289,136 @@ body {
   color: var(--color-text-muted);
 }
 
-@media (max-width: 900px) {
+@media (min-width: 1440px) {
+  .page-shell {
+    max-width: 1240px;
+    padding-inline: var(--space-6);
+  }
+
+  .section-container {
+    padding: 1.75rem;
+  }
+
+  .hero-search-controls {
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 1024px) {
+  .page-shell {
+    padding-inline: var(--space-5);
+  }
+
+  .landing-header {
+    gap: var(--space-3);
+  }
+
+  .hero-search-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-search-controls .primary-button {
+    grid-column: span 2;
+  }
+
+  .stats-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --text-2xl: clamp(1.45rem, 7vw, 2rem);
+    --text-xl: 1.15rem;
+  }
+
+  .page-shell {
+    padding: var(--space-5) var(--space-3) var(--space-6);
+  }
+
+  .landing-header {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'brand button'
+      'nav nav';
+    align-items: center;
+  }
+
+  .landing-header .brand {
+    grid-area: brand;
+  }
+
+  .landing-header .landing-nav {
+    grid-area: nav;
+    width: 100%;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    padding-top: var(--space-2);
+  }
+
+  .landing-header .primary-button {
+    grid-area: button;
+    justify-self: end;
+  }
+
+  .hero-search-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-search-controls .primary-button {
+    grid-column: auto;
+  }
+
+  .comparison-grid,
+  .footer-columns,
+  .stats-strip,
+  .easy-process ol {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonial-grid {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    scroll-snap-type: x mandatory;
+  }
+
+  .testimonial-grid .testimonial-card {
+    min-width: min(86vw, 20rem);
+    flex: 0 0 min(86vw, 20rem);
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 375px) {
+  .page-shell {
+    padding-inline: var(--space-2);
+  }
+
+  .section-container {
+    padding: 1.15rem;
+  }
+
   .landing-header {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'brand'
+      'button'
+      'nav';
     justify-items: start;
   }
 
-  .landing-nav {
-    justify-content: flex-start;
+  .landing-header .primary-button {
+    justify-self: start;
   }
 
-  .hero-search-controls,
-  .comparison-grid,
-  .testimonial-grid,
-  .footer-columns,
-  .stats-strip {
-    grid-template-columns: 1fr;
+  .landing-nav {
+    gap: var(--space-2);
+  }
+
+  .brand img {
+    width: 32px;
+    height: 32px;
   }
 }
