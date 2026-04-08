@@ -1,3 +1,6 @@
+import { Card } from '../primitives/Card';
+import { SectionContainer } from '../primitives/SectionContainer';
+
 type Stat = {
   label: string;
   value: string;
@@ -9,13 +12,13 @@ type StatsStripProps = {
 
 export function StatsStrip({ stats }: StatsStripProps) {
   return (
-    <section className="stats-strip">
+    <SectionContainer className="stats-strip">
       {stats.map((stat) => (
-        <article key={stat.label}>
+        <Card key={stat.label} className="stat-card">
           <strong>{stat.value}</strong>
           <span>{stat.label}</span>
-        </article>
+        </Card>
       ))}
-    </section>
+    </SectionContainer>
   );
 }

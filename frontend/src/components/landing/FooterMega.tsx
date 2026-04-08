@@ -1,3 +1,5 @@
+import { SectionContainer } from '../primitives/SectionContainer';
+
 type FooterColumn = {
   heading: string;
   links: string[];
@@ -10,7 +12,7 @@ type FooterMegaProps = {
 
 export function FooterMega({ columns, copyright }: FooterMegaProps) {
   return (
-    <footer className="footer-mega">
+    <SectionContainer as="footer" className="footer-mega">
       <div className="footer-columns">
         {columns.map((column) => (
           <div key={column.heading}>
@@ -24,6 +26,6 @@ export function FooterMega({ columns, copyright }: FooterMegaProps) {
         ))}
       </div>
       <p>{copyright}</p>
-    </footer>
+    </SectionContainer>
   );
 }

@@ -1,3 +1,5 @@
+import { SectionContainer } from '../primitives/SectionContainer';
+
 type Step = {
   title: string;
   description: string;
@@ -10,7 +12,7 @@ type EasyProcessProps = {
 
 export function EasyProcess({ title, steps }: EasyProcessProps) {
   return (
-    <section className="easy-process">
+    <SectionContainer className="easy-process">
       <h2>{title}</h2>
       <ol>
         {steps.map((step) => (
@@ -20,6 +22,6 @@ export function EasyProcess({ title, steps }: EasyProcessProps) {
           </li>
         ))}
       </ol>
-    </section>
+    </SectionContainer>
   );
 }

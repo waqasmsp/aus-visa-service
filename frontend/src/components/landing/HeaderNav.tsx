@@ -1,4 +1,5 @@
 import logo from '../../assets/logo.svg';
+import { PrimaryButton } from '../primitives/PrimaryButton';
 
 type HeaderNavProps = {
   brandName: string;
@@ -18,7 +19,7 @@ export function HeaderNav({ brandName, navItems, loginCta }: HeaderNavProps) {
           <a key={item} href="#">{item}</a>
         ))}
       </nav>
-      <button type="button" className="btn btn-outline">{loginCta}</button>
+      <PrimaryButton variant="outline">{loginCta}</PrimaryButton>
     </header>
   );
 }
