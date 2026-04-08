@@ -20,7 +20,7 @@ export function LandingPage() {
         <EasyProcess title={process.title} steps={process.steps} />
         <Testimonials title={testimonials.title} items={testimonials.items} />
       </main>
-      <FooterMega columns={footer.columns} copyright={footer.copyright} />
+      <FooterMega columns={footer.columns} socialLinks={footer.socialLinks} copyright={footer.copyright} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import logo from '../../assets/logo.svg';
+import logo from '../../assets/logo-custom-variant.svg';
 import { PrimaryButton } from '../primitives/PrimaryButton';
 
 type HeaderNavProps = {
