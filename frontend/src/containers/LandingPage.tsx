@@ -18,9 +18,7 @@ export function LandingPage() {
 
       <main className="landing-main">
         <section className="landing-section landing-section--hero">
-          <div className="content-container">
-            <HeroVisaSearch {...hero} />
-          </div>
+          <HeroVisaSearch {...hero} />
         </section>
 
         <section className="landing-section">
