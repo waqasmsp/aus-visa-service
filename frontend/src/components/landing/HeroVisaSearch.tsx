@@ -21,6 +21,9 @@ type CountryComboboxProps = {
   placeholder: string;
 };
 
+const ROTATING_KEYWORDS = ['perfect', 'fastest', 'right', 'best-fit'];
+const ROTATION_INTERVAL_MS = 2400;
+
 function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) {
   const [selected, setSelected] = useState<CountryOption | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -168,7 +171,7 @@ function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) 
   );
 }
 
-function renderHeroTitle(title: string) {
+function renderHeroTitle(title: string, activeKeyword: string) {
   const match = title.match(/\[\[(.*?)\]\]/);
 
   if (!match || match.index === undefined) {
@@ -182,7 +185,11 @@ function renderHeroTitle(title: string) {
   return (
     <>
       {before}
-      <span className="hero-search-title-accent">{highlighted}</span>
+      <span className="hero-search-title-accent">
+        <span key={activeKeyword} className="hero-search-title-word">
+          {activeKeyword || highlighted}
+        </span>
+      </span>
       {after}
     </>
   );
@@ -198,12 +205,38 @@ export function HeroVisaSearch({
   primaryCta,
   illustrationAlt
 }: HeroVisaSearchProps) {
+  const [activeKeywordIndex, setActiveKeywordIndex] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotionPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    updateMotionPreference();
+
+    mediaQuery.addEventListener('change', updateMotionPreference);
+    return () => mediaQuery.removeEventListener('change', updateMotionPreference);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveKeywordIndex((current) => (current + 1) % ROTATING_KEYWORDS.length);
+    }, ROTATION_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [prefersReducedMotion]);
+
+  const activeKeyword = ROTATING_KEYWORDS[activeKeywordIndex] ?? ROTATING_KEYWORDS[0];
+
   return (
     <section className="hero-search-band">
       <SectionContainer className="hero-search">
         <div className="hero-search-layout">
           <header className="hero-search-copy">
-            <h1>{renderHeroTitle(title)}</h1>
+            <h1 className={prefersReducedMotion ? 'is-reduced-motion' : ''}>{renderHeroTitle(title, activeKeyword)}</h1>
             <p>{subtitle}</p>
           </header>
           <div className="hero-search-panel">
