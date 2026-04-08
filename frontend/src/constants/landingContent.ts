@@ -5,7 +5,7 @@ export type CountryOption = {
 };
 
 export const landingContent = {
-  brandName: 'AUS Visa Service',
+  brandName: 'Global Visas',
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
   loginCta: 'Login',
   hero: {
