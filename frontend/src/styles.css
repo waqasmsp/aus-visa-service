@@ -78,8 +78,7 @@ body {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--space-4);
-  padding-bottom: var(--space-5);
+  gap: var(--space-5);
 }
 
 .brand {
@@ -99,7 +98,7 @@ body {
 .landing-nav {
   display: flex;
   justify-content: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
   flex-wrap: wrap;
 }
 
@@ -108,6 +107,62 @@ body {
   color: var(--color-link);
   text-decoration: none;
   font-weight: var(--font-weight-medium);
+}
+
+.top-header {
+  min-height: 4rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--color-border-base);
+  background: var(--color-bg-surface);
+}
+
+.top-header__brand {
+  white-space: nowrap;
+}
+
+.top-header__brand span {
+  letter-spacing: 0.01em;
+}
+
+.top-header__nav {
+  justify-content: flex-end;
+}
+
+.top-header__nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0;
+  white-space: nowrap;
+}
+
+.top-header__nav-indicator {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.top-header__actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.top-header__icon-button {
+  border: 1px solid var(--color-border-base);
+  background: var(--color-white);
+  border-radius: var(--radius-pill);
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.top-header__actions .primary-button {
+  padding: 0.52rem 1.1rem;
+  font-size: var(--text-sm);
 }
 
 .primary-button {
@@ -397,26 +452,42 @@ body {
   .landing-header {
     grid-template-columns: 1fr auto;
     grid-template-areas:
-      'brand button'
+      'brand actions'
       'nav nav';
     align-items: center;
+    row-gap: var(--space-2);
+    min-height: 0;
+    padding: 0.5rem 0;
   }
 
-  .landing-header .brand {
+  .landing-header .top-header__brand {
     grid-area: brand;
   }
 
-  .landing-header .landing-nav {
+  .landing-header .top-header__nav {
     grid-area: nav;
     width: 100%;
     justify-content: flex-start;
     gap: var(--space-3);
-    padding-top: var(--space-2);
+    padding-top: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
   }
 
-  .landing-header .primary-button {
-    grid-area: button;
+  .landing-header .top-header__actions {
+    grid-area: actions;
     justify-self: end;
+  }
+
+  .landing-header .top-header__icon-button {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.9rem;
+  }
+
+  .landing-header .top-header__actions .primary-button {
+    padding: 0.46rem 0.95rem;
   }
 
   .hero-search-layout {
@@ -470,12 +541,13 @@ body {
     grid-template-columns: 1fr;
     grid-template-areas:
       'brand'
-      'button'
+      'actions'
       'nav';
     justify-items: start;
+    gap: var(--space-2);
   }
 
-  .landing-header .primary-button {
+  .landing-header .top-header__actions {
     justify-self: start;
   }
 
