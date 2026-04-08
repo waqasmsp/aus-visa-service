@@ -12,9 +12,11 @@ export function LandingPage() {
 
   return (
     <div className="landing-page">
-      <div className="content-container">
-        <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} />
-      </div>
+      <section className="landing-section landing-section--header">
+        <div className="content-container">
+          <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} />
+        </div>
+      </section>
 
       <main className="landing-main">
         <section className="landing-section landing-section--hero">
