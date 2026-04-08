@@ -1,4 +1,4 @@
-import checkIcon from '../../assets/icon-check.svg';
+import checkIcon from '../../assets/icon-check-neutral.svg';
 
 type IconBulletListProps = {
   items: string[];

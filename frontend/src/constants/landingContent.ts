@@ -10,7 +10,8 @@ export const landingContent = {
     selectTwoLabel: 'I want to',
     selectOneOptions: ['United States', 'India', 'United Kingdom', 'Canada'],
     selectTwoOptions: ['Work in Australia', 'Study in Australia', 'Visit Australia', 'Join family'],
-    primaryCta: 'Find My Visa'
+    primaryCta: 'Find My Visa',
+    illustrationAlt: 'Illustrated travel planning cards and paper plane.'
   },
   comparison: {
     title: 'Why people choose us over doing it yourself',
@@ -53,6 +54,7 @@ export const landingContent = {
       { heading: 'Visa Services', links: ['Work Visa', 'Student Visa', 'Visitor Visa'] },
       { heading: 'Resources', links: ['Blog', 'Help Center', 'Contact'] }
     ],
+    socialLinks: ['Website', 'Email', 'Community'],
     copyright: `© ${new Date().getFullYear()} AUS Visa Service. All rights reserved.`
   }
 };
