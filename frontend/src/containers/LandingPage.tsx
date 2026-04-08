@@ -11,16 +11,48 @@ export function LandingPage() {
   const { hero, comparison, stats, process, testimonials, footer, brandName, navItems, loginCta } = landingContent;
 
   return (
-    <div className="page-shell">
-      <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} />
+    <div className="landing-page">
+      <div className="content-container">
+        <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} />
+      </div>
+
       <main className="landing-main">
-        <HeroVisaSearch {...hero} />
-        <ComparisonPanel {...comparison} />
-        <StatsStrip stats={stats} />
-        <EasyProcess title={process.title} steps={process.steps} />
-        <Testimonials title={testimonials.title} items={testimonials.items} />
+        <section className="landing-section landing-section--hero">
+          <div className="content-container">
+            <HeroVisaSearch {...hero} />
+          </div>
+        </section>
+
+        <section className="landing-section">
+          <div className="content-container">
+            <ComparisonPanel {...comparison} />
+          </div>
+        </section>
+
+        <section className="landing-section landing-section--stats">
+          <div className="content-container">
+            <StatsStrip stats={stats} />
+          </div>
+        </section>
+
+        <section className="landing-section">
+          <div className="content-container">
+            <EasyProcess title={process.title} steps={process.steps} />
+          </div>
+        </section>
+
+        <section className="landing-section landing-section--testimonials">
+          <div className="content-container">
+            <Testimonials title={testimonials.title} items={testimonials.items} />
+          </div>
+        </section>
       </main>
-      <FooterMega columns={footer.columns} socialLinks={footer.socialLinks} copyright={footer.copyright} />
+
+      <section className="landing-section landing-section--footer">
+        <div className="content-container">
+          <FooterMega columns={footer.columns} socialLinks={footer.socialLinks} copyright={footer.copyright} />
+        </div>
+      </section>
     </div>
   );
 }
