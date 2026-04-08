@@ -55,15 +55,23 @@ body {
   background: var(--color-bg-page);
 }
 
-.page-shell {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-4) calc(var(--space-6) + var(--space-4));
+.landing-page {
+  width: 100%;
+  padding: var(--space-6) 0 calc(var(--space-6) + var(--space-4));
+}
+
+.content-container {
+  width: min(1200px, calc(100% - 2rem));
+  margin-inline: auto;
 }
 
 .landing-main {
   display: grid;
   gap: var(--space-4);
+}
+
+.landing-section {
+  width: 100%;
 }
 
 .landing-header {
@@ -337,9 +345,8 @@ body {
 }
 
 @media (min-width: 1440px) {
-  .page-shell {
-    max-width: 1240px;
-    padding-inline: var(--space-6);
+  .content-container {
+    width: min(1240px, calc(100% - 3rem));
   }
 
   .section-container {
@@ -352,8 +359,8 @@ body {
 }
 
 @media (max-width: 1024px) {
-  .page-shell {
-    padding-inline: var(--space-5);
+  .content-container {
+    width: min(1200px, calc(100% - 2.5rem));
   }
 
   .landing-header {
@@ -379,8 +386,12 @@ body {
     --text-xl: 1.15rem;
   }
 
-  .page-shell {
-    padding: var(--space-5) var(--space-3) var(--space-6);
+  .landing-page {
+    padding: var(--space-5) 0 var(--space-6);
+  }
+
+  .content-container {
+    width: min(1200px, calc(100% - 1.5rem));
   }
 
   .landing-header {
@@ -447,8 +458,8 @@ body {
 }
 
 @media (max-width: 375px) {
-  .page-shell {
-    padding-inline: var(--space-2);
+  .content-container {
+    width: min(1200px, calc(100% - 1rem));
   }
 
   .section-container {
