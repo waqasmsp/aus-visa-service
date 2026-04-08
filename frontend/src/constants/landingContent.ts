@@ -12,15 +12,15 @@ export const landingContent = {
     title: 'Find your [[perfect]] Australian visa in minutes',
     subtitle:
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
-    selectOneLabel: 'I am from',
-    selectTwoLabel: 'I want to go to',
-    selectOneOptions: [
+    originCountryLabel: 'I am from',
+    destinationCountryLabel: 'I want to go to',
+    originCountryOptions: [
       { code: 'US', name: 'United States', flagEmoji: '🇺🇸' },
       { code: 'IN', name: 'India', flagEmoji: '🇮🇳' },
       { code: 'GB', name: 'United Kingdom', flagEmoji: '🇬🇧' },
       { code: 'CA', name: 'Canada', flagEmoji: '🇨🇦' }
     ] satisfies CountryOption[],
-    selectTwoOptions: [
+    destinationCountryOptions: [
       { code: 'AU', name: 'Australia', flagEmoji: '🇦🇺' },
       { code: 'NZ', name: 'New Zealand', flagEmoji: '🇳🇿' },
       { code: 'SG', name: 'Singapore', flagEmoji: '🇸🇬' },

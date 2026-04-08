@@ -7,10 +7,10 @@ import { SectionContainer } from '../primitives/SectionContainer';
 type HeroVisaSearchProps = {
   title: string;
   subtitle: string;
-  selectOneLabel: string;
-  selectTwoLabel: string;
-  selectOneOptions: CountryOption[];
-  selectTwoOptions: CountryOption[];
+  originCountryLabel: string;
+  destinationCountryLabel: string;
+  originCountryOptions: CountryOption[];
+  destinationCountryOptions: CountryOption[];
   primaryCta: string;
   illustrationAlt: string;
 };
@@ -191,10 +191,10 @@ function renderHeroTitle(title: string) {
 export function HeroVisaSearch({
   title,
   subtitle,
-  selectOneLabel,
-  selectTwoLabel,
-  selectOneOptions,
-  selectTwoOptions,
+  originCountryLabel,
+  destinationCountryLabel,
+  originCountryOptions,
+  destinationCountryOptions,
   primaryCta,
   illustrationAlt
 }: HeroVisaSearchProps) {
@@ -208,8 +208,8 @@ export function HeroVisaSearch({
           </header>
           <div className="hero-search-panel">
             <div className="hero-search-controls">
-              <CountryCombobox label={selectOneLabel} options={selectOneOptions} placeholder="Select country" />
-              <CountryCombobox label={selectTwoLabel} options={selectTwoOptions} placeholder="Select destination" />
+              <CountryCombobox label={originCountryLabel} options={originCountryOptions} placeholder="Select country" />
+              <CountryCombobox label={destinationCountryLabel} options={destinationCountryOptions} placeholder="Select country" />
               <PrimaryButton>{primaryCta}</PrimaryButton>
             </div>
           </div>
