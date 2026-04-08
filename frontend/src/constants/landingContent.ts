@@ -3,7 +3,7 @@ export const landingContent = {
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
   loginCta: 'Login',
   hero: {
-    title: 'Find your perfect Australian visa in minutes',
+    title: 'Find your [[perfect]] Australian visa in minutes',
     subtitle:
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
     selectOneLabel: 'I am from',
