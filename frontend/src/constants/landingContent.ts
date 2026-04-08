@@ -1,3 +1,9 @@
+export type CountryOption = {
+  code: string;
+  name: string;
+  flagEmoji?: string;
+};
+
 export const landingContent = {
   brandName: 'AUS Visa Service',
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
@@ -7,9 +13,19 @@ export const landingContent = {
     subtitle:
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
     selectOneLabel: 'I am from',
-    selectTwoLabel: 'I want to',
-    selectOneOptions: ['United States', 'India', 'United Kingdom', 'Canada'],
-    selectTwoOptions: ['Work in Australia', 'Study in Australia', 'Visit Australia', 'Join family'],
+    selectTwoLabel: 'I want to go to',
+    selectOneOptions: [
+      { code: 'US', name: 'United States', flagEmoji: '🇺🇸' },
+      { code: 'IN', name: 'India', flagEmoji: '🇮🇳' },
+      { code: 'GB', name: 'United Kingdom', flagEmoji: '🇬🇧' },
+      { code: 'CA', name: 'Canada', flagEmoji: '🇨🇦' }
+    ] satisfies CountryOption[],
+    selectTwoOptions: [
+      { code: 'AU', name: 'Australia', flagEmoji: '🇦🇺' },
+      { code: 'NZ', name: 'New Zealand', flagEmoji: '🇳🇿' },
+      { code: 'SG', name: 'Singapore', flagEmoji: '🇸🇬' },
+      { code: 'AE', name: 'United Arab Emirates', flagEmoji: '🇦🇪' }
+    ] satisfies CountryOption[],
     primaryCta: 'Find My Visa',
     illustrationAlt: 'Illustrated travel planning cards and paper plane.'
   },
