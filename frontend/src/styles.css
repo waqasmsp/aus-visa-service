@@ -667,10 +667,11 @@ body {
 }
 
 .easy-process--enhanced {
-  border-color: rgb(148 163 184 / 0.28);
-  background: var(--color-bg-surface);
+  border: 0;
+  background: transparent;
+  border-radius: 0;
   box-shadow: none;
-  padding: clamp(1.25rem, 3vw, 1.8rem);
+  padding-inline: 0;
 }
 
 .easy-process--enhanced .easy-process__title {
