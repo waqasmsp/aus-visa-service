@@ -423,7 +423,7 @@ body {
 
 .comparison-panel--enhanced .comparison-split {
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  align-items: stretch;
+  align-items: start;
 }
 
 .comparison-column {
@@ -449,6 +449,7 @@ body {
 
 .comparison-column--left {
   background: rgb(255 255 255 / 0.78);
+  align-self: start;
 }
 
 .comparison-column--left::before {
@@ -456,14 +457,14 @@ body {
 }
 
 .comparison-column--right {
-  border: 2px solid rgb(59 130 246 / 0.55);
+  border: 1px solid rgb(59 130 246 / 0.26);
   background: rgb(255 255 255 / 0.88);
   min-height: clamp(22rem, 38vw, 26rem);
   padding: clamp(1.25rem, 2.4vw, 2rem);
   box-shadow:
-    0 24px 40px rgb(59 130 246 / 0.2),
-    0 0 0 1px rgb(59 130 246 / 0.1) inset;
-  animation: movingShadow 6.2s ease-in-out infinite;
+    0 22px 44px rgb(59 130 246 / 0.2),
+    0 0 0 1px rgb(59 130 246 / 0.06) inset;
+  animation: movingShadow 10.5s ease-in-out infinite;
 }
 
 .comparison-column--right::before {
@@ -473,24 +474,17 @@ body {
 .comparison-column--right::after {
   content: '';
   position: absolute;
-  inset: -2px;
+  inset: -10px;
   border-radius: inherit;
   pointer-events: none;
-  background: conic-gradient(
-    from 0deg,
-    rgb(14 165 233 / 0.65),
-    rgb(59 130 246 / 0.2),
-    rgb(59 130 246 / 0.7),
-    rgb(14 165 233 / 0.2),
-    rgb(14 165 233 / 0.65)
-  );
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  padding: 2px;
-  opacity: 0.85;
-  animation: borderSweep 4.5s linear infinite;
+  background:
+    radial-gradient(circle at 20% 20%, rgb(56 189 248 / 0.35), transparent 60%),
+    radial-gradient(circle at 80% 35%, rgb(59 130 246 / 0.26), transparent 58%),
+    radial-gradient(circle at 60% 75%, rgb(125 211 252 / 0.24), transparent 64%);
+  filter: blur(14px);
+  opacity: 0.9;
+  z-index: -1;
+  animation: glowDrift 14s ease-in-out infinite;
 }
 
 .comparison-list {
@@ -598,9 +592,16 @@ body {
   }
 }
 
-@keyframes borderSweep {
-  to {
-    transform: rotate(1turn);
+@keyframes glowDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.82;
+  }
+
+  50% {
+    transform: translate3d(-8px, 6px, 0) scale(1.03);
+    opacity: 1;
   }
 }
 
