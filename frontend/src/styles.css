@@ -265,10 +265,10 @@ body.body--menu-open {
 
 .mobile-sidepanel__panel {
   position: absolute;
-  top: 0.65rem;
-  left: 0.65rem;
+  top: 20dvh;
+  left: 50%;
   width: min(22rem, calc(100vw - 1.3rem));
-  max-height: calc(100dvh - 1.3rem);
+  max-height: calc(80dvh - 0.8rem);
   overflow-y: auto;
   border-radius: 1.3rem;
   padding: 1rem;
@@ -278,7 +278,7 @@ body.body--menu-open {
   box-shadow:
     0 28px 68px rgb(15 23 42 / 0.34),
     0 0 0 1px rgb(255 255 255 / 0.7) inset;
-  transform: translate3d(-14px, 0, 0) scale(0.98);
+  transform: translate3d(-50%, 14px, 0) scale(0.98);
   opacity: 0;
 }
 
@@ -1719,12 +1719,12 @@ body.body--menu-open {
 
 @keyframes sidepanelIn {
   from {
-    transform: translate3d(-14px, 0, 0) scale(0.98);
+    transform: translate3d(-50%, 14px, 0) scale(0.98);
     opacity: 0;
   }
 
   to {
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(-50%, 0, 0) scale(1);
     opacity: 1;
   }
 }
@@ -2072,9 +2072,8 @@ body.body--menu-open {
 
   .mobile-sidepanel__panel {
     width: calc(100vw - 0.9rem);
-    left: 0.45rem;
-    top: 0.45rem;
-    max-height: calc(100dvh - 0.9rem);
+    top: 20dvh;
+    max-height: calc(80dvh - 0.6rem);
   }
 
   .brand img {
