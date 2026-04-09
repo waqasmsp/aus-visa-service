@@ -1307,15 +1307,16 @@ body {
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: transparent;
-  color: rgb(71 85 105 / 0.9);
+  background: rgb(239 68 68 / 0.22);
+  color: rgb(153 27 27 / 0.95);
   font-size: 0.66rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .visia-chat__greeting-close:hover {
-  color: rgb(30 41 59 / 0.95);
+  background: rgb(220 38 38 / 0.3);
+  color: rgb(127 29 29 / 0.98);
 }
 
 .visia-chat__greeting-label {
