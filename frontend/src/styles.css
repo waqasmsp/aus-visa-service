@@ -803,27 +803,15 @@ body {
   gap: 0.25rem;
 }
 
-.testimonials__viewport {
-  overflow: hidden;
-  position: relative;
-  padding: 0.2rem 0 0.3rem;
-}
-
-.testimonials__track {
-  display: flex;
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
-  width: max-content;
-  animation: testimonialsMarquee 44s linear infinite;
-}
-
-.testimonials__viewport:hover .testimonials__track {
-  animation-play-state: paused;
 }
 
 .testimonial-card {
   margin: 0;
-  width: clamp(20rem, 30vw, 25rem);
-  min-height: 16rem;
+  min-height: 14rem;
   border-color: rgb(59 130 246 / 0.3);
   border-radius: 1.15rem;
   background: var(--color-white);
@@ -868,22 +856,6 @@ body {
   font-weight: var(--font-weight-bold);
   font-size: clamp(1rem, 1.35vw, 1.16rem);
   text-align: right;
-}
-
-@keyframes testimonialsMarquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .testimonials__track {
-    animation: none;
-  }
 }
 
 .footer-columns h3 {
@@ -1359,13 +1331,8 @@ body {
     gap: 0.65rem;
   }
 
-  .testimonials__track {
-    animation-duration: 36s;
-  }
-
-  .testimonial-card {
-    width: min(86vw, 21rem);
-    min-height: 14.5rem;
+  .testimonial-grid {
+    grid-template-columns: 1fr;
   }
 
   .visia-chat {
