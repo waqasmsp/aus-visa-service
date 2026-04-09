@@ -51,7 +51,16 @@ export function LandingPage() {
 
       <section className="landing-section landing-section--footer">
         <div className="content-container">
-          <FooterMega columns={footer.columns} socialLinks={footer.socialLinks} copyright={footer.copyright} />
+          <FooterMega
+            brandName={brandName}
+            tagline={footer.tagline}
+            visaRoutes={footer.visaRoutes}
+            visaNews={footer.visaNews}
+            blogs={footer.blogs}
+            companyLinks={footer.companyLinks}
+            socialLinks={footer.socialLinks}
+            copyright={footer.copyright}
+          />
         </div>
       </section>
 

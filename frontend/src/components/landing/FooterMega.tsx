@@ -1,48 +1,108 @@
-import socialChatIcon from '../../assets/icon-social-chat.svg';
-import socialLinkIcon from '../../assets/icon-social-link.svg';
-import socialMailIcon from '../../assets/icon-social-mail.svg';
+import logo from '../../assets/logo-custom-variant.svg';
 import { SectionContainer } from '../primitives/SectionContainer';
 
-type FooterColumn = {
-  heading: string;
-  links: string[];
-};
-
 type FooterMegaProps = {
-  columns: FooterColumn[];
+  brandName: string;
+  tagline: string;
+  visaRoutes: string[];
+  visaNews: string[];
+  blogs: string[];
+  companyLinks: string[];
   socialLinks: string[];
   copyright: string;
 };
 
-const socialIcons = [socialLinkIcon, socialMailIcon, socialChatIcon];
-
-export function FooterMega({ columns, socialLinks, copyright }: FooterMegaProps) {
+export function FooterMega({
+  brandName,
+  tagline,
+  visaRoutes,
+  visaNews,
+  blogs,
+  companyLinks,
+  socialLinks,
+  copyright
+}: FooterMegaProps) {
   return (
-    <SectionContainer as="footer" className="footer-mega">
-      <div className="footer-columns">
-        {columns.map((column) => (
-          <div key={column.heading}>
-            <h3>{column.heading}</h3>
-            <ul>
-              {column.links.map((link) => (
-                <li key={link}><a href="#">{link}</a></li>
-              ))}
-            </ul>
-          </div>
-        ))}
+    <SectionContainer as="footer" className="footer-mega footer-mega--enhanced">
+      <div className="footer-mega__brand">
+        <a href="#" className="brand footer-mega__brand-link">
+          <img src={logo} alt={`${brandName} logo`} />
+          <span>{brandName}</span>
+        </a>
+        <p>{tagline}</p>
       </div>
 
-      <ul className="footer-social-links" aria-label="Social links">
-        {socialLinks.map((label, index) => (
-          <li key={label}>
-            <a href="#" aria-label={label}>
-              <img src={socialIcons[index % socialIcons.length]} alt="" aria-hidden="true" />
-            </a>
-          </li>
-        ))}
-      </ul>
+      <div className="footer-mega__grid">
+        <div className="footer-mega__column">
+          <h3>Visas by Nationality</h3>
+          <ul>
+            {visaRoutes.map((route) => (
+              <li key={route}>
+                <a href="#">{route}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <p>{copyright}</p>
+        <div className="footer-mega__column">
+          <h3>Latest Visa News</h3>
+          <ul>
+            {visaNews.map((newsItem) => (
+              <li key={newsItem}>
+                <a href="#">{newsItem}</a>
+              </li>
+            ))}
+          </ul>
+
+          <h3 className="footer-mega__subheading">Recent Blogs</h3>
+          <ul>
+            {blogs.map((blog) => (
+              <li key={blog}>
+                <a href="#">{blog}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="footer-mega__column">
+          <h3>Company</h3>
+          <ul>
+            {companyLinks.map((link) => (
+              <li key={link}>
+                <a href="#">{link}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="footer-mega__bottom">
+        <div className="footer-mega__social-wrap">
+          <span>Connect with us:</span>
+          <ul className="footer-social-links" aria-label="Social links">
+            {socialLinks.map((label) => (
+              <li key={label}>
+                <a href="#" aria-label={label}>
+                  {label.slice(0, 2).toUpperCase()}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="footer-mega__stores" aria-label="App download links">
+          <a href="#" className="footer-store-badge">
+            <strong>Available on</strong>
+            <span>App Store</span>
+          </a>
+          <a href="#" className="footer-store-badge">
+            <strong>Available on</strong>
+            <span>Google Play</span>
+          </a>
+        </div>
+      </div>
+
+      <p className="footer-mega__copyright">{copyright}</p>
     </SectionContainer>
   );
 }

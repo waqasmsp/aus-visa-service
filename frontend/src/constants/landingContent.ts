@@ -1,4 +1,4 @@
-export type CountryOption = {
+﻿export type CountryOption = {
   code: string;
   name: string;
   flagCode?: string;
@@ -94,12 +94,45 @@ export const landingContent = {
     ]
   },
   footer: {
-    columns: [
-      { heading: 'Company', links: ['About', 'Careers', 'Partners'] },
-      { heading: 'Visa Services', links: ['Work Visa', 'Student Visa', 'Visitor Visa'] },
-      { heading: 'Resources', links: ['Blog', 'Help Center', 'Contact'] }
+    tagline: 'Unlock the world with smarter, faster visa support.',
+    visaRoutes: [
+      'United States to United Kingdom',
+      'France to United Kingdom',
+      'Germany to United Kingdom',
+      'United States to India',
+      'Canada to United Kingdom',
+      'United States to Philippines',
+      'Australia to India',
+      'United States to New Zealand',
+      'Netherlands to United Kingdom',
+      'Italy to United Kingdom'
     ],
-    socialLinks: ['Website', 'Email', 'Community'],
-    copyright: `© ${new Date().getFullYear()} AUS Visa Service. All rights reserved.`
+    visaNews: [
+      'UK visa and immigration fees rise from April 2026',
+      'EU Entry/Exit system fully operational on April 10',
+      'Egypt makes transit visa mandatory for Bangladeshis',
+      'Armenia visa exemption for US, EU, and Gulf residents',
+      'Mozambique launches new eVisa and ETA platform'
+    ],
+    blogs: [
+      'Real stories: 5 trips saved at the last minute',
+      'iVisa vs government sites: understanding the fee gap',
+      'Visa mistakes that can ruin your holiday plans',
+      'ETIAS Europe: how to apply for 2026 authorization'
+    ],
+    companyLinks: [
+      'About Us',
+      'Careers',
+      'Contact Us',
+      'Help Center',
+      'Refer a Friend',
+      'Testimonials',
+      'Blog',
+      'Press',
+      'Visa News',
+      'Affiliates and Partnerships'
+    ],
+    socialLinks: ['Instagram', 'LinkedIn', 'YouTube', 'Facebook'],
+    copyright: `(c) ${new Date().getFullYear()} AUS Visa Service. All rights reserved.`
   }
 };
