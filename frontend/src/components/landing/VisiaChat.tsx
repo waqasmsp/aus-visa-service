@@ -24,10 +24,14 @@ const initialMessages: ChatMessage[] = [
 function VisiaIcon() {
   return (
     <svg viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
-      <path
-        d="M5 6.75A2.75 2.75 0 0 1 7.75 4h8.5A2.75 2.75 0 0 1 19 6.75v6.5A2.75 2.75 0 0 1 16.25 16h-4.96l-3.48 2.6a.6.6 0 0 1-.96-.48V16h-.1A2.75 2.75 0 0 1 4 13.25v-6.5Zm3.7 2.62a.9.9 0 1 0 0 1.8h6.6a.9.9 0 1 0 0-1.8H8.7Zm0 3.1a.9.9 0 0 0 0 1.8h4.2a.9.9 0 1 0 0-1.8H8.7Z"
-        fill="currentColor"
-      />
+      <rect x="5.25" y="7.25" width="13.5" height="10.5" rx="3" fill="currentColor" />
+      <circle cx="9.25" cy="12.5" r="1.15" fill="#3b82f6" />
+      <circle cx="14.75" cy="12.5" r="1.15" fill="#3b82f6" />
+      <rect x="10.1" y="15.1" width="3.8" height="1.3" rx="0.65" fill="#3b82f6" />
+      <rect x="11.35" y="3.5" width="1.3" height="3" rx="0.65" fill="currentColor" />
+      <circle cx="12" cy="2.8" r="1.15" fill="currentColor" />
+      <rect x="3.25" y="10.9" width="1.5" height="3.3" rx="0.75" fill="currentColor" />
+      <rect x="19.25" y="10.9" width="1.5" height="3.3" rx="0.75" fill="currentColor" />
     </svg>
   );
 }
