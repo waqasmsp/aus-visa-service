@@ -64,16 +64,32 @@ export const landingContent = {
     ]
   },
   testimonials: {
-    title: 'What our clients say',
+    title: 'Over 50,000 positive reviews',
     items: [
       {
-        name: 'Olivia M.',
+        name: 'Christine Pain Wood',
         quote:
-          'I found the right skilled visa pathway quickly and the whole journey felt surprisingly simple.'
+          'The process was quick and easy to understand. There were many opportunities to correct errors, and technology made everything much more efficient.'
       },
       {
-        name: 'Daniel T.',
-        quote: 'The guided steps saved me hours of confusion. I always knew what to do next.'
+        name: 'Laiha Aidiepemily',
+        quote:
+          'Faster than expected. I got my result in less than 24 hours. Processing is simple, smooth, and easy. I highly recommend their service.'
+      },
+      {
+        name: 'Michael John Beavis',
+        quote:
+          'Your patience and understanding of my visa application were exceptional, and I received a positive result. Excellent job. Thank you very much.'
+      },
+      {
+        name: 'Samantha Rivera',
+        quote:
+          'The step-by-step guidance removed all stress. The support team answered quickly and checked every detail before submission.'
+      },
+      {
+        name: 'Arjun Patel',
+        quote:
+          'From visa matching to submission, everything felt organized and transparent. I always knew what was next and why it mattered.'
       }
     ]
   },
