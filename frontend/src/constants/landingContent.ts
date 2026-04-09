@@ -30,11 +30,11 @@ export const landingContent = {
     illustrationAlt: 'Illustrated travel planning cards and paper plane.'
   },
   comparison: {
-    title: 'Why people choose us over doing it yourself',
+    title: 'Why millions of travelers choose us',
     leftTitle: 'Do it yourself',
-    leftPoints: ['Research everything alone', 'Higher chance of missing details', 'Longer and confusing process'],
+    leftPoints: ['Long government application forms', 'Confusing questions that can delay approvals', 'No real support when you get stuck', 'Progress may be lost if you leave mid-way', 'Limited and less secure payment options'],
     rightTitle: 'With us',
-    rightPoints: ['Guided visa matching', 'Expert-reviewed process', 'Faster, clearer, stress-free support']
+    rightPoints: ['Quick, guided applications', 'Clear questions reviewed by experts', '24/7 support on chat, email, and WhatsApp', 'Progress auto-saved so you can return anytime', 'Multiple secure ways to pay']
   },
   stats: [
     { label: 'Success Rate', value: '99%' },
