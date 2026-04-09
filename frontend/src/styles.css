@@ -7,8 +7,8 @@
   --color-link: #334155;
   --color-white: #ffffff;
 
-  --gradient-accent: linear-gradient(135deg, #14b8a6, #10b981);
-  --gradient-accent-soft: linear-gradient(135deg, rgb(20 184 166 / 0.08), rgb(16 185 129 / 0.14));
+  --gradient-accent: linear-gradient(135deg, #0ea5e9, #3b82f6);
+  --gradient-accent-soft: linear-gradient(135deg, rgb(14 165 233 / 0.08), rgb(59 130 246 / 0.14));
 
   --color-bg-page: #f8fafc;
   --color-bg-neutral: #f1f5f9;
@@ -76,15 +76,15 @@ body {
 
 .landing-section--hero {
   background:
-    linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, rgb(16 185 129 / 0.1) 42% 100%),
-    linear-gradient(180deg, rgb(16 185 129 / 0.14) 0%, rgb(16 185 129 / 0.03) 70%, transparent 100%);
+    linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, rgb(59 130 246 / 0.1) 42% 100%),
+    linear-gradient(180deg, rgb(59 130 246 / 0.14) 0%, rgb(59 130 246 / 0.03) 70%, transparent 100%);
 }
 
 .landing-section--header {
   background:
-    linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, rgb(16 185 129 / 0.1) 42% 100%),
-    linear-gradient(180deg, rgb(16 185 129 / 0.14) 0%, rgb(16 185 129 / 0.03) 70%, transparent 100%);
-  border-bottom: 1px solid rgb(16 185 129 / 0.18);
+    linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, rgb(59 130 246 / 0.1) 42% 100%),
+    linear-gradient(180deg, rgb(59 130 246 / 0.14) 0%, rgb(59 130 246 / 0.03) 70%, transparent 100%);
+  border-bottom: 1px solid rgb(59 130 246 / 0.18);
 }
 
 .landing-header {
@@ -178,7 +178,7 @@ body {
   padding: 0.52rem 1.1rem;
   font-size: var(--text-sm);
   background: rgb(255 255 255 / 0.75);
-  border-color: rgb(16 185 129 / 0.4);
+  border-color: rgb(59 130 246 / 0.4);
 }
 
 .primary-button {
@@ -198,8 +198,8 @@ body {
 
 .primary-button--outline {
   background: var(--color-white);
-  color: #0f766e;
-  border: 1px solid rgb(20 184 166 / 0.35);
+  color: #1d4ed8;
+  border: 1px solid rgb(59 130 246 / 0.35);
 }
 
 .section-container {
@@ -259,7 +259,7 @@ body {
   width: 100%;
   max-width: none;
   background: rgb(255 255 255 / 0.75);
-  border: 1px solid rgb(16 185 129 / 0.24);
+  border: 1px solid rgb(59 130 246 / 0.24);
   border-radius: 1.25rem;
   box-shadow: 0 10px 24px rgb(15 23 42 / 0.06);
   padding: clamp(0.85rem, 2vw, 1.05rem);
@@ -299,7 +299,7 @@ body {
 
 .hero-country-trigger:focus-visible,
 .hero-country-listbox:focus-visible {
-  outline: 2px solid rgb(20 184 166 / 0.48);
+  outline: 2px solid rgb(59 130 246 / 0.48);
   outline-offset: 2px;
 }
 
@@ -362,7 +362,7 @@ body {
 }
 
 .hero-country-list-option.is-active {
-  background: rgb(20 184 166 / 0.12);
+  background: rgb(59 130 246 / 0.12);
 }
 
 .hero-country-list-option.is-selected {
@@ -375,7 +375,7 @@ body {
   border-radius: 0.9rem;
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
-  box-shadow: 0 10px 22px rgb(20 184 166 / 0.32);
+  box-shadow: 0 10px 22px rgb(59 130 246 / 0.32);
 }
 
 .hero-illustration--subtle {
@@ -480,7 +480,7 @@ body {
 
 .testimonial-card {
   margin: 0;
-  border-color: rgb(20 184 166 / 0.25);
+  border-color: rgb(59 130 246 / 0.25);
 }
 
 .testimonial-rating {
@@ -501,7 +501,7 @@ body {
 .testimonial-grid cite {
   margin-top: var(--space-3);
   display: inline-block;
-  color: #0f766e;
+  color: #1d4ed8;
   font-style: normal;
   font-weight: var(--font-weight-semibold);
 }
