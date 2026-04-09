@@ -5,6 +5,7 @@ import { HeaderNav } from '../components/landing/HeaderNav';
 import { HeroVisaSearch } from '../components/landing/HeroVisaSearch';
 import { StatsStrip } from '../components/landing/StatsStrip';
 import { Testimonials } from '../components/landing/Testimonials';
+import { VisiaChat } from '../components/landing/VisiaChat';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage() {
@@ -53,6 +54,8 @@ export function LandingPage() {
           <FooterMega columns={footer.columns} socialLinks={footer.socialLinks} copyright={footer.copyright} />
         </div>
       </section>
+
+      <VisiaChat />
     </div>
   );
 }

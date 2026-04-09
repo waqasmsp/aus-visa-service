@@ -749,6 +749,280 @@ body {
   color: var(--color-text-muted);
 }
 
+.visia-chat {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.85rem;
+}
+
+.visia-chat__greeting {
+  border: 0;
+  width: min(19rem, calc(100vw - 2rem));
+  padding: 0.95rem 1rem;
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.96), rgb(237 245 255 / 0.92)),
+    linear-gradient(135deg, rgb(14 165 233 / 0.08), rgb(59 130 246 / 0.16));
+  color: var(--color-text-primary);
+  text-align: left;
+  box-shadow:
+    0 20px 44px rgb(15 23 42 / 0.16),
+    0 0 0 1px rgb(59 130 246 / 0.12) inset;
+  backdrop-filter: blur(16px);
+  cursor: pointer;
+  animation: visiaGreetingIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.visia-chat__greeting-label {
+  display: inline-flex;
+  margin-bottom: 0.35rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(59 130 246 / 0.12);
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.visia-chat__greeting strong,
+.visia-chat__greeting span {
+  display: block;
+}
+
+.visia-chat__greeting strong {
+  font-size: 1rem;
+}
+
+.visia-chat__greeting span:last-child {
+  margin-top: 0.28rem;
+  color: var(--color-text-secondary);
+}
+
+.visia-chat__panel {
+  width: min(24rem, calc(100vw - 1.5rem));
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.98), rgb(241 247 255 / 0.94));
+  border: 1px solid rgb(59 130 246 / 0.18);
+  box-shadow:
+    0 28px 60px rgb(15 23 42 / 0.18),
+    0 0 0 1px rgb(255 255 255 / 0.65) inset;
+  backdrop-filter: blur(20px);
+  animation: visiaPanelIn 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.visia-chat__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.9rem;
+  background:
+    linear-gradient(135deg, rgb(14 165 233 / 0.14), rgb(59 130 246 / 0.18));
+  border-bottom: 1px solid rgb(59 130 246 / 0.12);
+}
+
+.visia-chat__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.visia-chat__identity strong,
+.visia-chat__identity span {
+  display: block;
+}
+
+.visia-chat__identity span:last-child {
+  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+}
+
+.visia-chat__avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 1.15rem;
+  background: var(--gradient-accent);
+  color: white;
+  font-size: 1.35rem;
+  font-weight: 800;
+  box-shadow: 0 14px 28px rgb(59 130 246 / 0.34);
+}
+
+.visia-chat__avatar--small {
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 0.95rem;
+  font-size: 1rem;
+}
+
+.visia-chat__close {
+  border: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.76);
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.visia-chat__body {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  max-height: 19rem;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at top right, rgb(59 130 246 / 0.08), transparent 30%),
+    linear-gradient(180deg, rgb(248 251 255 / 0.98), rgb(255 255 255 / 0.96));
+}
+
+.visia-chat__message {
+  max-width: 85%;
+  padding: 0.8rem 0.9rem;
+  border-radius: 1rem;
+  line-height: 1.45;
+  box-shadow: 0 12px 24px rgb(15 23 42 / 0.06);
+}
+
+.visia-chat__message--visia {
+  justify-self: start;
+  background: white;
+  color: var(--color-text-primary);
+  border-top-left-radius: 0.35rem;
+}
+
+.visia-chat__message--user {
+  justify-self: end;
+  background: var(--gradient-accent);
+  color: white;
+  border-top-right-radius: 0.35rem;
+}
+
+.visia-chat__prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0 1rem 1rem;
+}
+
+.visia-chat__prompt {
+  border: 1px solid rgb(59 130 246 / 0.18);
+  background: rgb(59 130 246 / 0.08);
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.visia-chat__composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.7rem;
+  padding: 0 1rem 1rem;
+}
+
+.visia-chat__composer input {
+  min-width: 0;
+  border: 1px solid rgb(148 163 184 / 0.35);
+  border-radius: 1rem;
+  padding: 0.85rem 0.95rem;
+  font: inherit;
+  color: var(--color-text-primary);
+  background: rgb(255 255 255 / 0.9);
+}
+
+.visia-chat__composer input:focus-visible {
+  outline: 2px solid rgb(59 130 246 / 0.4);
+  outline-offset: 2px;
+}
+
+.visia-chat__composer button {
+  border: 0;
+  border-radius: 1rem;
+  padding: 0 1rem;
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  color: white;
+  background: var(--gradient-accent);
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgb(59 130 246 / 0.24);
+}
+
+.visia-chat__launcher {
+  position: relative;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.visia-chat__launcher-ring {
+  position: absolute;
+  inset: -0.35rem;
+  border-radius: 1.5rem;
+  background: radial-gradient(circle, rgb(59 130 246 / 0.3), transparent 68%);
+  animation: visiaPulse 2.6s ease-in-out infinite;
+}
+
+.visia-chat__launcher .visia-chat__avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.25rem;
+}
+
+@keyframes visiaGreetingIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes visiaPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes visiaPulse {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
 @media (min-width: 1440px) {
   .content-container {
     width: min(1240px, calc(100% - 3rem));
@@ -904,6 +1178,19 @@ body {
     min-width: min(86vw, 20rem);
     flex: 0 0 min(86vw, 20rem);
     scroll-snap-align: start;
+  }
+
+  .visia-chat {
+    right: 0.85rem;
+    bottom: 0.85rem;
+  }
+
+  .visia-chat__panel {
+    width: min(23rem, calc(100vw - 1rem));
+  }
+
+  .visia-chat__greeting {
+    width: min(17rem, calc(100vw - 1rem));
   }
 }
 
