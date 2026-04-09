@@ -21,6 +21,17 @@ const initialMessages: ChatMessage[] = [
   }
 ];
 
+function VisiaIcon() {
+  return (
+    <svg viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
+      <path
+        d="M5 6.75A2.75 2.75 0 0 1 7.75 4h8.5A2.75 2.75 0 0 1 19 6.75v6.5A2.75 2.75 0 0 1 16.25 16h-4.96l-3.48 2.6a.6.6 0 0 1-.96-.48V16h-.1A2.75 2.75 0 0 1 4 13.25v-6.5Zm3.7 2.62a.9.9 0 1 0 0 1.8h6.6a.9.9 0 1 0 0-1.8H8.7Zm0 3.1a.9.9 0 0 0 0 1.8h4.2a.9.9 0 1 0 0-1.8H8.7Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function VisiaChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
@@ -90,7 +101,7 @@ export function VisiaChat() {
           <header className="visia-chat__header">
             <div className="visia-chat__identity">
               <span className="visia-chat__avatar visia-chat__avatar--small" aria-hidden="true">
-                V
+                <VisiaIcon />
               </span>
               <div>
                 <strong>Visia</strong>
@@ -155,7 +166,7 @@ export function VisiaChat() {
       >
         <span className="visia-chat__launcher-ring" aria-hidden="true" />
         <span className="visia-chat__avatar" aria-hidden="true">
-          V
+          <VisiaIcon />
         </span>
       </button>
     </div>
