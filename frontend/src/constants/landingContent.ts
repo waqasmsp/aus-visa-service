@@ -4,6 +4,11 @@ export type CountryOption = {
   flagCode?: string;
 };
 
+export type VisaTypeOption = {
+  code: string;
+  name: string;
+};
+
 export const landingContent = {
   brandName: 'Global Visas',
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
@@ -14,6 +19,7 @@ export const landingContent = {
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
     originCountryLabel: 'I am from',
     destinationCountryLabel: 'I want to go to',
+    visaTypeLabel: 'Visa Type',
     originCountryOptions: [
       { code: 'US', name: 'United States', flagCode: 'US' },
       { code: 'IN', name: 'India', flagCode: 'IN' },
@@ -26,6 +32,13 @@ export const landingContent = {
       { code: 'SG', name: 'Singapore', flagCode: 'SG' },
       { code: 'AE', name: 'United Arab Emirates', flagCode: 'AE' }
     ] satisfies CountryOption[],
+    visaTypeOptions: [
+      { code: 'visitor', name: 'Visitor Visa' },
+      { code: 'business', name: 'Business Visa' },
+      { code: 'transit', name: 'Transit Visa' },
+      { code: 'student', name: 'Student Visa' },
+      { code: 'work', name: 'Work Visa' }
+    ] satisfies VisaTypeOption[],
     primaryCta: 'Find My Visa',
     illustrationAlt: 'Illustrated travel planning cards and paper plane.'
   },
