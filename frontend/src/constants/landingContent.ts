@@ -56,7 +56,7 @@ export const landingContent = {
     { label: 'Visas Processed', value: '200+' }
   ],
   process: {
-    title: 'Easy Process',
+    title: 'Our easy process',
     steps: [
       { title: 'Tell us your profile', description: 'Share your country, purpose, and timeline.' },
       { title: 'Get visa options', description: 'Receive matched visa pathways instantly.' },
