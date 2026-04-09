@@ -1280,9 +1280,10 @@ body {
 }
 
 .visia-chat__greeting {
+  position: relative;
   border: 0;
   width: min(19rem, calc(100vw - 2rem));
-  padding: 0.95rem 1rem;
+  padding: 0.95rem 1.75rem 0.95rem 1rem;
   border-radius: 1.2rem;
   background:
     linear-gradient(145deg, rgb(255 255 255 / 0.96), rgb(237 245 255 / 0.92)),
@@ -1295,6 +1296,26 @@ body {
   backdrop-filter: blur(16px);
   cursor: pointer;
   animation: visiaGreetingIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.visia-chat__greeting-close {
+  position: absolute;
+  top: 0.42rem;
+  right: 0.42rem;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(71 85 105 / 0.9);
+  font-size: 0.66rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.visia-chat__greeting-close:hover {
+  color: rgb(30 41 59 / 0.95);
 }
 
 .visia-chat__greeting-label {

@@ -39,6 +39,7 @@ function VisiaIcon() {
 export function VisiaChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
+  const [isGreetingDismissed, setIsGreetingDismissed] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
@@ -49,18 +50,6 @@ export function VisiaChat() {
 
     return () => window.clearTimeout(greetingTimer);
   }, []);
-
-  useEffect(() => {
-    if (!showGreeting || isOpen) {
-      return;
-    }
-
-    const hideTimer = window.setTimeout(() => {
-      setShowGreeting(false);
-    }, 6500);
-
-    return () => window.clearTimeout(hideTimer);
-  }, [showGreeting, isOpen]);
 
   const openChat = () => {
     setIsOpen(true);
@@ -92,12 +81,34 @@ export function VisiaChat() {
 
   return (
     <div className={`visia-chat${isOpen ? ' is-open' : ''}`}>
-      {showGreeting && !isOpen && (
-        <button type="button" className="visia-chat__greeting" onClick={openChat}>
+      {showGreeting && !isOpen && !isGreetingDismissed && (
+        <div
+          className="visia-chat__greeting"
+          role="button"
+          tabIndex={0}
+          onClick={openChat}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openChat();
+            }
+          }}
+        >
+          <button
+            type="button"
+            className="visia-chat__greeting-close"
+            aria-label="Dismiss greeting"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsGreetingDismissed(true);
+            }}
+          >
+            x
+          </button>
           <span className="visia-chat__greeting-label">Visia</span>
           <strong>Hi, I am Visia</strong>
           <span>How can I help you today?</span>
-        </button>
+        </div>
       )}
 
       {isOpen && (
