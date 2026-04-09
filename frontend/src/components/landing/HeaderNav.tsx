@@ -58,9 +58,11 @@ export function HeaderNav({ brandName, navItems, loginCta }: HeaderNavProps) {
           aria-controls="mobile-sidepanel"
           onClick={() => setIsMobileMenuOpen(true)}
         >
-          <span />
-          <span />
-          <span />
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 7.5h16" />
+            <path d="M7 12h13" />
+            <path d="M4 16.5h16" />
+          </svg>
         </button>
 
         <a href="#" className="brand top-header__brand">

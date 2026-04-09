@@ -224,19 +224,19 @@ body.body--menu-open {
   padding: 0;
   align-items: center;
   justify-content: center;
-  gap: 0.22rem;
   cursor: pointer;
   box-shadow:
     0 10px 22px rgb(15 23 42 / 0.12),
     0 0 0 1px rgb(255 255 255 / 0.6) inset;
 }
 
-.top-header__menu-button span {
-  display: block;
-  width: 0.95rem;
-  height: 0.12rem;
-  border-radius: 999px;
-  background: #1e3a5f;
+.top-header__menu-button svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke: #1e3a5f;
+  stroke-width: 2.15;
+  stroke-linecap: round;
+  fill: none;
 }
 
 .mobile-sidepanel {
