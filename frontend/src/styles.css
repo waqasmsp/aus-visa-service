@@ -423,7 +423,7 @@ body {
 
 .comparison-panel--enhanced .comparison-split {
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  align-items: start;
+  align-items: center;
 }
 
 .comparison-column {
@@ -449,10 +449,13 @@ body {
 
 .comparison-column--left {
   background: rgb(255 255 255 / 0.78);
-  min-height: clamp(22rem, 38vw, 26rem);
+  min-height: auto;
+  width: min(100%, 34rem);
+  justify-self: center;
+  align-self: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .comparison-column--left::before {
@@ -888,6 +891,12 @@ body {
 
   .comparison-panel--enhanced h2 {
     text-align: left;
+  }
+
+  .comparison-column--left {
+    width: 100%;
+    justify-self: stretch;
+    align-self: stretch;
   }
 
   .testimonial-grid {
