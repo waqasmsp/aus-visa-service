@@ -1,5 +1,3 @@
-import { Card } from '../primitives/Card';
-import { IconBulletList } from '../primitives/IconBulletList';
 import { SectionContainer } from '../primitives/SectionContainer';
 
 type ComparisonPanelProps = {
@@ -12,17 +10,41 @@ type ComparisonPanelProps = {
 
 export function ComparisonPanel({ title, leftTitle, leftPoints, rightTitle, rightPoints }: ComparisonPanelProps) {
   return (
-    <SectionContainer className="comparison-panel">
+    <SectionContainer className="comparison-panel comparison-panel--enhanced">
       <h2>{title}</h2>
-      <div className="comparison-grid">
-        <Card>
+
+      <div className="comparison-split">
+        <article className="comparison-column comparison-column--left" aria-label={leftTitle}>
           <h3>{leftTitle}</h3>
-          <IconBulletList items={leftPoints} />
-        </Card>
-        <Card>
+          <ul className="comparison-list comparison-list--negative">
+            {leftPoints.map((item, index) => (
+              <li key={item} style={{ animationDelay: `${index * 80}ms` }}>
+                <span className="comparison-list__icon" aria-hidden="true">
+                  ×
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="comparison-column comparison-column--right" aria-label={rightTitle}>
           <h3>{rightTitle}</h3>
-          <IconBulletList items={rightPoints} />
-        </Card>
+          <ul className="comparison-list comparison-list--positive">
+            {rightPoints.map((item, index) => (
+              <li key={item} style={{ animationDelay: `${index * 80 + 140}ms` }}>
+                <span className="comparison-list__icon" aria-hidden="true">
+                  ✓
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+
+          <button type="button" className="primary-button primary-button--solid comparison-cta">
+            Get Started
+          </button>
+        </article>
       </div>
     </SectionContainer>
   );
