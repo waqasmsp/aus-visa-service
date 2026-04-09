@@ -23,7 +23,7 @@ export function LandingPage() {
           <HeroVisaSearch {...hero} />
         </section>
 
-        <section className="landing-section">
+        <section className="landing-section landing-section--comparison">
           <div className="content-container">
             <ComparisonPanel {...comparison} />
           </div>
