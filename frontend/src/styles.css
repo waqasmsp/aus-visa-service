@@ -88,9 +88,7 @@ body {
 }
 
 .landing-section--comparison {
-  background:
-    linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, rgb(59 130 246 / 0.1) 42% 100%),
-    linear-gradient(180deg, rgb(59 130 246 / 0.14) 0%, rgb(59 130 246 / 0.03) 70%, transparent 100%);
+  background: transparent;
 }
 
 .landing-header {
