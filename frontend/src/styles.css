@@ -449,7 +449,10 @@ body {
 
 .comparison-column--left {
   background: rgb(255 255 255 / 0.78);
-  align-self: start;
+  min-height: clamp(22rem, 38vw, 26rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .comparison-column--left::before {
