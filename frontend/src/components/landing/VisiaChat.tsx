@@ -2,15 +2,21 @@ import { useEffect, useState } from 'react';
 
 const starterPrompts = ['Visitor visa help', 'Check visa options', 'Talk to support'];
 
-const initialMessages = [
+type ChatMessage = {
+  id: string;
+  sender: 'visia' | 'user';
+  text: string;
+};
+
+const initialMessages: ChatMessage[] = [
   {
     id: 'welcome',
-    sender: 'visia' as const,
+    sender: 'visia',
     text: 'Hi, I am Visia. How can I help you today?'
   },
   {
     id: 'follow-up',
-    sender: 'visia' as const,
+    sender: 'visia',
     text: 'I can guide you with visa types, documents, timelines, and application questions.'
   }
 ];
@@ -19,7 +25,7 @@ export function VisiaChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
   useEffect(() => {
     const greetingTimer = window.setTimeout(() => {
@@ -57,12 +63,12 @@ export function VisiaChat() {
       ...current,
       {
         id: `user-${current.length + 1}`,
-        sender: 'user' as const,
+        sender: 'user',
         text: trimmed
       },
       {
         id: `visia-${current.length + 2}`,
-        sender: 'visia' as const,
+        sender: 'visia',
         text: 'I can help with that. Tell me your travel purpose or preferred visa type, and I will point you in the right direction.'
       }
     ]);
