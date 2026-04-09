@@ -669,7 +669,7 @@ body {
 .easy-process--enhanced {
   border-color: rgb(148 163 184 / 0.28);
   background: var(--color-bg-surface);
-  box-shadow: 0 20px 38px rgb(15 23 42 / 0.06);
+  box-shadow: none;
   padding: clamp(1.25rem, 3vw, 1.8rem);
 }
 
@@ -691,9 +691,9 @@ body {
   margin: 0;
   border-radius: 1.25rem;
   overflow: hidden;
-  border: 1px solid rgb(14 116 144 / 0.2);
-  background: linear-gradient(160deg, rgb(240 253 250), rgb(219 234 254));
-  box-shadow: 0 16px 36px rgb(15 23 42 / 0.12);
+  border: 1px solid rgb(59 130 246 / 0.22);
+  background: var(--color-white);
+  box-shadow: none;
   min-height: clamp(20rem, 34vw, 30rem);
 }
 
@@ -706,7 +706,7 @@ body {
 
 .easy-process__timeline-card {
   border: 1px solid rgb(148 163 184 / 0.28);
-  background: rgb(255 255 255 / 0.9);
+  background: var(--color-white);
   border-radius: 1.25rem;
   padding: clamp(1rem, 2vw, 1.3rem);
 }
@@ -745,12 +745,12 @@ body {
   border-radius: 50%;
   display: inline-grid;
   place-items: center;
-  background: #0dcf84;
+  background: #2563eb;
   color: #f8fffd;
   font-weight: var(--font-weight-bold);
   font-size: clamp(1.1rem, 2vw, 1.4rem);
   position: relative;
-  box-shadow: 0 10px 22px rgb(16 185 129 / 0.28);
+  box-shadow: 0 10px 22px rgb(59 130 246 / 0.22);
 }
 
 .easy-process__timeline-item:not(:last-child) .easy-process__marker::after {
@@ -762,7 +762,7 @@ body {
   width: 0.35rem;
   height: calc(100% + 1rem);
   border-radius: 999px;
-  background: rgb(16 185 129 / 0.28);
+  background: rgb(59 130 246 / 0.26);
 }
 
 .testimonial-card {

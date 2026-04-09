@@ -1,5 +1,5 @@
 import { SectionContainer } from '../primitives/SectionContainer';
-import heroTravelIllustration from '../../assets/hero-travel-illustration.svg';
+import heroIllustration from '../../assets/hero-illustration.svg';
 
 type Step = {
   title: string;
@@ -17,7 +17,7 @@ export function EasyProcess({ title, steps }: EasyProcessProps) {
       <h2 className="easy-process__title">{title}</h2>
       <div className="easy-process__layout">
         <figure className="easy-process__visual">
-          <img src={heroTravelIllustration} alt="Travel planning illustration for visa process steps" />
+          <img src={heroIllustration} alt="Travel planning illustration for visa process steps" />
         </figure>
 
         <div className="easy-process__timeline-card">
