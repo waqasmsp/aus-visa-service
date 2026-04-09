@@ -20,7 +20,7 @@ export function ComparisonPanel({ title, leftTitle, leftPoints, rightTitle, righ
             {leftPoints.map((item, index) => (
               <li key={item} style={{ animationDelay: `${index * 80}ms` }}>
                 <span className="comparison-list__icon" aria-hidden="true">
-                  ×
+                  x
                 </span>
                 <span>{item}</span>
               </li>
@@ -34,7 +34,7 @@ export function ComparisonPanel({ title, leftTitle, leftPoints, rightTitle, righ
             {rightPoints.map((item, index) => (
               <li key={item} style={{ animationDelay: `${index * 80 + 140}ms` }}>
                 <span className="comparison-list__icon" aria-hidden="true">
-                  ✓
+                  &#10003;
                 </span>
                 <span>{item}</span>
               </li>
