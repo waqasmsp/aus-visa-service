@@ -18,12 +18,29 @@ export function Testimonials({ title, items }: TestimonialsProps) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const query = window.matchMedia('(max-width: 768px)');
-    const syncVisibleCards = () => setVisibleCards(query.matches ? 1 : 3);
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    const tabletQuery = window.matchMedia('(max-width: 1024px)');
+    const syncVisibleCards = () => {
+      if (mobileQuery.matches) {
+        setVisibleCards(1);
+        return;
+      }
+
+      if (tabletQuery.matches) {
+        setVisibleCards(2);
+        return;
+      }
+
+      setVisibleCards(3);
+    };
 
     syncVisibleCards();
-    query.addEventListener('change', syncVisibleCards);
-    return () => query.removeEventListener('change', syncVisibleCards);
+    mobileQuery.addEventListener('change', syncVisibleCards);
+    tabletQuery.addEventListener('change', syncVisibleCards);
+    return () => {
+      mobileQuery.removeEventListener('change', syncVisibleCards);
+      tabletQuery.removeEventListener('change', syncVisibleCards);
+    };
   }, []);
 
   useEffect(() => {
