@@ -1780,6 +1780,10 @@ body.body--menu-open {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .comparison-panel--enhanced .comparison-split {
+    grid-template-columns: 1fr;
+  }
+
   .footer-mega__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1905,9 +1909,12 @@ body.body--menu-open {
 
   .comparison-split,
   .footer-columns,
-  .stats-strip,
   .easy-process__layout {
     grid-template-columns: 1fr;
+  }
+
+  .stats-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .comparison-panel--enhanced h2 {
