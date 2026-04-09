@@ -3,13 +3,15 @@ import { EasyProcess } from '../components/landing/EasyProcess';
 import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { HeroVisaSearch } from '../components/landing/HeroVisaSearch';
+import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { StatsStrip } from '../components/landing/StatsStrip';
 import { Testimonials } from '../components/landing/Testimonials';
 import { VisiaChat } from '../components/landing/VisiaChat';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage() {
-  const { hero, comparison, stats, process, testimonials, footer, brandName, navItems, loginCta } = landingContent;
+  const { hero, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
+    landingContent;
 
   return (
     <div className="landing-page">
@@ -48,6 +50,17 @@ export function LandingPage() {
           </div>
         </section>
       </main>
+
+      <section className="landing-section landing-section--newsletter">
+        <div className="content-container">
+          <NewsletterSignup
+            title={newsletter.title}
+            description={newsletter.description}
+            emailPlaceholder={newsletter.emailPlaceholder}
+            ctaLabel={newsletter.ctaLabel}
+          />
+        </div>
+      </section>
 
       <section className="landing-section landing-section--footer">
         <div className="content-container">

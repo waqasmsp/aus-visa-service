@@ -93,6 +93,12 @@ export const landingContent = {
       }
     ]
   },
+  newsletter: {
+    title: 'Travel smarter, explore further!',
+    description: "Subscribe now for the latest visa updates, travel tips, and exclusive deals you won't want to miss.",
+    emailPlaceholder: 'Enter your email',
+    ctaLabel: 'Sign me up'
+  },
   footer: {
     tagline: 'Unlock the world with smarter, faster visa support.',
     visaRoutes: [
