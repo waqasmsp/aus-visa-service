@@ -668,9 +668,7 @@ body {
 
 .easy-process--enhanced {
   border-color: rgb(148 163 184 / 0.28);
-  background:
-    linear-gradient(118deg, rgb(255 255 255 / 0.92) 0%, rgb(236 253 245 / 0.6) 100%),
-    var(--color-bg-surface);
+  background: var(--color-bg-surface);
   box-shadow: 0 20px 38px rgb(15 23 42 / 0.06);
   padding: clamp(1.25rem, 3vw, 1.8rem);
 }
