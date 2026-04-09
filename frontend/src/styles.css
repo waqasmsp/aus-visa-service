@@ -243,7 +243,7 @@ body {
 }
 
 .hero-search-copy {
-  max-width: 40rem;
+  max-width: 56rem;
 }
 
 .hero-search h1 {
@@ -251,6 +251,8 @@ body {
   font-size: clamp(2.1rem, 5vw, 3.65rem);
   line-height: 1.1;
   letter-spacing: -0.02em;
+  max-width: 52rem;
+  margin-inline: auto;
 }
 
 .hero-search-title-accent {
@@ -259,6 +261,23 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
+  display: inline-block;
+}
+
+.hero-search-title-accent--animated {
+  animation: heroWordSwap 420ms ease;
+}
+
+@keyframes heroWordSwap {
+  from {
+    opacity: 0.1;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero-search p {

@@ -14,7 +14,7 @@ export const landingContent = {
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
   loginCta: 'Login',
   hero: {
-    title: 'Find your [[perfect]] Australian visa in minutes',
+    title: '[[Fastest|Quickest|Swiftest|Speediest]] Way to Get Your Australian Travel Visa in Minutes',
     subtitle:
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
     originCountryLabel: 'I am from',

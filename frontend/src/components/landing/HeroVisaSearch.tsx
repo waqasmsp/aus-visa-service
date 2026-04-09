@@ -29,6 +29,14 @@ type SelectComboboxProps<T extends SelectOption> = {
   renderLeadingVisual?: (option: T | null) => ReactNode;
 };
 
+const HERO_TITLE_ROTATION_MS = 2200;
+
+type ParsedHeroTitle = {
+  before: string;
+  variants: string[];
+  after: string;
+};
+
 function getFlagAssetUrl(flagCode?: string) {
   if (!flagCode) {
     return undefined;
@@ -260,23 +268,61 @@ function SelectCombobox<T extends SelectOption>({
   );
 }
 
-function renderHeroTitle(title: string) {
+function parseHeroTitle(title: string): ParsedHeroTitle | null {
   const match = title.match(/\[\[(.*?)\]\]/);
 
   if (!match || match.index === undefined) {
-    return title;
+    return null;
   }
 
-  const [fullMatch, highlighted] = match;
-  const before = title.slice(0, match.index);
-  const after = title.slice(match.index + fullMatch.length);
+  const [fullMatch, rawVariants] = match;
+  const variants = rawVariants
+    .split('|')
+    .map((variant) => variant.trim())
+    .filter((variant) => variant.length > 0);
+
+  if (variants.length === 0) {
+    return null;
+  }
+
+  return {
+    before: title.slice(0, match.index),
+    variants,
+    after: title.slice(match.index + fullMatch.length)
+  };
+}
+
+function AnimatedHeroTitle({ title }: { title: string }) {
+  const parsedTitle = parseHeroTitle(title);
+  const variantsCount = parsedTitle?.variants.length ?? 0;
+  const [activeWordIndex, setActiveWordIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveWordIndex(0);
+
+    if (variantsCount < 2) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveWordIndex((currentIndex) => (currentIndex + 1) % variantsCount);
+    }, HERO_TITLE_ROTATION_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [title, variantsCount]);
+
+  if (!parsedTitle) {
+    return <h1>{title}</h1>;
+  }
+
+  const activeWord = parsedTitle.variants[activeWordIndex] ?? parsedTitle.variants[0];
 
   return (
-    <>
-      {before}
-      <span className="hero-search-title-accent">{highlighted}</span>
-      {after}
-    </>
+    <h1>
+      {parsedTitle.before}
+      <span key={activeWord} className="hero-search-title-accent hero-search-title-accent--animated">{activeWord}</span>
+      {parsedTitle.after}
+    </h1>
   );
 }
 
@@ -297,7 +343,7 @@ export function HeroVisaSearch({
       <SectionContainer className="hero-search">
         <div className="hero-search-layout">
           <header className="hero-search-copy">
-            <h1>{renderHeroTitle(title)}</h1>
+            <AnimatedHeroTitle title={title} />
             <p>{subtitle}</p>
           </header>
           <div className="hero-search-panel">
