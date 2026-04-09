@@ -271,7 +271,7 @@ body {
 
 .hero-search-controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   align-items: end;
   gap: 0.8rem;
 }
@@ -783,11 +783,11 @@ body {
   }
 
   .hero-search-controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .hero-search-controls .primary-button {
-    grid-column: span 2;
+    grid-column: span 3;
   }
 
   .stats-strip {

@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import heroIllustration from '../../assets/hero-travel-illustration.svg';
-import type { CountryOption } from '../../constants/landingContent';
+import type { CountryOption, VisaTypeOption } from '../../constants/landingContent';
 import { PrimaryButton } from '../primitives/PrimaryButton';
 import { SectionContainer } from '../primitives/SectionContainer';
 
@@ -9,16 +9,24 @@ type HeroVisaSearchProps = {
   subtitle: string;
   originCountryLabel: string;
   destinationCountryLabel: string;
+  visaTypeLabel: string;
   originCountryOptions: CountryOption[];
   destinationCountryOptions: CountryOption[];
+  visaTypeOptions: VisaTypeOption[];
   primaryCta: string;
   illustrationAlt: string;
 };
 
-type CountryComboboxProps = {
+type SelectOption = {
+  code: string;
+  name: string;
+};
+
+type SelectComboboxProps<T extends SelectOption> = {
   label: string;
-  options: CountryOption[];
+  options: T[];
   placeholder: string;
+  renderLeadingVisual?: (option: T | null) => ReactNode;
 };
 
 function getFlagAssetUrl(flagCode?: string) {
@@ -38,7 +46,20 @@ function GlobeIcon() {
   );
 }
 
-function CountryFlag({ country, brokenFlags, onFlagError }: {
+function VisaIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="4" y="6" width="16" height="12" rx="2.4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M8 10h8M8 14h5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CountryFlag({
+  country,
+  brokenFlags,
+  onFlagError
+}: {
   country: CountryOption;
   brokenFlags: Set<string>;
   onFlagError: (flagCode: string) => void;
@@ -56,18 +77,18 @@ function CountryFlag({ country, brokenFlags, onFlagError }: {
 
   return (
     <span className="hero-country-flag" aria-hidden="true">
-      <img
-        src={getFlagAssetUrl(flagCode)}
-        alt=""
-        loading="lazy"
-        onError={() => onFlagError(flagCode)}
-      />
+      <img src={getFlagAssetUrl(flagCode)} alt="" loading="lazy" onError={() => onFlagError(flagCode)} />
     </span>
   );
 }
 
-function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) {
-  const [selected, setSelected] = useState<CountryOption | null>(null);
+function SelectCombobox<T extends SelectOption>({
+  label,
+  options,
+  placeholder,
+  renderLeadingVisual
+}: SelectComboboxProps<T>) {
+  const [selected, setSelected] = useState<T | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [brokenFlags, setBrokenFlags] = useState<Set<string>>(new Set());
@@ -162,6 +183,16 @@ function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) 
     }
   };
 
+  const leadingVisual = renderLeadingVisual
+    ? renderLeadingVisual(selected)
+    : (
+      <CountryFlag
+        country={(selected as CountryOption | null) ?? { code: '', name: placeholder }}
+        brokenFlags={brokenFlags}
+        onFlagError={onFlagError}
+      />
+    );
+
   return (
     <div className="hero-country-field" ref={wrapperRef}>
       <span id={labelId}>{label}</span>
@@ -180,10 +211,10 @@ function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) 
           onKeyDown={onTriggerKeyDown}
         >
           <span className="hero-country-option">
-            <CountryFlag country={selected ?? { code: '', name: placeholder }} brokenFlags={brokenFlags} onFlagError={onFlagError} />
+            {leadingVisual}
             <span>{selected?.name ?? placeholder}</span>
           </span>
-          <span className="hero-country-caret" aria-hidden="true">▾</span>
+          <span className="hero-country-caret" aria-hidden="true">&#9662;</span>
         </button>
         {isOpen && (
           <ul
@@ -212,7 +243,11 @@ function CountryCombobox({ label, options, placeholder }: CountryComboboxProps) 
                   }}
                 >
                   <span className="hero-country-option">
-                    <CountryFlag country={option} brokenFlags={brokenFlags} onFlagError={onFlagError} />
+                    {renderLeadingVisual ? (
+                      renderLeadingVisual(option)
+                    ) : (
+                      <CountryFlag country={option as CountryOption} brokenFlags={brokenFlags} onFlagError={onFlagError} />
+                    )}
                     <span>{option.name}</span>
                   </span>
                 </li>
@@ -250,8 +285,10 @@ export function HeroVisaSearch({
   subtitle,
   originCountryLabel,
   destinationCountryLabel,
+  visaTypeLabel,
   originCountryOptions,
   destinationCountryOptions,
+  visaTypeOptions,
   primaryCta,
   illustrationAlt
 }: HeroVisaSearchProps) {
@@ -265,8 +302,18 @@ export function HeroVisaSearch({
           </header>
           <div className="hero-search-panel">
             <div className="hero-search-controls">
-              <CountryCombobox label={originCountryLabel} options={originCountryOptions} placeholder="Select country" />
-              <CountryCombobox label={destinationCountryLabel} options={destinationCountryOptions} placeholder="Select country" />
+              <SelectCombobox label={originCountryLabel} options={originCountryOptions} placeholder="Select country" />
+              <SelectCombobox label={destinationCountryLabel} options={destinationCountryOptions} placeholder="Select country" />
+              <SelectCombobox
+                label={visaTypeLabel}
+                options={visaTypeOptions}
+                placeholder="Select visa type"
+                renderLeadingVisual={() => (
+                  <span className="hero-country-flag" aria-hidden="true">
+                    <VisaIcon />
+                  </span>
+                )}
+              />
               <PrimaryButton>{primaryCta}</PrimaryButton>
             </div>
           </div>
