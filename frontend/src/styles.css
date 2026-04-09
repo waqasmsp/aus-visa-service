@@ -1891,12 +1891,27 @@ body.body--menu-open {
   }
 
   .hero-search-band {
-    padding-top: 1.3rem;
+    padding-top: 1.75rem;
+    padding-bottom: 1.35rem;
+  }
+
+  .hero-search-layout {
+    gap: 1.2rem;
+  }
+
+  .hero-search p {
+    margin-top: 1rem;
+  }
+
+  .hero-search-panel {
+    margin-top: 0.2rem;
   }
 
   .hero-illustration--subtle {
     display: block;
     max-height: 145px;
+    margin-top: 0.85rem;
+    margin-bottom: 0.7rem;
   }
 
   .hero-search-controls {
