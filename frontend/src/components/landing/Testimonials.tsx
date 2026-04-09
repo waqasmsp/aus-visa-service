@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Card } from '../primitives/Card';
 import { SectionContainer } from '../primitives/SectionContainer';
 
@@ -12,6 +13,52 @@ type TestimonialsProps = {
 };
 
 export function Testimonials({ title, items }: TestimonialsProps) {
+  const [visibleCards, setVisibleCards] = useState(3);
+  const maxIndex = Math.max(0, items.length - visibleCards);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 768px)');
+    const syncVisibleCards = () => setVisibleCards(query.matches ? 1 : 3);
+
+    syncVisibleCards();
+    query.addEventListener('change', syncVisibleCards);
+    return () => query.removeEventListener('change', syncVisibleCards);
+  }, []);
+
+  useEffect(() => {
+    if (index > maxIndex) {
+      setIndex(maxIndex);
+    }
+  }, [index, maxIndex]);
+
+  useEffect(() => {
+    if (maxIndex === 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current >= maxIndex ? 0 : current + 1));
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, [maxIndex]);
+
+  const previous = () => {
+    setIndex((current) => (current <= 0 ? maxIndex : current - 1));
+  };
+
+  const next = () => {
+    setIndex((current) => (current >= maxIndex ? 0 : current + 1));
+  };
+
+  const trackStyle = useMemo(
+    () => ({
+      transform: `translateX(calc((100% / ${visibleCards}) * -${index}))`
+    }),
+    [index, visibleCards]
+  );
+
   return (
     <SectionContainer className="testimonials testimonials--enhanced">
       <div className="testimonials__header">
@@ -28,22 +75,35 @@ export function Testimonials({ title, items }: TestimonialsProps) {
         </div>
       </div>
 
-      <div className="testimonial-grid">
-        {items.map((item) => (
-          <Card key={item.name} as="blockquote" className="testimonial-card">
-            <p className="testimonial-card__quote">"{item.quote}"</p>
-            <footer className="testimonial-card__footer">
-              <div className="testimonial-rating" aria-label="Rated 5 out of 5">
-                {Array.from({ length: 5 }).map((_, starIndex) => (
-                  <span key={`${item.name}-star-${starIndex}`} className="testimonial-rating__star">
-                    *
-                  </span>
-                ))}
-              </div>
-              <cite>{item.name}</cite>
-            </footer>
-          </Card>
-        ))}
+      <div className="testimonials__carousel">
+        <div className="testimonials__viewport">
+          <div className="testimonials__track" style={trackStyle}>
+            {items.map((item) => (
+              <Card key={item.name} as="blockquote" className="testimonial-card">
+                <p className="testimonial-card__quote">"{item.quote}"</p>
+                <footer className="testimonial-card__footer">
+                  <div className="testimonial-rating" aria-label="Rated 5 out of 5">
+                    {Array.from({ length: 5 }).map((_, starIndex) => (
+                      <span key={`${item.name}-star-${starIndex}`} className="testimonial-rating__star">
+                        *
+                      </span>
+                    ))}
+                  </div>
+                  <cite>{item.name}</cite>
+                </footer>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div className="testimonials__controls">
+          <button type="button" className="testimonials__control testimonials__control--prev" onClick={previous} aria-label="Previous testimonial">
+            &#8592;
+          </button>
+          <button type="button" className="testimonials__control testimonials__control--next" onClick={next} aria-label="Next testimonial">
+            &#8594;
+          </button>
+        </div>
       </div>
     </SectionContainer>
   );

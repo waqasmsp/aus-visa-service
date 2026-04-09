@@ -803,14 +803,26 @@ body {
   gap: 0.25rem;
 }
 
-.testimonial-grid {
+.testimonials__carousel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.testimonials__viewport {
+  overflow: hidden;
+}
+
+.testimonials__track {
+  display: flex;
+  gap: 1rem;
+  transition: transform 620ms cubic-bezier(0.2, 0.75, 0.2, 1);
+  will-change: transform;
 }
 
 .testimonial-card {
   margin: 0;
+  width: calc((100% - 2rem) / 3);
+  min-width: calc((100% - 2rem) / 3);
   min-height: 14rem;
   border-color: rgb(59 130 246 / 0.3);
   border-radius: 1.15rem;
@@ -856,6 +868,41 @@ body {
   font-weight: var(--font-weight-bold);
   font-size: clamp(1rem, 1.35vw, 1.16rem);
   text-align: right;
+}
+
+.testimonials__controls {
+  display: inline-flex;
+  gap: 0.65rem;
+  justify-self: end;
+}
+
+.testimonials__control {
+  width: 3.1rem;
+  height: 3.1rem;
+  border-radius: 999px;
+  border: 1px solid rgb(59 130 246 / 0.24);
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.testimonials__control:hover {
+  transform: translateY(-1px);
+}
+
+.testimonials__control--prev {
+  background: var(--gradient-accent);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgb(59 130 246 / 0.3);
+}
+
+.testimonials__control--next {
+  background: rgb(226 232 240 / 0.9);
+  color: #475569;
 }
 
 .footer-columns h3 {
@@ -1331,8 +1378,13 @@ body {
     gap: 0.65rem;
   }
 
-  .testimonial-grid {
-    grid-template-columns: 1fr;
+  .testimonial-card {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .testimonials__controls {
+    justify-self: start;
   }
 
   .visia-chat {
