@@ -128,7 +128,7 @@ export function AboutPage({ pathname }: AboutPageProps) {
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-trust-stat-panel">
+            <div className="about-trust-stat-panel">
               <div className="about-trust-stat-head">
                 <p className="about-kicker">Why Clients Trust Us</p>
                 <h2>We make traveling easy for everyone</h2>
@@ -142,13 +142,13 @@ export function AboutPage({ pathname }: AboutPageProps) {
                   </article>
                 ))}
               </div>
-            </SectionContainer>
+            </div>
           </div>
         </section>
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-info-card">
+            <div className="about-info-card">
               <h2>Making Your Dreams a Reality</h2>
               <p>
                 Global Visas was founded to provide clear, reliable and professionally structured visa services for
@@ -157,13 +157,13 @@ export function AboutPage({ pathname }: AboutPageProps) {
                 consistent and fully compliant applications with ease. Our goal is to make applying for your visa
                 straightforward, stress-free and efficient, so you can focus on planning your trip.
               </p>
-            </SectionContainer>
+            </div>
           </div>
         </section>
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-why-card">
+            <div className="about-why-card">
               <h2>Reasons to Trust Global Visas</h2>
               <div className="about-trust-grid">
                 {trustPoints.map((point) => (
@@ -176,13 +176,13 @@ export function AboutPage({ pathname }: AboutPageProps) {
                   </article>
                 ))}
               </div>
-            </SectionContainer>
+            </div>
           </div>
         </section>
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-accreditations-card">
+            <div className="about-accreditations-card">
               <div className="about-section-header">
                 <p className="about-kicker">Professional Standards</p>
                 <h2>Our Direct Government Accreditations</h2>
@@ -201,13 +201,13 @@ export function AboutPage({ pathname }: AboutPageProps) {
                   </article>
                 ))}
               </div>
-            </SectionContainer>
+            </div>
           </div>
         </section>
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-partners-card">
+            <div className="about-partners-card">
               <div className="about-section-header">
                 <p className="about-kicker">Global Network</p>
                 <h2>Partner Government Accreditations</h2>
@@ -221,13 +221,13 @@ export function AboutPage({ pathname }: AboutPageProps) {
                   <span key={partner}>{partner}</span>
                 ))}
               </div>
-            </SectionContainer>
+            </div>
           </div>
         </section>
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-legal-card">
+            <div className="about-legal-card">
               <div className="about-section-header">
                 <h2>Legal Information</h2>
               </div>
@@ -252,13 +252,13 @@ export function AboutPage({ pathname }: AboutPageProps) {
                   <p>+1 510-288-5920</p>
                 </article>
               </div>
-            </SectionContainer>
+            </div>
           </div>
         </section>
 
         <section className="landing-section about-section">
           <div className="content-container">
-            <SectionContainer className="about-offices-card">
+            <div className="about-offices-card">
               <div className="about-section-header">
                 <h2>Our offices around the world</h2>
               </div>
@@ -277,7 +277,7 @@ export function AboutPage({ pathname }: AboutPageProps) {
                   </article>
                 ))}
               </div>
-            </SectionContainer>
+            </div>
           </div>
         </section>
       </main>
