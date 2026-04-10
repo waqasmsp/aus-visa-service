@@ -11,7 +11,7 @@ import { VisiaChat } from '../components/landing/VisiaChat';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { landingContent } from '../constants/landingContent';
 
-export function LandingPage() {
+export function LandingPage({ pathname }: { pathname: string }) {
   const { hero, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
     landingContent;
 
@@ -19,7 +19,7 @@ export function LandingPage() {
     <div className="landing-page">
       <section className="landing-section landing-section--header">
         <div className="content-container">
-          <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} />
+          <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} pathname={pathname} />
         </div>
       </section>
 
@@ -85,7 +85,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <MobileBottomNav />
+      <MobileBottomNav pathname={pathname} />
       <VisiaChat />
     </div>
   );

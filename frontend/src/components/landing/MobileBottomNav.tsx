@@ -16,16 +16,27 @@ function HomeIcon() {
   );
 }
 
-function ProfileIcon() {
+function InfoIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <circle cx="12" cy="8.3" r="3.1" />
-      <path d="M5.5 19.8a6.5 6.5 0 0 1 13 0" />
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 10v5" />
+      <circle cx="12" cy="7.2" r="0.8" fill="currentColor" stroke="none" />
     </svg>
   );
 }
 
-export function MobileBottomNav() {
+const normalizePathname = (value: string): string => value.toLowerCase().replace(/\/+$/, '') || '/';
+
+type MobileBottomNavProps = {
+  pathname: string;
+};
+
+export function MobileBottomNav({ pathname }: MobileBottomNavProps) {
+  const currentPath = normalizePathname(pathname);
+  const isHome = currentPath === '/';
+  const isAbout = currentPath === '/about-us';
+
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile quick navigation">
       <a href="#" className="mobile-bottom-nav__item mobile-bottom-nav__item--apply">
@@ -34,19 +45,26 @@ export function MobileBottomNav() {
         </span>
         <span>Apply Now</span>
       </a>
-      <a href="#" className="mobile-bottom-nav__item mobile-bottom-nav__item--active" aria-current="page">
+      <a
+        href="/"
+        className={`mobile-bottom-nav__item${isHome ? ' mobile-bottom-nav__item--active' : ''}`}
+        aria-current={isHome ? 'page' : undefined}
+      >
         <span className="mobile-bottom-nav__icon">
           <HomeIcon />
         </span>
         <span>Home</span>
       </a>
-      <a href="#" className="mobile-bottom-nav__item">
+      <a
+        href="/about-us"
+        className={`mobile-bottom-nav__item${isAbout ? ' mobile-bottom-nav__item--active' : ''}`}
+        aria-current={isAbout ? 'page' : undefined}
+      >
         <span className="mobile-bottom-nav__icon">
-          <ProfileIcon />
+          <InfoIcon />
         </span>
-        <span>Profile</span>
+        <span>About Us</span>
       </a>
     </nav>
   );
 }
-

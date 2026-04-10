@@ -6,11 +6,28 @@ type HeaderNavProps = {
   brandName: string;
   navItems: string[];
   loginCta: string;
+  pathname: string;
 };
 
-export function HeaderNav({ brandName, navItems, loginCta }: HeaderNavProps) {
+const resolveNavHref = (item: string): string => {
+  switch (item) {
+    case 'Home':
+      return '/';
+    case 'About Us':
+      return '/about-us';
+    case 'Contact Us':
+      return '/contact-us';
+    default:
+      return '#';
+  }
+};
+
+const normalizePathname = (value: string): string => value.toLowerCase().replace(/\/+$/, '') || '/';
+
+export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const hasDropdown = (item: string) => !['Home', 'Contact Us'].includes(item);
+  const hasDropdown = (item: string) => !['Home', 'About Us', 'Contact Us'].includes(item);
+  const currentPath = normalizePathname(pathname);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -65,18 +82,23 @@ export function HeaderNav({ brandName, navItems, loginCta }: HeaderNavProps) {
           </svg>
         </button>
 
-        <a href="#" className="brand top-header__brand">
+        <a href="/" className="brand top-header__brand">
           <img src={logo} alt={`${brandName} logo`} />
           <span>{brandName}</span>
         </a>
 
         <nav className="landing-nav top-header__nav" aria-label="Primary">
-          {navItems.map((item) => (
-            <a key={item} href="#">
+          {navItems.map((item) => {
+            const href = resolveNavHref(item);
+            const isCurrent = normalizePathname(href) === currentPath;
+
+            return (
+              <a key={item} href={href} aria-current={isCurrent ? 'page' : undefined}>
               <span>{item}</span>
               {hasDropdown(item) ? <span className="top-header__nav-indicator">&#9662;</span> : null}
             </a>
-          ))}
+            );
+          })}
         </nav>
 
         <div className="top-header__actions">
@@ -95,7 +117,7 @@ export function HeaderNav({ brandName, navItems, loginCta }: HeaderNavProps) {
         <button type="button" className="mobile-sidepanel__backdrop" aria-label="Close menu" onClick={closeMobileMenu} />
         <aside className="mobile-sidepanel__panel" role="dialog" aria-modal="true" aria-label="Mobile menu">
           <div className="mobile-sidepanel__header">
-            <a href="#" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu}>
+            <a href="/" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu}>
               <img src={logo} alt={`${brandName} logo`} />
               <span>{brandName}</span>
             </a>
@@ -105,12 +127,22 @@ export function HeaderNav({ brandName, navItems, loginCta }: HeaderNavProps) {
           </div>
 
           <nav className="mobile-sidepanel__nav" aria-label="Mobile navigation">
-            {navItems.map((item) => (
-              <a key={`mobile-${item}`} href="#" onClick={closeMobileMenu}>
+            {navItems.map((item) => {
+              const href = resolveNavHref(item);
+              const isCurrent = normalizePathname(href) === currentPath;
+
+              return (
+                <a
+                  key={`mobile-${item}`}
+                  href={href}
+                  onClick={closeMobileMenu}
+                  aria-current={isCurrent ? 'page' : undefined}
+                >
                 <span>{item}</span>
                 {hasDropdown(item) ? <span className="mobile-sidepanel__nav-indicator">&#9662;</span> : null}
               </a>
-            ))}
+              );
+            })}
           </nav>
 
           <PrimaryButton variant="outline" className="mobile-sidepanel__login-button">

@@ -8,7 +8,7 @@ const ssrDir = path.resolve(rootDir, 'dist-ssr');
 const templatePath = path.resolve(distDir, 'index.html');
 const ssrEntryPath = path.resolve(ssrDir, 'entry-server.js');
 
-const routes = (process.env.PRERENDER_ROUTES ?? '/')
+const routes = (process.env.PRERENDER_ROUTES ?? '/,/about-us')
   .split(',')
   .map((route) => route.trim())
   .filter(Boolean);
