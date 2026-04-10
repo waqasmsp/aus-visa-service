@@ -26,6 +26,9 @@ type SelectComboboxProps<T extends SelectOption> = {
   label: string;
   options: T[];
   placeholder: string;
+  value?: T | null;
+  onChange?: (option: T) => void;
+  disabled?: boolean;
   renderLeadingVisual?: (option: T | null) => ReactNode;
 };
 
@@ -94,9 +97,12 @@ function SelectCombobox<T extends SelectOption>({
   label,
   options,
   placeholder,
+  value,
+  onChange,
+  disabled = false,
   renderLeadingVisual
 }: SelectComboboxProps<T>) {
-  const [selected, setSelected] = useState<T | null>(null);
+  const [internalSelected, setInternalSelected] = useState<T | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [brokenFlags, setBrokenFlags] = useState<Set<string>>(new Set());
@@ -104,6 +110,16 @@ function SelectCombobox<T extends SelectOption>({
   const listboxRef = useRef<HTMLUListElement>(null);
   const labelId = useId();
   const listboxId = useId();
+  const isControlled = value !== undefined;
+  const selected = isControlled ? (value ?? null) : internalSelected;
+
+  const applySelected = (option: T) => {
+    if (!isControlled) {
+      setInternalSelected(option);
+    }
+
+    onChange?.(option);
+  };
 
   const onFlagError = (flagCode: string) => {
     setBrokenFlags((current) => {
@@ -140,6 +156,10 @@ function SelectCombobox<T extends SelectOption>({
   };
 
   const onTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (disabled || options.length === 0) {
+      return;
+    }
+
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       openWithIndex(selected ? options.findIndex((option) => option.code === selected.code) : 0);
@@ -153,6 +173,10 @@ function SelectCombobox<T extends SelectOption>({
   };
 
   const onListKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
+    if (options.length === 0) {
+      return;
+    }
+
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       setActiveIndex((current) => (current + 1) % options.length);
@@ -186,7 +210,7 @@ function SelectCombobox<T extends SelectOption>({
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       const activeOption = options[activeIndex];
-      setSelected(activeOption);
+      applySelected(activeOption);
       setIsOpen(false);
     }
   };
@@ -211,12 +235,18 @@ function SelectCombobox<T extends SelectOption>({
         aria-haspopup="listbox"
         aria-controls={listboxId}
         aria-labelledby={labelId}
+        aria-disabled={disabled}
       >
         <button
           type="button"
           className="hero-country-trigger"
-          onClick={() => setIsOpen((current) => !current)}
+          onClick={() => {
+            if (!disabled && options.length > 0) {
+              setIsOpen((current) => !current);
+            }
+          }}
           onKeyDown={onTriggerKeyDown}
+          disabled={disabled}
         >
           <span className="hero-country-option">
             {leadingVisual}
@@ -246,7 +276,7 @@ function SelectCombobox<T extends SelectOption>({
                   className={`hero-country-list-option${isActive ? ' is-active' : ''}${isSelected ? ' is-selected' : ''}`}
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => {
-                    setSelected(option);
+                    applySelected(option);
                     setIsOpen(false);
                   }}
                 >
@@ -338,6 +368,20 @@ export function HeroVisaSearch({
   primaryCta,
   illustrationAlt
 }: HeroVisaSearchProps) {
+  const [originCountry, setOriginCountry] = useState<CountryOption | null>(null);
+  const [destinationCountry, setDestinationCountry] = useState<CountryOption | null>(
+    destinationCountryOptions.find((option) => option.code === 'AU' || option.name.toLowerCase() === 'australia') ?? destinationCountryOptions[0] ?? null
+  );
+
+  useEffect(() => {
+    const australiaOption =
+      destinationCountryOptions.find((option) => option.code === 'AU' || option.name.toLowerCase() === 'australia') ??
+      destinationCountryOptions[0] ??
+      null;
+
+    setDestinationCountry(australiaOption);
+  }, [originCountry, destinationCountryOptions]);
+
   return (
     <section className="hero-search-band">
       <SectionContainer className="hero-search">
@@ -348,8 +392,20 @@ export function HeroVisaSearch({
           </header>
           <div className="hero-search-panel">
             <div className="hero-search-controls">
-              <SelectCombobox label={originCountryLabel} options={originCountryOptions} placeholder="Select country" />
-              <SelectCombobox label={destinationCountryLabel} options={destinationCountryOptions} placeholder="Select country" />
+              <SelectCombobox
+                label={originCountryLabel}
+                options={originCountryOptions}
+                placeholder="Select country"
+                value={originCountry}
+                onChange={setOriginCountry}
+              />
+              <SelectCombobox
+                label={destinationCountryLabel}
+                options={destinationCountry ? [destinationCountry] : destinationCountryOptions}
+                placeholder="Select country"
+                value={destinationCountry}
+                disabled
+              />
               <SelectCombobox
                 label={visaTypeLabel}
                 options={visaTypeOptions}
