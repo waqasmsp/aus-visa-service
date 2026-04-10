@@ -8,6 +8,7 @@ import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { StatsStrip } from '../components/landing/StatsStrip';
 import { Testimonials } from '../components/landing/Testimonials';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage() {
@@ -84,6 +85,7 @@ export function LandingPage() {
         </div>
       </section>
 
+      <MobileBottomNav />
       <VisiaChat />
     </div>
   );
