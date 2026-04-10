@@ -120,15 +120,15 @@ body.body--menu-open {
 }
 
 .about-main {
-  gap: 1.1rem;
+  gap: clamp(1.4rem, 2.6vw, 2.2rem);
 }
 
 .about-section {
-  padding-top: 0.2rem;
+  padding-top: 0;
 }
 
 .about-hero-band {
-  padding: clamp(1rem, 2.5vw, 1.6rem) 0 clamp(0.8rem, 2vw, 1.2rem);
+  padding: clamp(1rem, 2.5vw, 1.6rem) 0 clamp(1rem, 2.2vw, 1.5rem);
 }
 
 .about-hero-shell {
