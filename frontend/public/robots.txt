@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /user-dashboard
+Disallow: /user
+Disallow: /account
+Disallow: /auth
+
+Sitemap: https://ausvisaservice.com/sitemap.xml
