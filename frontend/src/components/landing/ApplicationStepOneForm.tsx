@@ -5,11 +5,12 @@ type ApplicationStepOneFormProps = {
 };
 
 type YesNo = 'yes' | 'no' | '';
-type ApplicationSubStep = 1 | 2 | 3 | 4 | 5;
+type ApplicationSubStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 type TravelerEntry = {
   id: string;
   name: string;
+  country: string;
 };
 
 const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => `${index + 1}`);
@@ -74,6 +75,12 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
   const [expectedArrivalDay, setExpectedArrivalDay] = useState('');
   const [expectedArrivalMonth, setExpectedArrivalMonth] = useState('');
   const [expectedArrivalYear, setExpectedArrivalYear] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [subscribeToUpdates, setSubscribeToUpdates] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [cardholderName, setCardholderName] = useState('');
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -121,12 +128,40 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
 
   const completeTravelerApplication = () => {
     const travelerName = `${firstName} ${lastName}`.trim() || `Traveler ${travelers.length + 1}`;
-    setTravelers((current) => [...current, { id: `${Date.now()}-${current.length + 1}`, name: travelerName }]);
+    setTravelers((current) => [
+      ...current,
+      {
+        id: `${Date.now()}-${current.length + 1}`,
+        name: travelerName,
+        country: residenceCountry || passportCountry || 'United States'
+      }
+    ]);
     setIsTravelersStage(true);
     setApplicationSubStep(5);
   };
 
   const travelerNames = travelers.map((traveler) => traveler.name).join(', ');
+  const currentStage: 1 | 2 | 3 | 4 = !isTravelersStage
+    ? 1
+    : applicationSubStep === 6
+      ? 3
+      : applicationSubStep === 7
+        ? 4
+        : 2;
+
+  const pricingByCountry: Record<string, { currency: string; governmentFees: number; standard: number }> = {
+    Pakistan: { currency: 'PKR', governmentFees: 42218.79, standard: 76529.99 },
+    India: { currency: 'INR', governmentFees: 9950, standard: 17650 },
+    Bangladesh: { currency: 'BDT', governmentFees: 12800, standard: 22900 },
+    'United Arab Emirates': { currency: 'AED', governmentFees: 535, standard: 965 },
+    'United States': { currency: 'USD', governmentFees: 149, standard: 269 }
+  };
+  const primaryTravelerCountry = travelers[0]?.country ?? 'United States';
+  const selectedPricing = pricingByCountry[primaryTravelerCountry] ?? pricingByCountry['United States'];
+  const applicantCount = Math.max(1, travelers.length);
+  const totalPerApplicant = selectedPricing.governmentFees + selectedPricing.standard;
+  const totalAllApplicants = totalPerApplicant * applicantCount;
+  const formatMoney = (amount: number) => `${selectedPricing.currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <div className="application-form-screen" role="region" aria-label="Visa application form">
@@ -137,10 +172,8 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
       <ol className="application-form-steps" aria-label="Application steps">
         {STEP_ITEMS.map((step, index) => {
           const stepIndex = index + 1;
-          const isStepOne = stepIndex === 1;
-          const isStepTwo = stepIndex === 2;
-          const isCompleted = isStepOne && isTravelersStage;
-          const isActive = (isStepOne && !isTravelersStage) || (isStepTwo && isTravelersStage);
+          const isCompleted = stepIndex < currentStage;
+          const isActive = stepIndex === currentStage;
 
           return (
             <li key={step} className={`application-form-step${isActive ? ' is-active' : ''}${isCompleted ? ' is-completed' : ''}`}>
@@ -148,12 +181,20 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
                 type="button"
                 className="application-form-step__button"
                 onClick={() => {
-                  if (isStepOne) {
+                  if (stepIndex === 1) {
                     setIsTravelersStage(false);
                     resetTravelerDraft();
                   }
-                  if (isStepTwo) {
+                  if (stepIndex === 2) {
                     startTravelerApplication();
+                  }
+                  if (stepIndex === 3 && travelers.length > 0) {
+                    setIsTravelersStage(true);
+                    setApplicationSubStep(6);
+                  }
+                  if (stepIndex === 4 && travelers.length > 0) {
+                    setIsTravelersStage(true);
+                    setApplicationSubStep(7);
                   }
                 }}
               >
@@ -188,6 +229,25 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
             <div className="application-visa-card__line">
               <p>Travelers</p>
               <strong>{travelerNames || `${firstName} ${lastName}`.trim() || 'Waqas Akber'}</strong>
+            </div>
+          ) : null}
+
+          {applicationSubStep === 7 ? (
+            <div className="application-pricing-card">
+              <h3>Choose a processing time</h3>
+              <p>Get it: Standard Processing</p>
+              <button type="button" className="application-pricing-option">
+                <span>
+                  <strong>Standard</strong>
+                  <small>Get it in 28 days</small>
+                </span>
+                <strong>Fastest</strong>
+              </button>
+              <div className="application-pricing-breakdown">
+                <p><span>Government fees</span><strong>{formatMoney(selectedPricing.governmentFees)}</strong></p>
+                <p><span>Standard</span><strong>{formatMoney(selectedPricing.standard)}</strong></p>
+                <p><span>Total ({applicantCount} applicant{applicantCount > 1 ? 's' : ''})</span><strong>{formatMoney(totalAllApplicants)}</strong></p>
+              </div>
             </div>
           ) : null}
         </aside>
@@ -380,7 +440,58 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
                 </div>
 
                 <button type="button" className="traveler-add-button" onClick={startTravelerApplication}><span aria-hidden="true">+</span> Add Another Traveler</button>
-                <div className="application-form-actions"><button type="button" className="application-continue-button">Continue</button></div>
+                <div className="application-form-actions">
+                  <button type="button" className="application-continue-button" onClick={() => setApplicationSubStep(6)}>
+                    Continue
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : applicationSubStep === 6 ? (
+            <>
+              <header className="application-form-card__header"><h1>Contact Details</h1></header>
+              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(7); }}>
+                <label className="application-field">
+                  <span>Email address</span>
+                  <input type="email" placeholder="johnsmith@gmail.com" value={emailAddress} onChange={(event) => setEmailAddress(event.target.value)} />
+                </label>
+                <p className="application-field-note">Your Australia Visitor Visa will be sent to this email address</p>
+
+                <label className="application-checkbox">
+                  <input type="checkbox" checked={subscribeToUpdates} onChange={(event) => setSubscribeToUpdates(event.target.checked)} />
+                  <span>
+                    I want to receive iVisa&apos;s updates, product launches and personalized offers. I can opt out anytime.
+                    <a href="#" onClick={(event) => event.preventDefault()}> Terms and Privacy Policy </a>
+                    apply.
+                  </span>
+                </label>
+
+                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+              </form>
+            </>
+          ) : applicationSubStep === 7 ? (
+            <>
+              <header className="application-form-card__header"><h1>Choose how to pay</h1></header>
+              <div className="application-step-form">
+                <button type="button" className="payment-wallet-button">G Pay | + Card</button>
+                <div className="payment-divider"><span>Or pay with</span></div>
+                <div className="payment-card-form">
+                  <input type="text" placeholder="Card Number" value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} />
+                  <div className="payment-card-form__row">
+                    <input type="text" placeholder="MM/YY" value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} />
+                    <input type="text" placeholder="CVV" value={cardCvv} onChange={(event) => setCardCvv(event.target.value)} />
+                  </div>
+                  <input type="text" placeholder="Cardholder name" value={cardholderName} onChange={(event) => setCardholderName(event.target.value)} />
+                </div>
+                <button type="button" className="payment-submit-button" disabled>
+                  &#128274; Submit payment
+                </button>
+                <p className="payment-note">
+                  By submitting payment I acknowledge that I have read and accept the iVisa
+                  <a href="#" onClick={(event) => event.preventDefault()}> Terms of Service</a>,
+                  <a href="#" onClick={(event) => event.preventDefault()}> Privacy policy</a>, and
+                  <a href="#" onClick={(event) => event.preventDefault()}> Refund Policy</a>.
+                </p>
               </div>
             </>
           ) : null}
