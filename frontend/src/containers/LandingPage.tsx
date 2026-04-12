@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { ApplicationStepOneForm } from '../components/landing/ApplicationStepOneForm';
 import { ComparisonPanel } from '../components/landing/ComparisonPanel';
 import { EasyProcess } from '../components/landing/EasyProcess';
 import { FooterMega } from '../components/landing/FooterMega';
@@ -14,9 +12,13 @@ import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage({ pathname }: { pathname: string }) {
-  const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const { hero, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
     landingContent;
+  const openApplicationPage = () => {
+    if (typeof window !== 'undefined') {
+      window.location.assign('/application');
+    }
+  };
 
   return (
     <div className="landing-page">
@@ -27,81 +29,69 @@ export function LandingPage({ pathname }: { pathname: string }) {
       </section>
 
       <main className="landing-main">
-        {isApplicationFormOpen ? (
-          <section className="landing-section landing-section--application">
-            <ApplicationStepOneForm onClose={() => setIsApplicationFormOpen(false)} />
-          </section>
-        ) : (
-          <>
-            <section className="landing-section landing-section--hero">
-              <HeroVisaSearch {...hero} onStartApplication={() => setIsApplicationFormOpen(true)} />
-            </section>
+        <section className="landing-section landing-section--hero">
+          <HeroVisaSearch {...hero} onStartApplication={openApplicationPage} />
+        </section>
 
-            <section className="landing-section landing-section--comparison">
-              <div className="content-container">
-                <ComparisonPanel {...comparison} onGetStarted={() => setIsApplicationFormOpen(true)} />
-              </div>
-            </section>
+        <section className="landing-section landing-section--comparison">
+          <div className="content-container">
+            <ComparisonPanel {...comparison} onGetStarted={openApplicationPage} />
+          </div>
+        </section>
 
-            <section className="landing-section landing-section--stats">
-              <div className="content-container">
-                <StatsStrip stats={stats} />
-              </div>
-            </section>
+        <section className="landing-section landing-section--stats">
+          <div className="content-container">
+            <StatsStrip stats={stats} />
+          </div>
+        </section>
 
-            <section className="landing-section">
-              <div className="content-container">
-                <EasyProcess title={process.title} steps={process.steps} />
-              </div>
-            </section>
+        <section className="landing-section">
+          <div className="content-container">
+            <EasyProcess title={process.title} steps={process.steps} />
+          </div>
+        </section>
 
-            <section className="landing-section landing-section--testimonials">
-              <div className="content-container">
-                <Testimonials title={testimonials.title} items={testimonials.items} />
-              </div>
-            </section>
-          </>
-        )}
+        <section className="landing-section landing-section--testimonials">
+          <div className="content-container">
+            <Testimonials title={testimonials.title} items={testimonials.items} />
+          </div>
+        </section>
       </main>
 
-      {!isApplicationFormOpen ? (
-        <>
-          <section className="landing-section landing-section--inc-highlight">
-            <div className="content-container">
-              <Inc5000Highlight />
-            </div>
-          </section>
+      <section className="landing-section landing-section--inc-highlight">
+        <div className="content-container">
+          <Inc5000Highlight />
+        </div>
+      </section>
 
-          <section className="landing-section landing-section--newsletter">
-            <div className="content-container">
-              <NewsletterSignup
-                title={newsletter.title}
-                description={newsletter.description}
-                emailPlaceholder={newsletter.emailPlaceholder}
-                ctaLabel={newsletter.ctaLabel}
-              />
-            </div>
-          </section>
+      <section className="landing-section landing-section--newsletter">
+        <div className="content-container">
+          <NewsletterSignup
+            title={newsletter.title}
+            description={newsletter.description}
+            emailPlaceholder={newsletter.emailPlaceholder}
+            ctaLabel={newsletter.ctaLabel}
+          />
+        </div>
+      </section>
 
-          <section className="landing-section landing-section--footer">
-            <div className="content-container">
-              <FooterMega
-                brandName={brandName}
-                tagline={footer.tagline}
-                visaRoutes={footer.visaRoutes}
-                visaNews={footer.visaNews}
-                blogs={footer.blogs}
-                companyLinks={footer.companyLinks}
-                socialLinks={footer.socialLinks}
-                copyright={footer.copyright}
-              />
-            </div>
-          </section>
-        </>
-      ) : null}
+      <section className="landing-section landing-section--footer">
+        <div className="content-container">
+          <FooterMega
+            brandName={brandName}
+            tagline={footer.tagline}
+            visaRoutes={footer.visaRoutes}
+            visaNews={footer.visaNews}
+            blogs={footer.blogs}
+            companyLinks={footer.companyLinks}
+            socialLinks={footer.socialLinks}
+            copyright={footer.copyright}
+          />
+        </div>
+      </section>
 
-      <MobileBottomNav pathname={pathname} onApplyNow={() => setIsApplicationFormOpen(true)} />
-      {!isApplicationFormOpen ? <VisiaChat /> : null}
+      <MobileBottomNav pathname={pathname} onApplyNow={openApplicationPage} />
+      <VisiaChat />
     </div>
   );
 }

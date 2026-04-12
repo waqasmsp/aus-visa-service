@@ -1,6 +1,7 @@
 import { Seo } from './components/seo/Seo';
 import { isPrivateRoute } from './config/seo';
 import { AboutPage } from './containers/AboutPage';
+import { ApplicationPage } from './containers/ApplicationPage';
 import { LandingPage } from './containers/LandingPage';
 
 type AppProps = {
@@ -11,6 +12,7 @@ export default function App({ pathname }: AppProps) {
   const noIndex = isPrivateRoute(pathname);
   const normalizedPath = pathname.toLowerCase().replace(/\/+$/, '') || '/';
   const isAboutPage = normalizedPath === '/about-us';
+  const isApplicationPage = normalizedPath === '/application' || normalizedPath === '/application-form';
   const seoTitle = isAboutPage ? 'About Us | Global Visas' : undefined;
   const seoDescription = isAboutPage
     ? 'Learn about Global Visas and how we make visa applications simple, accurate, and stress-free for travelers worldwide.'
@@ -22,7 +24,13 @@ export default function App({ pathname }: AppProps) {
   return (
     <>
       <Seo pathname={pathname} noIndex={noIndex} title={seoTitle} description={seoDescription} keywords={seoKeywords} />
-      {isAboutPage ? <AboutPage pathname={pathname} /> : <LandingPage pathname={pathname} />}
+      {isApplicationPage ? (
+        <ApplicationPage pathname={pathname} />
+      ) : isAboutPage ? (
+        <AboutPage pathname={pathname} />
+      ) : (
+        <LandingPage pathname={pathname} />
+      )}
     </>
   );
 }
