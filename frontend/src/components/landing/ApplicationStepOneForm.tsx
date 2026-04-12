@@ -232,6 +232,17 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
             </div>
           ) : null}
 
+          <button
+            type="button"
+            className="application-view-travelers-button"
+            onClick={() => {
+              setIsTravelersStage(true);
+              setApplicationSubStep(5);
+            }}
+          >
+            View all travelers
+          </button>
+
           {applicationSubStep === 7 ? (
             <div className="application-pricing-card">
               <h3>Choose a processing time</h3>

@@ -1073,6 +1073,19 @@ body.body--menu-open {
   font-size: 1.05rem;
 }
 
+.application-view-travelers-button {
+  width: 100%;
+  min-height: 2.8rem;
+  margin-top: 0.9rem;
+  border: 1px dashed #4f46e5;
+  border-radius: 0.85rem;
+  background: rgb(99 102 241 / 0.05);
+  color: #4f46e5;
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
 .application-form-card {
   padding: clamp(1rem, 2.5vw, 1.7rem);
 }
