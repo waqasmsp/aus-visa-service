@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ApplicationStepOneForm } from '../components/landing/ApplicationStepOneForm';
 import { ComparisonPanel } from '../components/landing/ComparisonPanel';
 import { EasyProcess } from '../components/landing/EasyProcess';
@@ -18,11 +18,6 @@ export function LandingPage({ pathname }: { pathname: string }) {
   const { hero, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
     landingContent;
 
-  useEffect(() => {
-    document.body.classList.toggle('body--form-open', isApplicationFormOpen);
-    return () => document.body.classList.remove('body--form-open');
-  }, [isApplicationFormOpen]);
-
   return (
     <div className="landing-page">
       <section className="landing-section landing-section--header">
@@ -32,70 +27,81 @@ export function LandingPage({ pathname }: { pathname: string }) {
       </section>
 
       <main className="landing-main">
-        <section className="landing-section landing-section--hero">
-          <HeroVisaSearch {...hero} onStartApplication={() => setIsApplicationFormOpen(true)} />
-        </section>
+        {isApplicationFormOpen ? (
+          <section className="landing-section landing-section--application">
+            <ApplicationStepOneForm onClose={() => setIsApplicationFormOpen(false)} />
+          </section>
+        ) : (
+          <>
+            <section className="landing-section landing-section--hero">
+              <HeroVisaSearch {...hero} onStartApplication={() => setIsApplicationFormOpen(true)} />
+            </section>
 
-        <section className="landing-section landing-section--comparison">
-          <div className="content-container">
-            <ComparisonPanel {...comparison} onGetStarted={() => setIsApplicationFormOpen(true)} />
-          </div>
-        </section>
+            <section className="landing-section landing-section--comparison">
+              <div className="content-container">
+                <ComparisonPanel {...comparison} onGetStarted={() => setIsApplicationFormOpen(true)} />
+              </div>
+            </section>
 
-        <section className="landing-section landing-section--stats">
-          <div className="content-container">
-            <StatsStrip stats={stats} />
-          </div>
-        </section>
+            <section className="landing-section landing-section--stats">
+              <div className="content-container">
+                <StatsStrip stats={stats} />
+              </div>
+            </section>
 
-        <section className="landing-section">
-          <div className="content-container">
-            <EasyProcess title={process.title} steps={process.steps} />
-          </div>
-        </section>
+            <section className="landing-section">
+              <div className="content-container">
+                <EasyProcess title={process.title} steps={process.steps} />
+              </div>
+            </section>
 
-        <section className="landing-section landing-section--testimonials">
-          <div className="content-container">
-            <Testimonials title={testimonials.title} items={testimonials.items} />
-          </div>
-        </section>
+            <section className="landing-section landing-section--testimonials">
+              <div className="content-container">
+                <Testimonials title={testimonials.title} items={testimonials.items} />
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
-      <section className="landing-section landing-section--inc-highlight">
-        <div className="content-container">
-          <Inc5000Highlight />
-        </div>
-      </section>
+      {!isApplicationFormOpen ? (
+        <>
+          <section className="landing-section landing-section--inc-highlight">
+            <div className="content-container">
+              <Inc5000Highlight />
+            </div>
+          </section>
 
-      <section className="landing-section landing-section--newsletter">
-        <div className="content-container">
-          <NewsletterSignup
-            title={newsletter.title}
-            description={newsletter.description}
-            emailPlaceholder={newsletter.emailPlaceholder}
-            ctaLabel={newsletter.ctaLabel}
-          />
-        </div>
-      </section>
+          <section className="landing-section landing-section--newsletter">
+            <div className="content-container">
+              <NewsletterSignup
+                title={newsletter.title}
+                description={newsletter.description}
+                emailPlaceholder={newsletter.emailPlaceholder}
+                ctaLabel={newsletter.ctaLabel}
+              />
+            </div>
+          </section>
 
-      <section className="landing-section landing-section--footer">
-        <div className="content-container">
-          <FooterMega
-            brandName={brandName}
-            tagline={footer.tagline}
-            visaRoutes={footer.visaRoutes}
-            visaNews={footer.visaNews}
-            blogs={footer.blogs}
-            companyLinks={footer.companyLinks}
-            socialLinks={footer.socialLinks}
-            copyright={footer.copyright}
-          />
-        </div>
-      </section>
+          <section className="landing-section landing-section--footer">
+            <div className="content-container">
+              <FooterMega
+                brandName={brandName}
+                tagline={footer.tagline}
+                visaRoutes={footer.visaRoutes}
+                visaNews={footer.visaNews}
+                blogs={footer.blogs}
+                companyLinks={footer.companyLinks}
+                socialLinks={footer.socialLinks}
+                copyright={footer.copyright}
+              />
+            </div>
+          </section>
+        </>
+      ) : null}
 
       <MobileBottomNav pathname={pathname} onApplyNow={() => setIsApplicationFormOpen(true)} />
-      <VisiaChat />
-      {isApplicationFormOpen ? <ApplicationStepOneForm onClose={() => setIsApplicationFormOpen(false)} /> : null}
+      {!isApplicationFormOpen ? <VisiaChat /> : null}
     </div>
   );
 }
