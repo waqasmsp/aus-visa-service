@@ -1187,6 +1187,12 @@ body.body--menu-open {
   font-size: 1.02rem;
 }
 
+.application-field--error input,
+.application-field--error select {
+  border-color: #dc2626;
+  background: #fff7f7;
+}
+
 .application-select-wrap {
   position: relative;
 }
@@ -1240,6 +1246,10 @@ body.body--menu-open {
   color: #2d4f6d;
   font-weight: var(--font-weight-semibold);
   font-size: 1.02rem;
+}
+
+.application-fieldset--error legend {
+  color: #b91c1c;
 }
 
 .application-date-block {
@@ -1506,6 +1516,11 @@ body.body--menu-open {
   gap: 0.8rem;
   padding: 0 1rem;
   cursor: pointer;
+}
+
+.application-gender-option.is-error {
+  border-color: #dc2626;
+  background: #fff7f7;
 }
 
 .application-gender-option__dot {

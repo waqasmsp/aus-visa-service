@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 type YesNo = 'yes' | 'no' | '';
 type ApplicationSubStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -46,6 +46,9 @@ export function ApplicationStepOneForm() {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [birthDay, setBirthDay] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
 
   const [passportCountry, setPassportCountry] = useState('Pakistan');
@@ -79,6 +82,7 @@ export function ApplicationStepOneForm() {
   const [cardholderName, setCardholderName] = useState('');
   const [showTravelerPrompt, setShowTravelerPrompt] = useState(false);
   const [travelerPromptCountdown, setTravelerPromptCountdown] = useState(5);
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!showTravelerPrompt) {
@@ -102,6 +106,9 @@ export function ApplicationStepOneForm() {
     setApplicationSubStep(1);
     setFirstName('');
     setLastName('');
+    setBirthDay('');
+    setBirthMonth('');
+    setBirthYear('');
     setGender('');
     setPassportCountry('Pakistan');
     setPassportInfoAvailable('');
@@ -124,6 +131,25 @@ export function ApplicationStepOneForm() {
     setExpectedArrivalDay('');
     setExpectedArrivalMonth('');
     setExpectedArrivalYear('');
+    setValidationErrors(new Set());
+  };
+
+  const hasError = (field: string) => validationErrors.has(field);
+
+  const clearError = (field: string) => {
+    setValidationErrors((current) => {
+      if (!current.has(field)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.delete(field);
+      return next;
+    });
+  };
+
+  const applyValidation = (fields: string[]) => {
+    setValidationErrors(new Set(fields));
   };
 
   const startTravelerApplication = () => {
@@ -167,6 +193,84 @@ export function ApplicationStepOneForm() {
   const totalPerApplicant = selectedPricing.governmentFees + selectedPricing.standard;
   const totalAllApplicants = totalPerApplicant * applicantCount;
   const formatMoney = (amount: number) => `${selectedPricing.currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const submitStepOne = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors: string[] = [];
+    if (!firstName.trim()) errors.push('firstName');
+    if (!lastName.trim()) errors.push('lastName');
+    if (!birthDay) errors.push('birthDay');
+    if (!birthMonth) errors.push('birthMonth');
+    if (!birthYear) errors.push('birthYear');
+    if (!gender) errors.push('gender');
+    applyValidation(errors);
+    if (errors.length === 0) {
+      setApplicationSubStep(2);
+    }
+  };
+
+  const submitStepTwo = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors: string[] = [];
+    if (!passportInfoAvailable) errors.push('passportInfoAvailable');
+    if (passportInfoAvailable === 'yes') {
+      if (!passportNumber.trim()) errors.push('passportNumber');
+      if (!passportIssueDay) errors.push('passportIssueDay');
+      if (!passportIssueMonth) errors.push('passportIssueMonth');
+      if (!passportIssueYear) errors.push('passportIssueYear');
+      if (!passportExpiryDay) errors.push('passportExpiryDay');
+      if (!passportExpiryMonth) errors.push('passportExpiryMonth');
+      if (!passportExpiryYear) errors.push('passportExpiryYear');
+    }
+    applyValidation(errors);
+    if (errors.length === 0) {
+      setApplicationSubStep(3);
+    }
+  };
+
+  const submitStepThree = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors: string[] = [];
+    if (!homeAddress.trim()) errors.push('homeAddress');
+    if (!cityOrTown.trim()) errors.push('cityOrTown');
+    if (!stateOrProvince.trim()) errors.push('stateOrProvince');
+    if (!zipOrPostcode.trim()) errors.push('zipOrPostcode');
+    applyValidation(errors);
+    if (errors.length === 0) {
+      setApplicationSubStep(4);
+    }
+  };
+
+  const submitStepFour = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors: string[] = [];
+    if (!isEmployed) errors.push('isEmployed');
+    if (!hasCriminalOffense) errors.push('hasCriminalOffense');
+    if (!reasonForTrip) errors.push('reasonForTrip');
+    if (!hasConfirmedTravelPlans) errors.push('hasConfirmedTravelPlans');
+    if (hasConfirmedTravelPlans === 'yes') {
+      if (!expectedArrivalDay) errors.push('expectedArrivalDay');
+      if (!expectedArrivalMonth) errors.push('expectedArrivalMonth');
+      if (!expectedArrivalYear) errors.push('expectedArrivalYear');
+    }
+    applyValidation(errors);
+    if (errors.length === 0) {
+      completeTravelerApplication();
+    }
+  };
+
+  const submitContactStep = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors: string[] = [];
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailAddress.trim() || !emailRegex.test(emailAddress)) {
+      errors.push('emailAddress');
+    }
+    applyValidation(errors);
+    if (errors.length === 0) {
+      setApplicationSubStep(7);
+    }
+  };
 
   return (
     <div className="application-form-screen" role="region" aria-label="Visa application form">
@@ -295,32 +399,32 @@ export function ApplicationStepOneForm() {
                 <p>Enter the details as they appear on your passport</p>
               </header>
 
-              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(2); }}>
+              <form className="application-step-form" onSubmit={submitStepOne}>
                 <div className="application-form-grid application-form-grid--two">
-                  <label className="application-field">
+                  <label className={`application-field${hasError('firstName') ? ' application-field--error' : ''}`}>
                     <span>First and middle name</span>
-                    <input type="text" name="firstName" placeholder="John William" autoComplete="given-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} />
+                    <input type="text" name="firstName" placeholder="John William" autoComplete="given-name" value={firstName} onChange={(event) => { setFirstName(event.target.value); clearError('firstName'); }} aria-invalid={hasError('firstName')} />
                   </label>
-                  <label className="application-field">
+                  <label className={`application-field${hasError('lastName') ? ' application-field--error' : ''}`}>
                     <span>Last name</span>
-                    <input type="text" name="lastName" placeholder="Smith" autoComplete="family-name" value={lastName} onChange={(event) => setLastName(event.target.value)} />
+                    <input type="text" name="lastName" placeholder="Smith" autoComplete="family-name" value={lastName} onChange={(event) => { setLastName(event.target.value); clearError('lastName'); }} aria-invalid={hasError('lastName')} />
                   </label>
                 </div>
 
-                <fieldset className="application-fieldset">
+                <fieldset className={`application-fieldset${hasError('birthDay') || hasError('birthMonth') || hasError('birthYear') ? ' application-fieldset--error' : ''}`}>
                   <legend>Date of birth</legend>
                   <div className="application-form-grid application-form-grid--three">
-                    <label className="application-field"><span className="sr-only">Day</span><select defaultValue=""><option value="" disabled>Day</option>{DAY_OPTIONS.map((day) => <option key={day} value={day}>{day}</option>)}</select></label>
-                    <label className="application-field"><span className="sr-only">Month</span><select defaultValue=""><option value="" disabled>Month</option>{MONTH_OPTIONS.map((month) => <option key={month} value={month}>{month}</option>)}</select></label>
-                    <label className="application-field"><span className="sr-only">Year</span><select defaultValue=""><option value="" disabled>Year</option>{YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
+                    <label className={`application-field${hasError('birthDay') ? ' application-field--error' : ''}`}><span className="sr-only">Day</span><select value={birthDay} onChange={(event) => { setBirthDay(event.target.value); clearError('birthDay'); }} aria-invalid={hasError('birthDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={day} value={day}>{day}</option>)}</select></label>
+                    <label className={`application-field${hasError('birthMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Month</span><select value={birthMonth} onChange={(event) => { setBirthMonth(event.target.value); clearError('birthMonth'); }} aria-invalid={hasError('birthMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={month} value={month}>{month}</option>)}</select></label>
+                    <label className={`application-field${hasError('birthYear') ? ' application-field--error' : ''}`}><span className="sr-only">Year</span><select value={birthYear} onChange={(event) => { setBirthYear(event.target.value); clearError('birthYear'); }} aria-invalid={hasError('birthYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
                   </div>
                 </fieldset>
 
-                <fieldset className="application-fieldset">
+                <fieldset className={`application-fieldset${hasError('gender') ? ' application-fieldset--error' : ''}`}>
                   <legend>Gender</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${gender === 'male' ? ' is-selected' : ''}`} onClick={() => setGender('male')}><span className="application-gender-option__dot" aria-hidden="true" />Male</button>
-                    <button type="button" className={`application-gender-option${gender === 'female' ? ' is-selected' : ''}`} onClick={() => setGender('female')}><span className="application-gender-option__dot" aria-hidden="true" />Female</button>
+                    <button type="button" className={`application-gender-option${gender === 'male' ? ' is-selected' : ''}${hasError('gender') ? ' is-error' : ''}`} onClick={() => { setGender('male'); clearError('gender'); }}><span className="application-gender-option__dot" aria-hidden="true" />Male</button>
+                    <button type="button" className={`application-gender-option${gender === 'female' ? ' is-selected' : ''}${hasError('gender') ? ' is-error' : ''}`} onClick={() => { setGender('female'); clearError('gender'); }}><span className="application-gender-option__dot" aria-hidden="true" />Female</button>
                   </div>
                 </fieldset>
 
@@ -331,7 +435,7 @@ export function ApplicationStepOneForm() {
             <>
               <header className="application-form-card__header"><h1>Passport Details</h1></header>
 
-              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(3); }}>
+              <form className="application-step-form" onSubmit={submitStepTwo}>
                 <label className="application-field">
                   <span>Passport</span>
                   <div className="application-select-wrap">
@@ -342,36 +446,36 @@ export function ApplicationStepOneForm() {
                   </div>
                 </label>
 
-                <fieldset className="application-fieldset">
+                <fieldset className={`application-fieldset${hasError('passportInfoAvailable') ? ' application-fieldset--error' : ''}`}>
                   <legend>Do you have passport information available?</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'yes' ? ' is-selected' : ''}`} onClick={() => setPassportInfoAvailable('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'no' ? ' is-selected' : ''}`} onClick={() => setPassportInfoAvailable('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'yes' ? ' is-selected' : ''}${hasError('passportInfoAvailable') ? ' is-error' : ''}`} onClick={() => { setPassportInfoAvailable('yes'); clearError('passportInfoAvailable'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'no' ? ' is-selected' : ''}${hasError('passportInfoAvailable') ? ' is-error' : ''}`} onClick={() => { setPassportInfoAvailable('no'); clearError('passportInfoAvailable'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
                   </div>
                 </fieldset>
 
                 {passportInfoAvailable === 'yes' ? (
                   <>
-                    <label className="application-field">
+                    <label className={`application-field${hasError('passportNumber') ? ' application-field--error' : ''}`}>
                       <span>Passport number</span>
-                      <input type="text" name="passportNumber" placeholder="P9876543" value={passportNumber} onChange={(event) => setPassportNumber(event.target.value)} />
+                      <input type="text" name="passportNumber" placeholder="P9876543" value={passportNumber} onChange={(event) => { setPassportNumber(event.target.value); clearError('passportNumber'); }} aria-invalid={hasError('passportNumber')} />
                     </label>
 
                     <div className="application-date-block">
                       <p>Passport issue date</p>
                       <div className="application-form-grid application-form-grid--three">
-                        <label className="application-field"><span className="sr-only">Issue day</span><select value={passportIssueDay} onChange={(event) => setPassportIssueDay(event.target.value)}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`issue-${day}`} value={day}>{day}</option>)}</select></label>
-                        <label className="application-field"><span className="sr-only">Issue month</span><select value={passportIssueMonth} onChange={(event) => setPassportIssueMonth(event.target.value)}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`issue-${month}`} value={month}>{month}</option>)}</select></label>
-                        <label className="application-field"><span className="sr-only">Issue year</span><select value={passportIssueYear} onChange={(event) => setPassportIssueYear(event.target.value)}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`issue-${year}`} value={year}>{year}</option>)}</select></label>
+                        <label className={`application-field${hasError('passportIssueDay') ? ' application-field--error' : ''}`}><span className="sr-only">Issue day</span><select value={passportIssueDay} onChange={(event) => { setPassportIssueDay(event.target.value); clearError('passportIssueDay'); }} aria-invalid={hasError('passportIssueDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`issue-${day}`} value={day}>{day}</option>)}</select></label>
+                        <label className={`application-field${hasError('passportIssueMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Issue month</span><select value={passportIssueMonth} onChange={(event) => { setPassportIssueMonth(event.target.value); clearError('passportIssueMonth'); }} aria-invalid={hasError('passportIssueMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`issue-${month}`} value={month}>{month}</option>)}</select></label>
+                        <label className={`application-field${hasError('passportIssueYear') ? ' application-field--error' : ''}`}><span className="sr-only">Issue year</span><select value={passportIssueYear} onChange={(event) => { setPassportIssueYear(event.target.value); clearError('passportIssueYear'); }} aria-invalid={hasError('passportIssueYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`issue-${year}`} value={year}>{year}</option>)}</select></label>
                       </div>
                     </div>
 
                     <div className="application-date-block">
                       <p>Passport expiration date</p>
                       <div className="application-form-grid application-form-grid--three">
-                        <label className="application-field"><span className="sr-only">Expiry day</span><select value={passportExpiryDay} onChange={(event) => setPassportExpiryDay(event.target.value)}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`expiry-${day}`} value={day}>{day}</option>)}</select></label>
-                        <label className="application-field"><span className="sr-only">Expiry month</span><select value={passportExpiryMonth} onChange={(event) => setPassportExpiryMonth(event.target.value)}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`expiry-${month}`} value={month}>{month}</option>)}</select></label>
-                        <label className="application-field"><span className="sr-only">Expiry year</span><select value={passportExpiryYear} onChange={(event) => setPassportExpiryYear(event.target.value)}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`expiry-${year}`} value={year}>{year}</option>)}</select></label>
+                        <label className={`application-field${hasError('passportExpiryDay') ? ' application-field--error' : ''}`}><span className="sr-only">Expiry day</span><select value={passportExpiryDay} onChange={(event) => { setPassportExpiryDay(event.target.value); clearError('passportExpiryDay'); }} aria-invalid={hasError('passportExpiryDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`expiry-${day}`} value={day}>{day}</option>)}</select></label>
+                        <label className={`application-field${hasError('passportExpiryMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Expiry month</span><select value={passportExpiryMonth} onChange={(event) => { setPassportExpiryMonth(event.target.value); clearError('passportExpiryMonth'); }} aria-invalid={hasError('passportExpiryMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`expiry-${month}`} value={month}>{month}</option>)}</select></label>
+                        <label className={`application-field${hasError('passportExpiryYear') ? ' application-field--error' : ''}`}><span className="sr-only">Expiry year</span><select value={passportExpiryYear} onChange={(event) => { setPassportExpiryYear(event.target.value); clearError('passportExpiryYear'); }} aria-invalid={hasError('passportExpiryYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`expiry-${year}`} value={year}>{year}</option>)}</select></label>
                       </div>
                     </div>
                   </>
@@ -383,7 +487,7 @@ export function ApplicationStepOneForm() {
           ) : applicationSubStep === 3 ? (
             <>
               <header className="application-form-card__header"><h1>Address Details</h1></header>
-              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(4); }}>
+              <form className="application-step-form" onSubmit={submitStepThree}>
                 <label className="application-field">
                   <span>Country of residence</span>
                   <div className="application-select-wrap">
@@ -396,14 +500,14 @@ export function ApplicationStepOneForm() {
                 <p className="application-field-note">The country where you live permanently.</p>
 
                 <div className="application-form-grid application-form-grid--two">
-                  <label className="application-field"><span>Home address</span><input type="text" name="homeAddress" placeholder="1234 Sesame St. Apt. 3, Springtown, Islamabad" value={homeAddress} onChange={(event) => setHomeAddress(event.target.value)} /></label>
-                  <label className="application-field"><span>City or town</span><input type="text" name="cityOrTown" value={cityOrTown} onChange={(event) => setCityOrTown(event.target.value)} /></label>
+                  <label className={`application-field${hasError('homeAddress') ? ' application-field--error' : ''}`}><span>Home address</span><input type="text" name="homeAddress" placeholder="1234 Sesame St. Apt. 3, Springtown, Islamabad" value={homeAddress} onChange={(event) => { setHomeAddress(event.target.value); clearError('homeAddress'); }} aria-invalid={hasError('homeAddress')} /></label>
+                  <label className={`application-field${hasError('cityOrTown') ? ' application-field--error' : ''}`}><span>City or town</span><input type="text" name="cityOrTown" value={cityOrTown} onChange={(event) => { setCityOrTown(event.target.value); clearError('cityOrTown'); }} aria-invalid={hasError('cityOrTown')} /></label>
                 </div>
                 <p className="application-field-note">The address must be in the country where you live.</p>
 
                 <div className="application-form-grid application-form-grid--two">
-                  <label className="application-field"><span>State or province</span><input type="text" name="stateOrProvince" value={stateOrProvince} onChange={(event) => setStateOrProvince(event.target.value)} /></label>
-                  <label className="application-field"><span>ZIP or postcode</span><input type="text" name="zipOrPostcode" value={zipOrPostcode} onChange={(event) => setZipOrPostcode(event.target.value)} /></label>
+                  <label className={`application-field${hasError('stateOrProvince') ? ' application-field--error' : ''}`}><span>State or province</span><input type="text" name="stateOrProvince" value={stateOrProvince} onChange={(event) => { setStateOrProvince(event.target.value); clearError('stateOrProvince'); }} aria-invalid={hasError('stateOrProvince')} /></label>
+                  <label className={`application-field${hasError('zipOrPostcode') ? ' application-field--error' : ''}`}><span>ZIP or postcode</span><input type="text" name="zipOrPostcode" value={zipOrPostcode} onChange={(event) => { setZipOrPostcode(event.target.value); clearError('zipOrPostcode'); }} aria-invalid={hasError('zipOrPostcode')} /></label>
                 </div>
 
                 <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
@@ -412,45 +516,45 @@ export function ApplicationStepOneForm() {
           ) : applicationSubStep === 4 ? (
             <>
               <header className="application-form-card__header"><h1>Additional Information</h1></header>
-              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); completeTravelerApplication(); }}>
-                <fieldset className="application-fieldset">
+              <form className="application-step-form" onSubmit={submitStepFour}>
+                <fieldset className={`application-fieldset${hasError('isEmployed') ? ' application-fieldset--error' : ''}`}>
                   <legend>Are you employed?</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${isEmployed === 'yes' ? ' is-selected' : ''}`} onClick={() => setIsEmployed('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${isEmployed === 'no' ? ' is-selected' : ''}`} onClick={() => setIsEmployed('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                    <button type="button" className={`application-gender-option${isEmployed === 'yes' ? ' is-selected' : ''}${hasError('isEmployed') ? ' is-error' : ''}`} onClick={() => { setIsEmployed('yes'); clearError('isEmployed'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${isEmployed === 'no' ? ' is-selected' : ''}${hasError('isEmployed') ? ' is-error' : ''}`} onClick={() => { setIsEmployed('no'); clearError('isEmployed'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
                   </div>
                 </fieldset>
 
-                <fieldset className="application-fieldset">
+                <fieldset className={`application-fieldset${hasError('hasCriminalOffense') ? ' application-fieldset--error' : ''}`}>
                   <legend>Have you ever been convicted of a criminal offense?</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'yes' ? ' is-selected' : ''}`} onClick={() => setHasCriminalOffense('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'no' ? ' is-selected' : ''}`} onClick={() => setHasCriminalOffense('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'yes' ? ' is-selected' : ''}${hasError('hasCriminalOffense') ? ' is-error' : ''}`} onClick={() => { setHasCriminalOffense('yes'); clearError('hasCriminalOffense'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'no' ? ' is-selected' : ''}${hasError('hasCriminalOffense') ? ' is-error' : ''}`} onClick={() => { setHasCriminalOffense('no'); clearError('hasCriminalOffense'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
                   </div>
                 </fieldset>
 
-                <label className="application-field">
+                <label className={`application-field${hasError('reasonForTrip') ? ' application-field--error' : ''}`}>
                   <span>Reason for trip</span>
-                  <select value={reasonForTrip} onChange={(event) => setReasonForTrip(event.target.value)}>
+                  <select value={reasonForTrip} onChange={(event) => { setReasonForTrip(event.target.value); clearError('reasonForTrip'); }} aria-invalid={hasError('reasonForTrip')}>
                     <option value="">Select an option</option>
                     {REASON_FOR_TRIP_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
                 </label>
 
-                <fieldset className="application-fieldset">
+                <fieldset className={`application-fieldset${hasError('hasConfirmedTravelPlans') ? ' application-fieldset--error' : ''}`}>
                   <legend>Do you have confirmed travel plans?</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'yes' ? ' is-selected' : ''}`} onClick={() => setHasConfirmedTravelPlans('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'no' ? ' is-selected' : ''}`} onClick={() => setHasConfirmedTravelPlans('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'yes' ? ' is-selected' : ''}${hasError('hasConfirmedTravelPlans') ? ' is-error' : ''}`} onClick={() => { setHasConfirmedTravelPlans('yes'); clearError('hasConfirmedTravelPlans'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'no' ? ' is-selected' : ''}${hasError('hasConfirmedTravelPlans') ? ' is-error' : ''}`} onClick={() => { setHasConfirmedTravelPlans('no'); clearError('hasConfirmedTravelPlans'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
                   </div>
                 </fieldset>
                 {hasConfirmedTravelPlans === 'yes' ? (
                   <div className="application-date-block">
                     <p>Expected arrival date</p>
                     <div className="application-form-grid application-form-grid--three">
-                      <label className="application-field"><span className="sr-only">Arrival day</span><select value={expectedArrivalDay} onChange={(event) => setExpectedArrivalDay(event.target.value)}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`arrival-${day}`} value={day}>{day}</option>)}</select></label>
-                      <label className="application-field"><span className="sr-only">Arrival month</span><select value={expectedArrivalMonth} onChange={(event) => setExpectedArrivalMonth(event.target.value)}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`arrival-${month}`} value={month}>{month}</option>)}</select></label>
-                      <label className="application-field"><span className="sr-only">Arrival year</span><select value={expectedArrivalYear} onChange={(event) => setExpectedArrivalYear(event.target.value)}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`arrival-${year}`} value={year}>{year}</option>)}</select></label>
+                      <label className={`application-field${hasError('expectedArrivalDay') ? ' application-field--error' : ''}`}><span className="sr-only">Arrival day</span><select value={expectedArrivalDay} onChange={(event) => { setExpectedArrivalDay(event.target.value); clearError('expectedArrivalDay'); }} aria-invalid={hasError('expectedArrivalDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`arrival-${day}`} value={day}>{day}</option>)}</select></label>
+                      <label className={`application-field${hasError('expectedArrivalMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Arrival month</span><select value={expectedArrivalMonth} onChange={(event) => { setExpectedArrivalMonth(event.target.value); clearError('expectedArrivalMonth'); }} aria-invalid={hasError('expectedArrivalMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`arrival-${month}`} value={month}>{month}</option>)}</select></label>
+                      <label className={`application-field${hasError('expectedArrivalYear') ? ' application-field--error' : ''}`}><span className="sr-only">Arrival year</span><select value={expectedArrivalYear} onChange={(event) => { setExpectedArrivalYear(event.target.value); clearError('expectedArrivalYear'); }} aria-invalid={hasError('expectedArrivalYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`arrival-${year}`} value={year}>{year}</option>)}</select></label>
                     </div>
                   </div>
                 ) : null}
@@ -485,10 +589,10 @@ export function ApplicationStepOneForm() {
           ) : applicationSubStep === 6 ? (
             <>
               <header className="application-form-card__header"><h1>Contact Details</h1></header>
-              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(7); }}>
-                <label className="application-field">
+              <form className="application-step-form" onSubmit={submitContactStep}>
+                <label className={`application-field${hasError('emailAddress') ? ' application-field--error' : ''}`}>
                   <span>Email address</span>
-                  <input type="email" placeholder="johnsmith@gmail.com" value={emailAddress} onChange={(event) => setEmailAddress(event.target.value)} />
+                  <input type="email" placeholder="johnsmith@gmail.com" value={emailAddress} onChange={(event) => { setEmailAddress(event.target.value); clearError('emailAddress'); }} aria-invalid={hasError('emailAddress')} />
                 </label>
                 <p className="application-field-note">Your Australia Visitor Visa will be sent to this email address</p>
 
