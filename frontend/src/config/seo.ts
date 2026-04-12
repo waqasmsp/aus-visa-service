@@ -2,7 +2,7 @@ const FALLBACK_SITE_URL = 'https://ausvisaservice.com';
 
 export const siteUrl = (import.meta.env.VITE_SITE_URL ?? FALLBACK_SITE_URL).replace(/\/+$/, '');
 
-export const privateRoutePrefixes = ['/admin', '/dashboard', '/user-dashboard', '/user', '/account', '/auth'];
+export const privateRoutePrefixes = ['/admin', '/dashboard', '/user-dashboard', '/user', '/account', '/auth', '/login', '/signup'];
 
 export const isPrivateRoute = (pathname: string): boolean => {
   const normalized = pathname.toLowerCase();
