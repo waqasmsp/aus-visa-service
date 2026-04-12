@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
 
-type ApplicationStepOneFormProps = {
-  onClose: () => void;
-};
-
 type YesNo = 'yes' | 'no' | '';
 type ApplicationSubStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -43,7 +39,7 @@ function VisaBadgeIcon() {
   );
 }
 
-export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps) {
+export function ApplicationStepOneForm() {
   const [applicationSubStep, setApplicationSubStep] = useState<ApplicationSubStep>(1);
   const [isTravelersStage, setIsTravelersStage] = useState(false);
   const [travelers, setTravelers] = useState<TravelerEntry[]>([]);
@@ -83,17 +79,6 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
   const [cardholderName, setCardholderName] = useState('');
   const [showTravelerPrompt, setShowTravelerPrompt] = useState(false);
   const [travelerPromptCountdown, setTravelerPromptCountdown] = useState(5);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
 
   useEffect(() => {
     if (!showTravelerPrompt) {
@@ -185,10 +170,6 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
 
   return (
     <div className="application-form-screen" role="region" aria-label="Visa application form">
-      <button type="button" className="application-form-close" aria-label="Close form" onClick={onClose}>
-        &#10005;
-      </button>
-
       {showTravelerPrompt ? (
         <div className="application-notice" role="alert" aria-live="polite">
           <p>Please complete first traveler details before viewing all travelers.</p>
