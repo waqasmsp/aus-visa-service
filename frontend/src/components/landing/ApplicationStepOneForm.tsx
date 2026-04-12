@@ -81,6 +81,8 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardholderName, setCardholderName] = useState('');
+  const [showTravelerPrompt, setShowTravelerPrompt] = useState(false);
+  const [travelerPromptCountdown, setTravelerPromptCountdown] = useState(5);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -92,6 +94,24 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
+
+  useEffect(() => {
+    if (!showTravelerPrompt) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (travelerPromptCountdown <= 1) {
+        setShowTravelerPrompt(false);
+        setTravelerPromptCountdown(5);
+        return;
+      }
+
+      setTravelerPromptCountdown((current) => current - 1);
+    }, 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showTravelerPrompt, travelerPromptCountdown]);
 
   const resetTravelerDraft = () => {
     setApplicationSubStep(1);
@@ -169,6 +189,23 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
         &#10005;
       </button>
 
+      {showTravelerPrompt ? (
+        <div className="application-notice" role="alert" aria-live="polite">
+          <p>Please complete first traveler details before viewing all travelers.</p>
+          <span>Closing in {travelerPromptCountdown}s</span>
+          <button
+            type="button"
+            aria-label="Close notification"
+            onClick={() => {
+              setShowTravelerPrompt(false);
+              setTravelerPromptCountdown(5);
+            }}
+          >
+            &#10005;
+          </button>
+        </div>
+      ) : null}
+
       <ol className="application-form-steps" aria-label="Application steps">
         {STEP_ITEMS.map((step, index) => {
           const stepIndex = index + 1;
@@ -236,6 +273,12 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
             type="button"
             className="application-view-travelers-button"
             onClick={() => {
+              if (travelers.length === 0) {
+                setShowTravelerPrompt(true);
+                setTravelerPromptCountdown(5);
+                return;
+              }
+
               setIsTravelersStage(true);
               setApplicationSubStep(5);
             }}
