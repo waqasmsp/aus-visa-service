@@ -950,13 +950,24 @@ body.body--menu-open {
 }
 
 .application-form-step {
+  color: #31506e;
+  font-size: 1.02rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.application-form-step__button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0.45rem;
-  color: #31506e;
-  font-size: 1.02rem;
-  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
 }
 
 .application-form-step::after {
@@ -990,6 +1001,12 @@ body.body--menu-open {
 
 .application-form-step.is-active::after {
   background: #9ad5e7;
+}
+
+.application-form-step.is-completed .application-form-step__index {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
 }
 
 .application-form-layout {
@@ -1181,6 +1198,83 @@ body.body--menu-open {
   color: #2d4f6d;
   font-weight: var(--font-weight-semibold);
   font-size: 1.02rem;
+}
+
+.application-field-note {
+  margin: -0.35rem 0 0;
+  color: #49647e;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.travelers-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.traveler-row {
+  border: 1px solid #bfd0de;
+  border-radius: 1rem;
+  min-height: 3.35rem;
+  padding: 0.45rem 0.75rem 0.45rem 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.traveler-row__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0f2947;
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.traveler-row__status {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.traveler-row__actions {
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.traveler-row__action {
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.65rem;
+  border: 1px solid #4f46e5;
+  background: rgb(99 102 241 / 0.06);
+  color: #4f46e5;
+  font: inherit;
+  cursor: pointer;
+}
+
+.traveler-add-button {
+  width: 100%;
+  min-height: 3.65rem;
+  border: 1.5px dashed #4f46e5;
+  border-radius: 1rem;
+  background: rgb(99 102 241 / 0.04);
+  color: #4f46e5;
+  font: inherit;
+  font-size: 1.18rem;
+  font-weight: var(--font-weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
 }
 
 .application-gender-option {

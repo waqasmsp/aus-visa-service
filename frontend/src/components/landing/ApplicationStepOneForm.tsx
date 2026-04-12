@@ -4,8 +4,15 @@ type ApplicationStepOneFormProps = {
   onClose: () => void;
 };
 
-const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => `${index + 1}`);
+type YesNo = 'yes' | 'no' | '';
+type ApplicationSubStep = 1 | 2 | 3 | 4 | 5;
 
+type TravelerEntry = {
+  id: string;
+  name: string;
+};
+
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => `${index + 1}`);
 const MONTH_OPTIONS = [
   'January',
   'February',
@@ -20,9 +27,10 @@ const MONTH_OPTIONS = [
   'November',
   'December'
 ];
-
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 100 }, (_, index) => `${CURRENT_YEAR - index}`);
+const REASON_FOR_TRIP_OPTIONS = ['Tourism', 'Business', 'Family visit', 'Medical treatment', 'Conference or event'];
+const STEP_ITEMS = ['Application', 'Add Travelers', 'Contact Details', 'Confirm & Submit'];
 
 function VisaBadgeIcon() {
   return (
@@ -34,15 +42,17 @@ function VisaBadgeIcon() {
   );
 }
 
-const STEP_ITEMS = ['Application', 'Add Travelers', 'Contact Details', 'Confirm & Submit'];
-
 export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps) {
-  const [applicationSubStep, setApplicationSubStep] = useState<1 | 2>(1);
-  const [gender, setGender] = useState<'male' | 'female' | ''>('');
-  const [passportInfoAvailable, setPassportInfoAvailable] = useState<'yes' | 'no' | ''>('');
+  const [applicationSubStep, setApplicationSubStep] = useState<ApplicationSubStep>(1);
+  const [isTravelersStage, setIsTravelersStage] = useState(false);
+  const [travelers, setTravelers] = useState<TravelerEntry[]>([]);
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
+
   const [passportCountry, setPassportCountry] = useState('Pakistan');
+  const [passportInfoAvailable, setPassportInfoAvailable] = useState<YesNo>('');
   const [passportNumber, setPassportNumber] = useState('');
   const [passportIssueDay, setPassportIssueDay] = useState('');
   const [passportIssueMonth, setPassportIssueMonth] = useState('');
@@ -50,6 +60,20 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
   const [passportExpiryDay, setPassportExpiryDay] = useState('');
   const [passportExpiryMonth, setPassportExpiryMonth] = useState('');
   const [passportExpiryYear, setPassportExpiryYear] = useState('');
+
+  const [residenceCountry, setResidenceCountry] = useState('Pakistan');
+  const [homeAddress, setHomeAddress] = useState('');
+  const [cityOrTown, setCityOrTown] = useState('');
+  const [stateOrProvince, setStateOrProvince] = useState('');
+  const [zipOrPostcode, setZipOrPostcode] = useState('');
+
+  const [isEmployed, setIsEmployed] = useState<YesNo>('');
+  const [hasCriminalOffense, setHasCriminalOffense] = useState<YesNo>('');
+  const [reasonForTrip, setReasonForTrip] = useState('');
+  const [hasConfirmedTravelPlans, setHasConfirmedTravelPlans] = useState<YesNo>('');
+  const [expectedArrivalDay, setExpectedArrivalDay] = useState('');
+  const [expectedArrivalMonth, setExpectedArrivalMonth] = useState('');
+  const [expectedArrivalYear, setExpectedArrivalYear] = useState('');
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -62,6 +86,48 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
+  const resetTravelerDraft = () => {
+    setApplicationSubStep(1);
+    setFirstName('');
+    setLastName('');
+    setGender('');
+    setPassportCountry('Pakistan');
+    setPassportInfoAvailable('');
+    setPassportNumber('');
+    setPassportIssueDay('');
+    setPassportIssueMonth('');
+    setPassportIssueYear('');
+    setPassportExpiryDay('');
+    setPassportExpiryMonth('');
+    setPassportExpiryYear('');
+    setResidenceCountry('Pakistan');
+    setHomeAddress('');
+    setCityOrTown('');
+    setStateOrProvince('');
+    setZipOrPostcode('');
+    setIsEmployed('');
+    setHasCriminalOffense('');
+    setReasonForTrip('');
+    setHasConfirmedTravelPlans('');
+    setExpectedArrivalDay('');
+    setExpectedArrivalMonth('');
+    setExpectedArrivalYear('');
+  };
+
+  const startTravelerApplication = () => {
+    setIsTravelersStage(true);
+    resetTravelerDraft();
+  };
+
+  const completeTravelerApplication = () => {
+    const travelerName = `${firstName} ${lastName}`.trim() || `Traveler ${travelers.length + 1}`;
+    setTravelers((current) => [...current, { id: `${Date.now()}-${current.length + 1}`, name: travelerName }]);
+    setIsTravelersStage(true);
+    setApplicationSubStep(5);
+  };
+
+  const travelerNames = travelers.map((traveler) => traveler.name).join(', ');
+
   return (
     <div className="application-form-screen" role="region" aria-label="Visa application form">
       <button type="button" className="application-form-close" aria-label="Close form" onClick={onClose}>
@@ -69,12 +135,34 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
       </button>
 
       <ol className="application-form-steps" aria-label="Application steps">
-        {STEP_ITEMS.map((step, index) => (
-          <li key={step} className={`application-form-step${index === 0 ? ' is-active' : ''}`}>
-            <span className="application-form-step__index">{index + 1}</span>
-            <span>{step}</span>
-          </li>
-        ))}
+        {STEP_ITEMS.map((step, index) => {
+          const stepIndex = index + 1;
+          const isStepOne = stepIndex === 1;
+          const isStepTwo = stepIndex === 2;
+          const isCompleted = isStepOne && isTravelersStage;
+          const isActive = (isStepOne && !isTravelersStage) || (isStepTwo && isTravelersStage);
+
+          return (
+            <li key={step} className={`application-form-step${isActive ? ' is-active' : ''}${isCompleted ? ' is-completed' : ''}`}>
+              <button
+                type="button"
+                className="application-form-step__button"
+                onClick={() => {
+                  if (isStepOne) {
+                    setIsTravelersStage(false);
+                    resetTravelerDraft();
+                  }
+                  if (isStepTwo) {
+                    startTravelerApplication();
+                  }
+                }}
+              >
+                <span className="application-form-step__index">{isCompleted ? '\u2713' : stepIndex}</span>
+                <span>{step}</span>
+              </button>
+            </li>
+          );
+        })}
       </ol>
 
       <div className="application-form-layout">
@@ -96,10 +184,10 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
             <strong>&#128274; 256-bit Encrypted</strong>
           </div>
 
-          {applicationSubStep === 2 ? (
+          {applicationSubStep >= 2 || isTravelersStage ? (
             <div className="application-visa-card__line">
               <p>Travelers</p>
-              <strong>{`${firstName} ${lastName}`.trim() || 'Waqas Akber'}</strong>
+              <strong>{travelerNames || `${firstName} ${lastName}`.trim() || 'Waqas Akber'}</strong>
             </div>
           ) : null}
         </aside>
@@ -112,135 +200,49 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
                 <p>Enter the details as they appear on your passport</p>
               </header>
 
-              <form
-                className="application-step-form"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  setApplicationSubStep(2);
-                }}
-              >
+              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(2); }}>
                 <div className="application-form-grid application-form-grid--two">
                   <label className="application-field">
                     <span>First and middle name</span>
-                    <input
-                      type="text"
-                      name="firstName"
-                      placeholder="John William"
-                      autoComplete="given-name"
-                      value={firstName}
-                      onChange={(event) => setFirstName(event.target.value)}
-                    />
+                    <input type="text" name="firstName" placeholder="John William" autoComplete="given-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} />
                   </label>
-
                   <label className="application-field">
                     <span>Last name</span>
-                    <input
-                      type="text"
-                      name="lastName"
-                      placeholder="Smith"
-                      autoComplete="family-name"
-                      value={lastName}
-                      onChange={(event) => setLastName(event.target.value)}
-                    />
+                    <input type="text" name="lastName" placeholder="Smith" autoComplete="family-name" value={lastName} onChange={(event) => setLastName(event.target.value)} />
                   </label>
                 </div>
 
                 <fieldset className="application-fieldset">
                   <legend>Date of birth</legend>
                   <div className="application-form-grid application-form-grid--three">
-                    <label className="application-field">
-                      <span className="sr-only">Day</span>
-                      <select defaultValue="">
-                        <option value="" disabled>
-                          Day
-                        </option>
-                        {DAY_OPTIONS.map((day) => (
-                          <option key={day} value={day}>
-                            {day}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="application-field">
-                      <span className="sr-only">Month</span>
-                      <select defaultValue="">
-                        <option value="" disabled>
-                          Month
-                        </option>
-                        {MONTH_OPTIONS.map((month) => (
-                          <option key={month} value={month}>
-                            {month}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="application-field">
-                      <span className="sr-only">Year</span>
-                      <select defaultValue="">
-                        <option value="" disabled>
-                          Year
-                        </option>
-                        {YEAR_OPTIONS.map((year) => (
-                          <option key={year} value={year}>
-                            {year}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <label className="application-field"><span className="sr-only">Day</span><select defaultValue=""><option value="" disabled>Day</option>{DAY_OPTIONS.map((day) => <option key={day} value={day}>{day}</option>)}</select></label>
+                    <label className="application-field"><span className="sr-only">Month</span><select defaultValue=""><option value="" disabled>Month</option>{MONTH_OPTIONS.map((month) => <option key={month} value={month}>{month}</option>)}</select></label>
+                    <label className="application-field"><span className="sr-only">Year</span><select defaultValue=""><option value="" disabled>Year</option>{YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
                   </div>
                 </fieldset>
 
                 <fieldset className="application-fieldset">
                   <legend>Gender</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button
-                      type="button"
-                      className={`application-gender-option${gender === 'male' ? ' is-selected' : ''}`}
-                      onClick={() => setGender('male')}
-                    >
-                      <span className="application-gender-option__dot" aria-hidden="true" />
-                      Male
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`application-gender-option${gender === 'female' ? ' is-selected' : ''}`}
-                      onClick={() => setGender('female')}
-                    >
-                      <span className="application-gender-option__dot" aria-hidden="true" />
-                      Female
-                    </button>
+                    <button type="button" className={`application-gender-option${gender === 'male' ? ' is-selected' : ''}`} onClick={() => setGender('male')}><span className="application-gender-option__dot" aria-hidden="true" />Male</button>
+                    <button type="button" className={`application-gender-option${gender === 'female' ? ' is-selected' : ''}`} onClick={() => setGender('female')}><span className="application-gender-option__dot" aria-hidden="true" />Female</button>
                   </div>
                 </fieldset>
 
-                <div className="application-form-actions">
-                  <button type="submit" className="application-continue-button">
-                    Continue
-                  </button>
-                </div>
+                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
               </form>
             </>
-          ) : (
+          ) : applicationSubStep === 2 ? (
             <>
-              <header className="application-form-card__header">
-                <h1>Passport Details</h1>
-              </header>
+              <header className="application-form-card__header"><h1>Passport Details</h1></header>
 
-              <form className="application-step-form" onSubmit={(event) => event.preventDefault()}>
+              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(3); }}>
                 <label className="application-field">
                   <span>Passport</span>
                   <div className="application-select-wrap">
-                    <span className="application-select-icon" aria-hidden="true">
-                      PK
-                    </span>
+                    <span className="application-select-icon" aria-hidden="true">PK</span>
                     <select value={passportCountry} onChange={(event) => setPassportCountry(event.target.value)}>
-                      <option>Pakistan</option>
-                      <option>India</option>
-                      <option>Bangladesh</option>
-                      <option>United Arab Emirates</option>
-                      <option>United States</option>
+                      <option>Pakistan</option><option>India</option><option>Bangladesh</option><option>United Arab Emirates</option><option>United States</option>
                     </select>
                   </div>
                 </label>
@@ -248,23 +250,8 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
                 <fieldset className="application-fieldset">
                   <legend>Do you have passport information available?</legend>
                   <div className="application-form-grid application-form-grid--two">
-                    <button
-                      type="button"
-                      className={`application-gender-option${passportInfoAvailable === 'yes' ? ' is-selected' : ''}`}
-                      onClick={() => setPassportInfoAvailable('yes')}
-                    >
-                      <span className="application-gender-option__dot" aria-hidden="true" />
-                      Yes
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`application-gender-option${passportInfoAvailable === 'no' ? ' is-selected' : ''}`}
-                      onClick={() => setPassportInfoAvailable('no')}
-                    >
-                      <span className="application-gender-option__dot" aria-hidden="true" />
-                      No
-                    </button>
+                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'yes' ? ' is-selected' : ''}`} onClick={() => setPassportInfoAvailable('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'no' ? ' is-selected' : ''}`} onClick={() => setPassportInfoAvailable('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
                   </div>
                 </fieldset>
 
@@ -272,107 +259,131 @@ export function ApplicationStepOneForm({ onClose }: ApplicationStepOneFormProps)
                   <>
                     <label className="application-field">
                       <span>Passport number</span>
-                      <input
-                        type="text"
-                        name="passportNumber"
-                        placeholder="P9876543"
-                        value={passportNumber}
-                        onChange={(event) => setPassportNumber(event.target.value)}
-                      />
+                      <input type="text" name="passportNumber" placeholder="P9876543" value={passportNumber} onChange={(event) => setPassportNumber(event.target.value)} />
                     </label>
 
                     <div className="application-date-block">
                       <p>Passport issue date</p>
                       <div className="application-form-grid application-form-grid--three">
-                        <label className="application-field">
-                          <span className="sr-only">Issue day</span>
-                          <select value={passportIssueDay} onChange={(event) => setPassportIssueDay(event.target.value)}>
-                            <option value="">Day</option>
-                            {DAY_OPTIONS.map((day) => (
-                              <option key={`issue-${day}`} value={day}>
-                                {day}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label className="application-field">
-                          <span className="sr-only">Issue month</span>
-                          <select value={passportIssueMonth} onChange={(event) => setPassportIssueMonth(event.target.value)}>
-                            <option value="">Month</option>
-                            {MONTH_OPTIONS.map((month) => (
-                              <option key={`issue-${month}`} value={month}>
-                                {month}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label className="application-field">
-                          <span className="sr-only">Issue year</span>
-                          <select value={passportIssueYear} onChange={(event) => setPassportIssueYear(event.target.value)}>
-                            <option value="">Year</option>
-                            {YEAR_OPTIONS.map((year) => (
-                              <option key={`issue-${year}`} value={year}>
-                                {year}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
+                        <label className="application-field"><span className="sr-only">Issue day</span><select value={passportIssueDay} onChange={(event) => setPassportIssueDay(event.target.value)}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`issue-${day}`} value={day}>{day}</option>)}</select></label>
+                        <label className="application-field"><span className="sr-only">Issue month</span><select value={passportIssueMonth} onChange={(event) => setPassportIssueMonth(event.target.value)}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`issue-${month}`} value={month}>{month}</option>)}</select></label>
+                        <label className="application-field"><span className="sr-only">Issue year</span><select value={passportIssueYear} onChange={(event) => setPassportIssueYear(event.target.value)}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`issue-${year}`} value={year}>{year}</option>)}</select></label>
                       </div>
                     </div>
 
                     <div className="application-date-block">
                       <p>Passport expiration date</p>
                       <div className="application-form-grid application-form-grid--three">
-                        <label className="application-field">
-                          <span className="sr-only">Expiry day</span>
-                          <select value={passportExpiryDay} onChange={(event) => setPassportExpiryDay(event.target.value)}>
-                            <option value="">Day</option>
-                            {DAY_OPTIONS.map((day) => (
-                              <option key={`expiry-${day}`} value={day}>
-                                {day}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label className="application-field">
-                          <span className="sr-only">Expiry month</span>
-                          <select value={passportExpiryMonth} onChange={(event) => setPassportExpiryMonth(event.target.value)}>
-                            <option value="">Month</option>
-                            {MONTH_OPTIONS.map((month) => (
-                              <option key={`expiry-${month}`} value={month}>
-                                {month}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label className="application-field">
-                          <span className="sr-only">Expiry year</span>
-                          <select value={passportExpiryYear} onChange={(event) => setPassportExpiryYear(event.target.value)}>
-                            <option value="">Year</option>
-                            {YEAR_OPTIONS.map((year) => (
-                              <option key={`expiry-${year}`} value={year}>
-                                {year}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
+                        <label className="application-field"><span className="sr-only">Expiry day</span><select value={passportExpiryDay} onChange={(event) => setPassportExpiryDay(event.target.value)}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`expiry-${day}`} value={day}>{day}</option>)}</select></label>
+                        <label className="application-field"><span className="sr-only">Expiry month</span><select value={passportExpiryMonth} onChange={(event) => setPassportExpiryMonth(event.target.value)}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`expiry-${month}`} value={month}>{month}</option>)}</select></label>
+                        <label className="application-field"><span className="sr-only">Expiry year</span><select value={passportExpiryYear} onChange={(event) => setPassportExpiryYear(event.target.value)}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`expiry-${year}`} value={year}>{year}</option>)}</select></label>
                       </div>
                     </div>
                   </>
                 ) : null}
 
-                <div className="application-form-actions">
-                  <button type="submit" className="application-continue-button">
-                    Continue
-                  </button>
-                </div>
+                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
               </form>
             </>
-          )}
+          ) : applicationSubStep === 3 ? (
+            <>
+              <header className="application-form-card__header"><h1>Address Details</h1></header>
+              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); setApplicationSubStep(4); }}>
+                <label className="application-field">
+                  <span>Country of residence</span>
+                  <div className="application-select-wrap">
+                    <span className="application-select-icon" aria-hidden="true">PK</span>
+                    <select value={residenceCountry} onChange={(event) => setResidenceCountry(event.target.value)}>
+                      <option>Pakistan</option><option>India</option><option>Bangladesh</option><option>United Arab Emirates</option><option>United States</option>
+                    </select>
+                  </div>
+                </label>
+                <p className="application-field-note">The country where you live permanently.</p>
+
+                <div className="application-form-grid application-form-grid--two">
+                  <label className="application-field"><span>Home address</span><input type="text" name="homeAddress" placeholder="1234 Sesame St. Apt. 3, Springtown, Islamabad" value={homeAddress} onChange={(event) => setHomeAddress(event.target.value)} /></label>
+                  <label className="application-field"><span>City or town</span><input type="text" name="cityOrTown" value={cityOrTown} onChange={(event) => setCityOrTown(event.target.value)} /></label>
+                </div>
+                <p className="application-field-note">The address must be in the country where you live.</p>
+
+                <div className="application-form-grid application-form-grid--two">
+                  <label className="application-field"><span>State or province</span><input type="text" name="stateOrProvince" value={stateOrProvince} onChange={(event) => setStateOrProvince(event.target.value)} /></label>
+                  <label className="application-field"><span>ZIP or postcode</span><input type="text" name="zipOrPostcode" value={zipOrPostcode} onChange={(event) => setZipOrPostcode(event.target.value)} /></label>
+                </div>
+
+                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+              </form>
+            </>
+          ) : applicationSubStep === 4 ? (
+            <>
+              <header className="application-form-card__header"><h1>Additional Information</h1></header>
+              <form className="application-step-form" onSubmit={(event) => { event.preventDefault(); completeTravelerApplication(); }}>
+                <fieldset className="application-fieldset">
+                  <legend>Are you employed?</legend>
+                  <div className="application-form-grid application-form-grid--two">
+                    <button type="button" className={`application-gender-option${isEmployed === 'yes' ? ' is-selected' : ''}`} onClick={() => setIsEmployed('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${isEmployed === 'no' ? ' is-selected' : ''}`} onClick={() => setIsEmployed('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                  </div>
+                </fieldset>
+
+                <fieldset className="application-fieldset">
+                  <legend>Have you ever been convicted of a criminal offense?</legend>
+                  <div className="application-form-grid application-form-grid--two">
+                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'yes' ? ' is-selected' : ''}`} onClick={() => setHasCriminalOffense('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'no' ? ' is-selected' : ''}`} onClick={() => setHasCriminalOffense('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                  </div>
+                </fieldset>
+
+                <label className="application-field">
+                  <span>Reason for trip</span>
+                  <select value={reasonForTrip} onChange={(event) => setReasonForTrip(event.target.value)}>
+                    <option value="">Select an option</option>
+                    {REASON_FOR_TRIP_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </label>
+
+                <fieldset className="application-fieldset">
+                  <legend>Do you have confirmed travel plans?</legend>
+                  <div className="application-form-grid application-form-grid--two">
+                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'yes' ? ' is-selected' : ''}`} onClick={() => setHasConfirmedTravelPlans('yes')}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
+                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'no' ? ' is-selected' : ''}`} onClick={() => setHasConfirmedTravelPlans('no')}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
+                  </div>
+                </fieldset>
+                {hasConfirmedTravelPlans === 'yes' ? (
+                  <div className="application-date-block">
+                    <p>Expected arrival date</p>
+                    <div className="application-form-grid application-form-grid--three">
+                      <label className="application-field"><span className="sr-only">Arrival day</span><select value={expectedArrivalDay} onChange={(event) => setExpectedArrivalDay(event.target.value)}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`arrival-${day}`} value={day}>{day}</option>)}</select></label>
+                      <label className="application-field"><span className="sr-only">Arrival month</span><select value={expectedArrivalMonth} onChange={(event) => setExpectedArrivalMonth(event.target.value)}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`arrival-${month}`} value={month}>{month}</option>)}</select></label>
+                      <label className="application-field"><span className="sr-only">Arrival year</span><select value={expectedArrivalYear} onChange={(event) => setExpectedArrivalYear(event.target.value)}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`arrival-${year}`} value={year}>{year}</option>)}</select></label>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+              </form>
+            </>
+          ) : applicationSubStep === 5 ? (
+            <>
+              <header className="application-form-card__header"><h1>Travelers</h1></header>
+              <div className="application-step-form">
+                <div className="travelers-list">
+                  {travelers.map((traveler) => (
+                    <div key={traveler.id} className="traveler-row">
+                      <span className="traveler-row__name"><span className="traveler-row__status">&#10003;</span>{traveler.name}</span>
+                      <div className="traveler-row__actions">
+                        <button type="button" className="traveler-row__action" onClick={startTravelerApplication} aria-label={`Edit ${traveler.name}`}>&#9998;</button>
+                        <button type="button" className="traveler-row__action" aria-label={`Remove ${traveler.name}`} onClick={() => setTravelers((current) => current.filter((item) => item.id !== traveler.id))}>&#128465;</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="button" className="traveler-add-button" onClick={startTravelerApplication}><span aria-hidden="true">+</span> Add Another Traveler</button>
+                <div className="application-form-actions"><button type="button" className="application-continue-button">Continue</button></div>
+              </div>
+            </>
+          ) : null}
         </section>
       </div>
     </div>
