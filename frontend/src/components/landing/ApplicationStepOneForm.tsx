@@ -28,6 +28,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 100 }, (_, index) => `${CURRENT_YEAR - index}`);
 const REASON_FOR_TRIP_OPTIONS = ['Tourism', 'Business', 'Family visit', 'Medical treatment', 'Conference or event'];
 const STEP_ITEMS = ['Application', 'Add Travelers', 'Contact Details', 'Confirm & Submit'];
+const FORM_STORAGE_KEY = 'aus-visa-application-draft-v1';
 
 function VisaBadgeIcon() {
   return (
@@ -83,6 +84,7 @@ export function ApplicationStepOneForm() {
   const [showTravelerPrompt, setShowTravelerPrompt] = useState(false);
   const [travelerPromptCountdown, setTravelerPromptCountdown] = useState(5);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const [isDraftHydrated, setIsDraftHydrated] = useState(false);
 
   useEffect(() => {
     if (!showTravelerPrompt) {
@@ -101,6 +103,135 @@ export function ApplicationStepOneForm() {
 
     return () => window.clearTimeout(timeoutId);
   }, [showTravelerPrompt, travelerPromptCountdown]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const rawDraft = window.localStorage.getItem(FORM_STORAGE_KEY);
+      if (!rawDraft) {
+        setIsDraftHydrated(true);
+        return;
+      }
+
+      const draft = JSON.parse(rawDraft) as Record<string, unknown>;
+      setApplicationSubStep((draft.applicationSubStep as ApplicationSubStep) ?? 1);
+      setIsTravelersStage((draft.isTravelersStage as boolean) ?? false);
+      setTravelers((draft.travelers as TravelerEntry[]) ?? []);
+      setFirstName((draft.firstName as string) ?? '');
+      setLastName((draft.lastName as string) ?? '');
+      setBirthDay((draft.birthDay as string) ?? '');
+      setBirthMonth((draft.birthMonth as string) ?? '');
+      setBirthYear((draft.birthYear as string) ?? '');
+      setGender((draft.gender as 'male' | 'female' | '') ?? '');
+      setPassportCountry((draft.passportCountry as string) ?? 'Pakistan');
+      setPassportInfoAvailable((draft.passportInfoAvailable as YesNo) ?? '');
+      setPassportNumber((draft.passportNumber as string) ?? '');
+      setPassportIssueDay((draft.passportIssueDay as string) ?? '');
+      setPassportIssueMonth((draft.passportIssueMonth as string) ?? '');
+      setPassportIssueYear((draft.passportIssueYear as string) ?? '');
+      setPassportExpiryDay((draft.passportExpiryDay as string) ?? '');
+      setPassportExpiryMonth((draft.passportExpiryMonth as string) ?? '');
+      setPassportExpiryYear((draft.passportExpiryYear as string) ?? '');
+      setResidenceCountry((draft.residenceCountry as string) ?? 'Pakistan');
+      setHomeAddress((draft.homeAddress as string) ?? '');
+      setCityOrTown((draft.cityOrTown as string) ?? '');
+      setStateOrProvince((draft.stateOrProvince as string) ?? '');
+      setZipOrPostcode((draft.zipOrPostcode as string) ?? '');
+      setIsEmployed((draft.isEmployed as YesNo) ?? '');
+      setHasCriminalOffense((draft.hasCriminalOffense as YesNo) ?? '');
+      setReasonForTrip((draft.reasonForTrip as string) ?? '');
+      setHasConfirmedTravelPlans((draft.hasConfirmedTravelPlans as YesNo) ?? '');
+      setExpectedArrivalDay((draft.expectedArrivalDay as string) ?? '');
+      setExpectedArrivalMonth((draft.expectedArrivalMonth as string) ?? '');
+      setExpectedArrivalYear((draft.expectedArrivalYear as string) ?? '');
+      setEmailAddress((draft.emailAddress as string) ?? '');
+      setSubscribeToUpdates((draft.subscribeToUpdates as boolean) ?? false);
+    } catch {
+      // Ignore malformed browser draft data.
+    } finally {
+      setIsDraftHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isDraftHydrated) {
+      return;
+    }
+
+    const draft = {
+      applicationSubStep,
+      isTravelersStage,
+      travelers,
+      firstName,
+      lastName,
+      birthDay,
+      birthMonth,
+      birthYear,
+      gender,
+      passportCountry,
+      passportInfoAvailable,
+      passportNumber,
+      passportIssueDay,
+      passportIssueMonth,
+      passportIssueYear,
+      passportExpiryDay,
+      passportExpiryMonth,
+      passportExpiryYear,
+      residenceCountry,
+      homeAddress,
+      cityOrTown,
+      stateOrProvince,
+      zipOrPostcode,
+      isEmployed,
+      hasCriminalOffense,
+      reasonForTrip,
+      hasConfirmedTravelPlans,
+      expectedArrivalDay,
+      expectedArrivalMonth,
+      expectedArrivalYear,
+      emailAddress,
+      subscribeToUpdates
+    };
+
+    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(draft));
+  }, [
+    isDraftHydrated,
+    applicationSubStep,
+    isTravelersStage,
+    travelers,
+    firstName,
+    lastName,
+    birthDay,
+    birthMonth,
+    birthYear,
+    gender,
+    passportCountry,
+    passportInfoAvailable,
+    passportNumber,
+    passportIssueDay,
+    passportIssueMonth,
+    passportIssueYear,
+    passportExpiryDay,
+    passportExpiryMonth,
+    passportExpiryYear,
+    residenceCountry,
+    homeAddress,
+    cityOrTown,
+    stateOrProvince,
+    zipOrPostcode,
+    isEmployed,
+    hasCriminalOffense,
+    reasonForTrip,
+    hasConfirmedTravelPlans,
+    expectedArrivalDay,
+    expectedArrivalMonth,
+    expectedArrivalYear,
+    emailAddress,
+    subscribeToUpdates
+  ]);
 
   const resetTravelerDraft = () => {
     setApplicationSubStep(1);
