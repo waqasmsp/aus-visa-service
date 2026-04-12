@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { ApplicationStepOneForm } from '../components/landing/ApplicationStepOneForm';
 import { ComparisonPanel } from '../components/landing/ComparisonPanel';
 import { EasyProcess } from '../components/landing/EasyProcess';
 import { FooterMega } from '../components/landing/FooterMega';
@@ -12,8 +14,14 @@ import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage({ pathname }: { pathname: string }) {
+  const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const { hero, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
     landingContent;
+
+  useEffect(() => {
+    document.body.classList.toggle('body--form-open', isApplicationFormOpen);
+    return () => document.body.classList.remove('body--form-open');
+  }, [isApplicationFormOpen]);
 
   return (
     <div className="landing-page">
@@ -25,12 +33,12 @@ export function LandingPage({ pathname }: { pathname: string }) {
 
       <main className="landing-main">
         <section className="landing-section landing-section--hero">
-          <HeroVisaSearch {...hero} />
+          <HeroVisaSearch {...hero} onStartApplication={() => setIsApplicationFormOpen(true)} />
         </section>
 
         <section className="landing-section landing-section--comparison">
           <div className="content-container">
-            <ComparisonPanel {...comparison} />
+            <ComparisonPanel {...comparison} onGetStarted={() => setIsApplicationFormOpen(true)} />
           </div>
         </section>
 
@@ -85,8 +93,9 @@ export function LandingPage({ pathname }: { pathname: string }) {
         </div>
       </section>
 
-      <MobileBottomNav pathname={pathname} />
+      <MobileBottomNav pathname={pathname} onApplyNow={() => setIsApplicationFormOpen(true)} />
       <VisiaChat />
+      {isApplicationFormOpen ? <ApplicationStepOneForm onClose={() => setIsApplicationFormOpen(false)} /> : null}
     </div>
   );
 }

@@ -30,21 +30,22 @@ const normalizePathname = (value: string): string => value.toLowerCase().replace
 
 type MobileBottomNavProps = {
   pathname: string;
+  onApplyNow?: () => void;
 };
 
-export function MobileBottomNav({ pathname }: MobileBottomNavProps) {
+export function MobileBottomNav({ pathname, onApplyNow }: MobileBottomNavProps) {
   const currentPath = normalizePathname(pathname);
   const isHome = currentPath === '/';
   const isAbout = currentPath === '/about-us';
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile quick navigation">
-      <a href="#" className="mobile-bottom-nav__item mobile-bottom-nav__item--apply">
+      <button type="button" className="mobile-bottom-nav__item mobile-bottom-nav__item--apply" onClick={onApplyNow}>
         <span className="mobile-bottom-nav__icon">
           <ApplyIcon />
         </span>
         <span>Apply Now</span>
-      </a>
+      </button>
       <a
         href="/"
         className={`mobile-bottom-nav__item${isHome ? ' mobile-bottom-nav__item--active' : ''}`}

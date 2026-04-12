@@ -15,6 +15,7 @@ type HeroVisaSearchProps = {
   visaTypeOptions: VisaTypeOption[];
   primaryCta: string;
   illustrationAlt: string;
+  onStartApplication?: () => void;
 };
 
 type SelectOption = {
@@ -366,7 +367,8 @@ export function HeroVisaSearch({
   destinationCountryOptions,
   visaTypeOptions,
   primaryCta,
-  illustrationAlt
+  illustrationAlt,
+  onStartApplication
 }: HeroVisaSearchProps) {
   const [originCountry, setOriginCountry] = useState<CountryOption | null>(null);
   const [destinationCountry, setDestinationCountry] = useState<CountryOption | null>(
@@ -416,7 +418,7 @@ export function HeroVisaSearch({
                   </span>
                 )}
               />
-              <PrimaryButton>{primaryCta}</PrimaryButton>
+              <PrimaryButton onClick={onStartApplication}>{primaryCta}</PrimaryButton>
             </div>
           </div>
         </div>

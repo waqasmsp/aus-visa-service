@@ -6,9 +6,10 @@ type ComparisonPanelProps = {
   leftPoints: string[];
   rightTitle: string;
   rightPoints: string[];
+  onGetStarted?: () => void;
 };
 
-export function ComparisonPanel({ title, leftTitle, leftPoints, rightTitle, rightPoints }: ComparisonPanelProps) {
+export function ComparisonPanel({ title, leftTitle, leftPoints, rightTitle, rightPoints, onGetStarted }: ComparisonPanelProps) {
   return (
     <SectionContainer className="comparison-panel comparison-panel--enhanced">
       <h2>{title}</h2>
@@ -41,7 +42,7 @@ export function ComparisonPanel({ title, leftTitle, leftPoints, rightTitle, righ
             ))}
           </ul>
 
-          <button type="button" className="primary-button primary-button--solid comparison-cta">
+          <button type="button" className="primary-button primary-button--solid comparison-cta" onClick={onGetStarted}>
             Get Started
           </button>
         </article>
