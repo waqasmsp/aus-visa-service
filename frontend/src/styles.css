@@ -1116,6 +1116,32 @@ body.body--menu-open {
   font-size: 1.02rem;
 }
 
+.application-select-wrap {
+  position: relative;
+}
+
+.application-select-wrap .application-select-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: #4d7c0f;
+  color: #ffffff;
+  font-size: 0.55rem;
+  font-weight: var(--font-weight-bold);
+  display: inline-grid;
+  place-items: center;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.application-select-wrap select {
+  padding-left: 2.6rem;
+}
+
 .application-field input::placeholder {
   color: #8ca2b6;
 }
@@ -1140,6 +1166,18 @@ body.body--menu-open {
 .application-fieldset legend {
   padding: 0;
   margin-bottom: 0.2rem;
+  color: #2d4f6d;
+  font-weight: var(--font-weight-semibold);
+  font-size: 1.02rem;
+}
+
+.application-date-block {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.application-date-block p {
+  margin: 0;
   color: #2d4f6d;
   font-weight: var(--font-weight-semibold);
   font-size: 1.02rem;
