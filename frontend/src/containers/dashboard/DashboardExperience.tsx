@@ -76,21 +76,21 @@ const sidebarItems: Array<{ section: DashboardSection; label: string; href: stri
 ];
 
 const managerSidebarItems: Array<{ section: ManagerSection; label: string; href: string; badge?: string }> = [
-  { section: 'overview', label: 'Overview', href: '/manager-dashboard' },
-  { section: 'team', label: 'Team Queue', href: '/manager-dashboard/team', badge: 'Ops' },
-  { section: 'applications', label: 'Applications', href: '/manager-dashboard/applications', badge: 'Core' },
-  { section: 'documents', label: 'Documents', href: '/manager-dashboard/documents' },
-  { section: 'payments', label: 'Payments', href: '/manager-dashboard/payments' },
-  { section: 'settings', label: 'Settings', href: '/manager-dashboard/settings' }
+  { section: 'overview', label: 'Overview', href: '/dashboard' },
+  { section: 'team', label: 'Team Queue', href: '/dashboard/team', badge: 'Ops' },
+  { section: 'applications', label: 'Applications', href: '/dashboard/applications', badge: 'Core' },
+  { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
+  { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
+  { section: 'settings', label: 'Settings', href: '/dashboard/settings' }
 ];
 
 const userSidebarItems: Array<{ section: UserSection; label: string; href: string; badge?: string }> = [
-  { section: 'overview', label: 'Overview', href: '/user-dashboard' },
-  { section: 'applications', label: 'My Applications', href: '/user-dashboard/applications', badge: 'Core' },
-  { section: 'documents', label: 'My Documents', href: '/user-dashboard/documents' },
-  { section: 'payments', label: 'Payments', href: '/user-dashboard/payments' },
-  { section: 'messages', label: 'Support', href: '/user-dashboard/messages' },
-  { section: 'profile', label: 'Profile', href: '/user-dashboard/profile' }
+  { section: 'overview', label: 'Overview', href: '/dashboard' },
+  { section: 'applications', label: 'My Applications', href: '/dashboard/applications', badge: 'Core' },
+  { section: 'documents', label: 'My Documents', href: '/dashboard/documents' },
+  { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
+  { section: 'messages', label: 'Support', href: '/dashboard/messages' },
+  { section: 'profile', label: 'Profile', href: '/dashboard/profile' }
 ];
 
 const initialPages: CmsPage[] = [
@@ -256,12 +256,12 @@ const dummyCredentials: Record<DashboardRole, { email: string; password: string;
   manager: {
     email: 'manager@ausvisaservice.com',
     password: 'Manager@123',
-    route: '/manager-dashboard'
+    route: '/dashboard'
   },
   user: {
     email: 'user@ausvisaservice.com',
     password: 'User@123',
-    route: '/user-dashboard'
+    route: '/dashboard'
   }
 };
 
@@ -373,9 +373,9 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   const normalizedPath = normalizePathname(pathname);
   const isLoginRoute = normalizedPath === '/dashboard/login' || normalizedPath === '/login';
   const isSignupRoute = normalizedPath === '/dashboard/signup' || normalizedPath === '/signup';
-  const isAdminDashboardRoute = normalizedPath.startsWith('/dashboard');
-  const isManagerDashboardRoute = normalizedPath.startsWith('/manager-dashboard');
-  const isUserDashboardRoute = normalizedPath.startsWith('/user-dashboard');
+  const isDashboardRoute = normalizedPath.startsWith('/dashboard');
+  const isLegacyManagerRoute = normalizedPath.startsWith('/manager-dashboard');
+  const isLegacyUserRoute = normalizedPath.startsWith('/user-dashboard');
   const [session, setSession] = useState<AuthSession | null>(() => readAuthSession());
   const [authReady, setAuthReady] = useState(false);
 
@@ -392,7 +392,16 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
     return <DashboardSignupPage />;
   }
 
-  if (!isAdminDashboardRoute && !isManagerDashboardRoute && !isUserDashboardRoute) {
+  if (isLegacyManagerRoute || isLegacyUserRoute) {
+    if (typeof window !== 'undefined') {
+      const legacySuffix = normalizedPath.replace(/^\/(?:manager|user)-dashboard/, '');
+      const target = `/dashboard${legacySuffix || ''}`;
+      window.location.replace(target);
+    }
+    return null;
+  }
+
+  if (!isDashboardRoute) {
     return null;
   }
 
@@ -408,32 +417,11 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
     return null;
   }
 
-  if (session.role === 'user' && (isAdminDashboardRoute || isManagerDashboardRoute)) {
-    if (typeof window !== 'undefined') {
-      window.location.replace('/user-dashboard');
-    }
-    return null;
-  }
-
-  if (session.role === 'manager' && (isAdminDashboardRoute || isUserDashboardRoute)) {
-    if (typeof window !== 'undefined') {
-      window.location.replace('/manager-dashboard');
-    }
-    return null;
-  }
-
-  if (session.role === 'admin' && (isManagerDashboardRoute || isUserDashboardRoute)) {
-    if (typeof window !== 'undefined') {
-      window.location.replace('/dashboard');
-    }
-    return null;
-  }
-
-  if (isManagerDashboardRoute) {
+  if (session.role === 'manager') {
     return <ManagerDashboardWorkspace pathname={normalizedPath} session={session} />;
   }
 
-  if (isUserDashboardRoute) {
+  if (session.role === 'user') {
     return <UserDashboardWorkspace pathname={normalizedPath} session={session} />;
   }
 
@@ -1217,7 +1205,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
       />
 
       <aside className={`dashboard-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
-        <a href="/manager-dashboard" className="dashboard-brand" aria-label="Manager Dashboard Home">
+        <a href="/dashboard" className="dashboard-brand" aria-label="Manager Dashboard Home">
           <span className="dashboard-brand__logo">MG</span>
           <span className="dashboard-brand__text">
             <strong>Manager Console</strong>
@@ -1239,7 +1227,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
 
         <div className="dashboard-sidebar__foot">
           <p>Escalations due in next 24h: 7</p>
-          <a href="/manager-dashboard/team">Review team assignments</a>
+          <a href="/dashboard/team">Review team assignments</a>
         </div>
       </aside>
 
@@ -1483,7 +1471,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
       />
 
       <aside className={`dashboard-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
-        <a href="/user-dashboard" className="dashboard-brand" aria-label="User Dashboard Home">
+        <a href="/dashboard" className="dashboard-brand" aria-label="User Dashboard Home">
           <span className="dashboard-brand__logo">ME</span>
           <span className="dashboard-brand__text">
             <strong>My Visa Portal</strong>
@@ -1505,7 +1493,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
 
         <div className="dashboard-sidebar__foot">
           <p>Need urgent help? Chat with support in Messages.</p>
-          <a href="/user-dashboard/messages">Open support center</a>
+          <a href="/dashboard/messages">Open support center</a>
         </div>
       </aside>
 
@@ -1787,14 +1775,6 @@ function DashboardLoginPage() {
   useEffect(() => {
     const existing = readAuthSession();
     if (!existing || typeof window === 'undefined') {
-      return;
-    }
-    if (existing.role === 'user') {
-      window.location.replace('/user-dashboard');
-      return;
-    }
-    if (existing.role === 'manager') {
-      window.location.replace('/manager-dashboard');
       return;
     }
     window.location.replace('/dashboard');
