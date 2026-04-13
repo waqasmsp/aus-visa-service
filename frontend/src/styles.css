@@ -928,7 +928,7 @@ body.body--menu-open {
   position: relative;
 }
 
-.top-header__nav a {
+.top-header__nav > .top-header__nav-item > a {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -937,7 +937,7 @@ body.body--menu-open {
   color: #1e3a5f;
 }
 
-.top-header__nav a[aria-current='page'] {
+.top-header__nav > .top-header__nav-item > a[aria-current='page'] {
   color: #1d4ed8;
   font-weight: var(--font-weight-semibold);
 }
