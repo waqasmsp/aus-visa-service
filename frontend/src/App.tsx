@@ -7,6 +7,7 @@ import { DashboardExperience } from './containers/dashboard/DashboardExperience'
 import { LandingPage } from './containers/LandingPage';
 import { PricingPage } from './containers/PricingPage';
 import { VisaDetailsPage } from './containers/VisaDetailsPage';
+import { VisaServicesPage } from './containers/VisaServicesPage';
 
 type AppProps = {
   pathname: string;
@@ -26,6 +27,7 @@ export default function App({ pathname }: AppProps) {
   const isContactPage = normalizedPath === '/contact-us';
   const isPricingPage = normalizedPath === '/pricing';
   const isVisaDetailsPage = normalizedPath.startsWith('/visa/');
+  const isVisaServicesPage = normalizedPath === '/visa-services';
   const seoTitle = isDashboardRoute
     ? 'Dashboard | AUS Visa Service'
     : isAboutPage
@@ -34,8 +36,10 @@ export default function App({ pathname }: AppProps) {
         ? 'Pricing | Global Visas'
       : isContactPage
         ? 'Contact Us | Global Visas'
-        : isVisaDetailsPage
-          ? 'Visa Details | Global Visas'
+        : isVisaServicesPage
+          ? 'Visa Services | Global Visas'
+          : isVisaDetailsPage
+            ? 'Visa Details | Global Visas'
       : undefined;
   const seoDescription = isDashboardRoute
     ? 'AUS Visa Service dashboards for admins, managers, and users to manage applications, profiles, pages, and settings.'
@@ -45,8 +49,10 @@ export default function App({ pathname }: AppProps) {
         ? 'Explore Global Visas pricing packages for ETA and Visitor Visa services with transparent per-attempt costs.'
       : isContactPage
         ? 'Get in touch with Global Visas for consultation, visa support, and application guidance from our specialist team.'
-        : isVisaDetailsPage
-          ? 'Explore Australian visitor visa options, compare subclass pathways, and apply online with guided support.'
+        : isVisaServicesPage
+          ? 'Browse all Australian visa services with structured guidance, service comparisons, and direct links to detailed pages.'
+          : isVisaDetailsPage
+            ? 'Explore Australian visitor visa options, compare subclass pathways, and apply online with guided support.'
       : undefined;
   const seoKeywords = isDashboardRoute
     ? ['dashboard', 'visa applications', 'admin panel', 'users management', 'visa workflow']
@@ -56,8 +62,10 @@ export default function App({ pathname }: AppProps) {
         ? ['visa pricing', 'eta 601 price', 'visitor visa 600 fee', 'australia visa packages', 'global visas pricing']
       : isContactPage
         ? ['contact global visas', 'visa support contact', 'visa consultation', 'help center', 'contact us']
-        : isVisaDetailsPage
-          ? ['visitor visa 600', 'eta 601', 'evisitor 651', 'australia visa options', 'apply australia visa']
+        : isVisaServicesPage
+          ? ['visa services australia', 'australian visa types', 'visitor visa options', 'visa comparison', 'global visas']
+          : isVisaDetailsPage
+            ? ['visitor visa 600', 'eta 601', 'evisitor 651', 'australia visa options', 'apply australia visa']
       : undefined;
 
   return (
@@ -73,6 +81,8 @@ export default function App({ pathname }: AppProps) {
         <ContactPage pathname={pathname} />
       ) : isPricingPage ? (
         <PricingPage pathname={pathname} />
+      ) : isVisaServicesPage ? (
+        <VisaServicesPage pathname={pathname} />
       ) : isVisaDetailsPage ? (
         <VisaDetailsPage pathname={pathname} />
       ) : (
