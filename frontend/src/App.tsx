@@ -2,6 +2,7 @@ import { Seo } from './components/seo/Seo';
 import { isPrivateRoute } from './config/seo';
 import { AboutPage } from './containers/AboutPage';
 import { ApplicationPage } from './containers/ApplicationPage';
+import { ContactPage } from './containers/ContactPage';
 import { DashboardExperience } from './containers/dashboard/DashboardExperience';
 import { LandingPage } from './containers/LandingPage';
 
@@ -20,20 +21,27 @@ export default function App({ pathname }: AppProps) {
     normalizedPath === '/signup';
   const isAboutPage = normalizedPath === '/about-us';
   const isApplicationPage = normalizedPath === '/application' || normalizedPath === '/application-form';
+  const isContactPage = normalizedPath === '/contact-us';
   const seoTitle = isDashboardRoute
     ? 'Dashboard | AUS Visa Service'
     : isAboutPage
       ? 'About Us | Global Visas'
+      : isContactPage
+        ? 'Contact Us | Global Visas'
       : undefined;
   const seoDescription = isDashboardRoute
     ? 'AUS Visa Service dashboards for admins, managers, and users to manage applications, profiles, pages, and settings.'
     : isAboutPage
       ? 'Learn about Global Visas and how we make visa applications simple, accurate, and stress-free for travelers worldwide.'
+      : isContactPage
+        ? 'Get in touch with Global Visas for consultation, visa support, and application guidance from our specialist team.'
       : undefined;
   const seoKeywords = isDashboardRoute
     ? ['dashboard', 'visa applications', 'admin panel', 'users management', 'visa workflow']
     : isAboutPage
       ? ['about global visas', 'visa support', 'visa application guidance', 'travel visa help', 'global visas']
+      : isContactPage
+        ? ['contact global visas', 'visa support contact', 'visa consultation', 'help center', 'contact us']
       : undefined;
 
   return (
@@ -45,6 +53,8 @@ export default function App({ pathname }: AppProps) {
         <ApplicationPage pathname={pathname} />
       ) : isAboutPage ? (
         <AboutPage pathname={pathname} />
+      ) : isContactPage ? (
+        <ContactPage pathname={pathname} />
       ) : (
         <LandingPage pathname={pathname} />
       )}

@@ -1,4 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { ContactEntry } from '../../types/contact';
+import { getContactEntries } from '../../utils/contactEntries';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -10,8 +12,8 @@ type AuthSession = {
   email: string;
   loginAt: string;
 };
-type DashboardSection = 'overview' | 'pages' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'settings';
-type ManagerSection = 'overview' | 'team' | 'applications' | 'documents' | 'payments' | 'settings';
+type DashboardSection = 'overview' | 'pages' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
+type ManagerSection = 'overview' | 'team' | 'applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
 type UserSection = 'overview' | 'applications' | 'documents' | 'payments' | 'messages' | 'profile';
 type PageStatus = 'Published' | 'Draft' | 'Archived';
 type UserSegment = 'Registered' | 'Lead';
@@ -54,8 +56,8 @@ type VisaApplication = {
 const AUTH_SESSION_KEY = 'aus-visa-auth-session';
 
 const roleScope: Record<DashboardRole, DashboardSection[]> = {
-  admin: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'settings'],
-  manager: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'settings'],
+  admin: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
+  manager: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
   user: ['overview', 'visa-applications', 'documents', 'settings']
 };
 
@@ -66,6 +68,7 @@ const sidebarItems: Array<{ section: DashboardSection; label: string; href: stri
   { section: 'visa-applications', label: 'Visa Applications', href: '/dashboard/visa-applications', badge: 'Core' },
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
+  { section: 'contact-entries', label: 'Contact Entries', href: '/dashboard/contact-entries', badge: 'Inbox' },
   { section: 'settings', label: 'Settings', href: '/dashboard/settings' }
 ];
 
@@ -75,6 +78,7 @@ const managerSidebarItems: Array<{ section: ManagerSection; label: string; href:
   { section: 'applications', label: 'Applications', href: '/dashboard/applications', badge: 'Core' },
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
+  { section: 'contact-entries', label: 'Contact Entries', href: '/dashboard/contact-entries', badge: 'Inbox' },
   { section: 'settings', label: 'Settings', href: '/dashboard/settings' }
 ];
 
@@ -277,6 +281,8 @@ const getDashboardSectionFromPath = (pathname: string): DashboardSection => {
       return 'documents';
     case 'payments':
       return 'payments';
+    case 'contact-entries':
+      return 'contact-entries';
     case 'settings':
       return 'settings';
     default:
@@ -298,6 +304,8 @@ const getManagerSectionFromPath = (pathname: string): ManagerSection => {
       return 'documents';
     case 'payments':
       return 'payments';
+    case 'contact-entries':
+      return 'contact-entries';
     case 'settings':
       return 'settings';
     default:
@@ -447,6 +455,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
     'visa-applications': 'Visa Applications',
     documents: 'Document Center',
     payments: 'Payments and Billing',
+    'contact-entries': 'Contact Form Inbox',
     settings: 'Application Settings'
   };
 
@@ -528,6 +537,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {activeSection === 'visa-applications' ? <VisaApplicationsPanel /> : null}
           {activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
           {activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
+          {activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
           {activeSection === 'settings' ? <SettingsPanel /> : null}
         </main>
       </div>
@@ -1178,6 +1188,77 @@ function SettingsPanel() {
   );
 }
 
+function ContactEntriesPanel({ audience }: { audience: 'admin' | 'manager' }) {
+  const [entries, setEntries] = useState<ContactEntry[]>([]);
+
+  useEffect(() => {
+    setEntries(getContactEntries());
+  }, []);
+
+  const subtitle =
+    audience === 'admin'
+      ? 'Messages submitted from the Contact Us page are shown below.'
+      : 'Track and triage customer inquiries from the public contact form.';
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Contact Form Submissions</h2>
+          <small>{entries.length} total messages</small>
+        </div>
+        <p className="dashboard-panel__note">{subtitle}</p>
+
+        {entries.length ? (
+          <div className="dashboard-table-wrap">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Subject</th>
+                  <th>Message</th>
+                  <th>Received</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.name}</td>
+                    <td>
+                      <strong>{entry.email}</strong>
+                      <small>{entry.phone}</small>
+                    </td>
+                    <td>{entry.subject}</td>
+                    <td className="dashboard-cell-message">{entry.message}</td>
+                    <td>{formatDashboardDate(entry.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="dashboard-empty-state">
+            No contact messages yet. New submissions from `/contact-us` will appear here.
+          </p>
+        )}
+      </article>
+    </section>
+  );
+}
+
+function formatDashboardDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(date);
+}
+
 function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const activeSection = getManagerSectionFromPath(pathname);
@@ -1192,6 +1273,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
     applications: 'Application Pipeline',
     documents: 'Document Review',
     payments: 'Payment Oversight',
+    'contact-entries': 'Contact Form Inbox',
     settings: 'Manager Settings'
   };
 
@@ -1267,6 +1349,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
           {activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
           {activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
           {activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
+          {activeSection === 'contact-entries' ? <ContactEntriesPanel audience="manager" /> : null}
           {activeSection === 'settings' ? <ManagerSettingsPanel /> : null}
         </main>
       </div>

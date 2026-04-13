@@ -28,10 +28,9 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const hasDropdown = (item: string) => !['Home', 'About Us', 'Contact Us'].includes(item);
   const currentPath = normalizePathname(pathname);
-  const goToLogin = () => {
+  const goToApplication = () => {
     if (typeof window !== 'undefined') {
-      window.history.pushState(null, '', '/dashboard/login');
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      window.location.assign('/application');
     }
   };
 
@@ -111,7 +110,7 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
           <button className="top-header__icon-button" type="button" aria-label="Change language">
             &#127760;
           </button>
-          <PrimaryButton variant="outline" onClick={goToLogin}>
+          <PrimaryButton variant="outline" onClick={goToApplication}>
             {loginCta}
           </PrimaryButton>
         </div>
@@ -153,7 +152,7 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
             })}
           </nav>
 
-          <PrimaryButton variant="outline" className="mobile-sidepanel__login-button" onClick={goToLogin}>
+          <PrimaryButton variant="outline" className="mobile-sidepanel__login-button" onClick={goToApplication}>
             {loginCta}
           </PrimaryButton>
         </aside>

@@ -12,7 +12,7 @@ export type VisaTypeOption = {
 export const landingContent = {
   brandName: 'Global Visas',
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
-  loginCta: 'Login',
+  loginCta: 'Apply Now',
   hero: {
     title: '[[Fastest|Quickest|Swiftest|Speediest]] Way to Get Your Australian Travel Visa in Minutes',
     subtitle:
