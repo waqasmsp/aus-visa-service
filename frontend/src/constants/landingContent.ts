@@ -18,7 +18,7 @@ type ServiceCatalogCard = {
 
 export const landingContent = {
   brandName: 'Global Visas',
-  navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
+  navItems: ['Home', 'Visa Services', 'Pricing', 'Blogs', 'About Us', 'Contact Us'],
   loginCta: 'Apply Now',
   hero: {
     title: '[[Fastest|Quickest|Swiftest|Speediest]] Way to Get Your Australian Travel Visa in Minutes',
