@@ -89,7 +89,7 @@ body.body--menu-open {
 
 .landing-main {
   display: grid;
-  gap: var(--space-4);
+  gap: 0;
 }
 
 .landing-section {
