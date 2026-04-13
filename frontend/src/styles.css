@@ -3447,6 +3447,15 @@ body.body--menu-open {
   font-weight: 700;
 }
 
+.dashboard-role-picker strong,
+.dashboard-role-picker small {
+  display: block;
+}
+
+.dashboard-role-picker small {
+  color: #5b7494;
+}
+
 .dashboard-role-picker select,
 .dashboard-ghost-button,
 .dashboard-primary-button,
@@ -3768,6 +3777,7 @@ body.body--menu-open {
   color: #1d4ed8;
   font-weight: 700;
   background: rgb(255 255 255 / 0.75);
+  cursor: pointer;
 }
 
 .dashboard-primary-link {
@@ -3929,6 +3939,12 @@ body.body--menu-open {
   border-radius: 0.75rem;
   padding: 0.55rem 0.65rem;
   font-size: 0.86rem;
+}
+
+.dashboard-auth__message.is-error {
+  color: #991b1b;
+  background: rgb(239 68 68 / 0.12);
+  border-color: rgb(239 68 68 / 0.3);
 }
 
 .dashboard-auth__links {

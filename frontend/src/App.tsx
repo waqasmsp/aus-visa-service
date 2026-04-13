@@ -13,7 +13,10 @@ export default function App({ pathname }: AppProps) {
   const noIndex = isPrivateRoute(pathname);
   const normalizedPath = pathname.toLowerCase().replace(/\/+$/, '') || '/';
   const isDashboardRoute =
-    normalizedPath.startsWith('/dashboard') || normalizedPath === '/login' || normalizedPath === '/signup';
+    normalizedPath.startsWith('/dashboard') ||
+    normalizedPath.startsWith('/user-dashboard') ||
+    normalizedPath === '/login' ||
+    normalizedPath === '/signup';
   const isAboutPage = normalizedPath === '/about-us';
   const isApplicationPage = normalizedPath === '/application' || normalizedPath === '/application-form';
   const seoTitle = isDashboardRoute
@@ -22,7 +25,7 @@ export default function App({ pathname }: AppProps) {
       ? 'About Us | Global Visas'
       : undefined;
   const seoDescription = isDashboardRoute
-    ? 'AUS Visa Service dashboard for admins, managers, and users to manage applications, users, pages, and settings.'
+    ? 'AUS Visa Service dashboards for admins, managers, and users to manage applications, profiles, pages, and settings.'
     : isAboutPage
       ? 'Learn about Global Visas and how we make visa applications simple, accurate, and stress-free for travelers worldwide.'
       : undefined;

@@ -5,7 +5,13 @@ type DashboardExperienceProps = {
 };
 
 type DashboardRole = 'admin' | 'manager' | 'user';
+type AuthSession = {
+  role: DashboardRole;
+  email: string;
+  loginAt: string;
+};
 type DashboardSection = 'overview' | 'pages' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'settings';
+type UserSection = 'overview' | 'applications' | 'documents' | 'payments' | 'messages' | 'profile';
 type PageStatus = 'Published' | 'Draft' | 'Archived';
 type UserSegment = 'Registered' | 'Lead';
 type ApplicationStatus = 'Submitted' | 'In Review' | 'Documents Needed' | 'Approved' | 'Completed' | 'Rejected';
@@ -44,6 +50,8 @@ type VisaApplication = {
   status: ApplicationStatus;
 };
 
+const AUTH_SESSION_KEY = 'aus-visa-auth-session';
+
 const roleOptions: Array<{ role: DashboardRole; label: string; helper: string }> = [
   { role: 'admin', label: 'Admin', helper: 'Full control over all modules' },
   { role: 'manager', label: 'Manager', helper: 'Operations and team workflows' },
@@ -64,6 +72,15 @@ const sidebarItems: Array<{ section: DashboardSection; label: string; href: stri
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
   { section: 'settings', label: 'Settings', href: '/dashboard/settings' }
+];
+
+const userSidebarItems: Array<{ section: UserSection; label: string; href: string; badge?: string }> = [
+  { section: 'overview', label: 'Overview', href: '/user-dashboard' },
+  { section: 'applications', label: 'My Applications', href: '/user-dashboard/applications', badge: 'Core' },
+  { section: 'documents', label: 'My Documents', href: '/user-dashboard/documents' },
+  { section: 'payments', label: 'Payments', href: '/user-dashboard/payments' },
+  { section: 'messages', label: 'Support', href: '/user-dashboard/messages' },
+  { section: 'profile', label: 'Profile', href: '/user-dashboard/profile' }
 ];
 
 const initialPages: CmsPage[] = [
@@ -234,7 +251,7 @@ const dummyCredentials: Record<DashboardRole, { email: string; password: string;
   user: {
     email: 'user@ausvisaservice.com',
     password: 'User@123',
-    route: '/dashboard/visa-applications'
+    route: '/user-dashboard'
   }
 };
 
@@ -263,24 +280,77 @@ const getDashboardSectionFromPath = (pathname: string): DashboardSection => {
   }
 };
 
+const getUserSectionFromPath = (pathname: string): UserSection => {
+  const normalized = normalizePathname(pathname);
+  const pieces = normalized.split('/').filter(Boolean);
+  const section = pieces[1];
+
+  switch (section) {
+    case 'applications':
+      return 'applications';
+    case 'documents':
+      return 'documents';
+    case 'payments':
+      return 'payments';
+    case 'messages':
+      return 'messages';
+    case 'profile':
+      return 'profile';
+    default:
+      return 'overview';
+  }
+};
+
 const toClassToken = (value: string): string => value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-const resolveRoleFromSearch = (): DashboardRole => {
+const readAuthSession = (): AuthSession | null => {
   if (typeof window === 'undefined') {
-    return 'admin';
+    return null;
   }
 
-  const parsedRole = new URLSearchParams(window.location.search).get('role');
-  if (parsedRole === 'admin' || parsedRole === 'manager' || parsedRole === 'user') {
-    return parsedRole;
+  const raw = window.localStorage.getItem(AUTH_SESSION_KEY);
+  if (!raw) {
+    return null;
   }
-  return 'admin';
+
+  try {
+    const parsed = JSON.parse(raw) as AuthSession;
+    if (!parsed || (parsed.role !== 'admin' && parsed.role !== 'manager' && parsed.role !== 'user')) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const writeAuthSession = (session: AuthSession): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+};
+
+const clearAuthSession = (): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.localStorage.removeItem(AUTH_SESSION_KEY);
 };
 
 export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   const normalizedPath = normalizePathname(pathname);
   const isLoginRoute = normalizedPath === '/dashboard/login' || normalizedPath === '/login';
   const isSignupRoute = normalizedPath === '/dashboard/signup' || normalizedPath === '/signup';
+  const isAdminDashboardRoute = normalizedPath.startsWith('/dashboard');
+  const isUserDashboardRoute = normalizedPath.startsWith('/user-dashboard');
+  const [session, setSession] = useState<AuthSession | null>(() => readAuthSession());
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    setSession(readAuthSession());
+    setAuthReady(true);
+  }, []);
 
   if (isLoginRoute) {
     return <DashboardLoginPage />;
@@ -290,15 +360,44 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
     return <DashboardSignupPage />;
   }
 
-  if (!normalizedPath.startsWith('/dashboard')) {
+  if (!isAdminDashboardRoute && !isUserDashboardRoute) {
     return null;
   }
 
-  return <DashboardWorkspace pathname={normalizedPath} />;
+  if (!authReady) {
+    return null;
+  }
+
+  if (!session) {
+    if (typeof window !== 'undefined') {
+      const next = encodeURIComponent(normalizedPath);
+      window.location.replace(`/dashboard/login?next=${next}`);
+    }
+    return null;
+  }
+
+  if (session.role === 'user' && isAdminDashboardRoute) {
+    if (typeof window !== 'undefined') {
+      window.location.replace('/user-dashboard');
+    }
+    return null;
+  }
+
+  if ((session.role === 'admin' || session.role === 'manager') && isUserDashboardRoute) {
+    if (typeof window !== 'undefined') {
+      window.location.replace('/dashboard');
+    }
+    return null;
+  }
+
+  if (isUserDashboardRoute) {
+    return <UserDashboardWorkspace pathname={normalizedPath} session={session} />;
+  }
+
+  return <DashboardWorkspace pathname={normalizedPath} role={session.role} session={session} />;
 }
 
-function DashboardWorkspace({ pathname }: { pathname: string }) {
-  const [role, setRole] = useState<DashboardRole>(() => resolveRoleFromSearch());
+function DashboardWorkspace({ pathname, role, session }: { pathname: string; role: DashboardRole; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sectionFromPath = getDashboardSectionFromPath(pathname);
   const canAccessSection = roleScope[role].includes(sectionFromPath);
@@ -368,19 +467,26 @@ function DashboardWorkspace({ pathname }: { pathname: string }) {
             </div>
           </div>
           <div className="dashboard-topbar__right">
-            <label className="dashboard-role-picker">
-              Role Preview
-              <select value={role} onChange={(event) => setRole(event.target.value as DashboardRole)}>
-                {roleOptions.map((roleOption) => (
-                  <option key={roleOption.role} value={roleOption.role}>
-                    {roleOption.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="dashboard-role-picker">
+              Logged in as
+              <strong>{role.toUpperCase()}</strong>
+              <small>{session.email}</small>
+            </div>
             <a href="/dashboard/login" className="dashboard-ghost-button">
               Switch account
             </a>
+            <button
+              type="button"
+              className="dashboard-ghost-button"
+              onClick={() => {
+                clearAuthSession();
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/dashboard/login';
+                }
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
@@ -1041,11 +1147,341 @@ function SettingsPanel() {
   );
 }
 
+function UserDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const activeSection = getUserSectionFromPath(pathname);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  const pageTitleMap: Record<UserSection, string> = {
+    overview: 'My Travel Dashboard',
+    applications: 'My Visa Applications',
+    documents: 'My Documents',
+    payments: 'Payments and Receipts',
+    messages: 'Support Messages',
+    profile: 'My Profile'
+  };
+
+  return (
+    <div className="dashboard-shell">
+      <button
+        type="button"
+        className={`dashboard-backdrop ${sidebarOpen ? 'is-open' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-label="Close sidebar"
+      />
+
+      <aside className={`dashboard-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
+        <a href="/user-dashboard" className="dashboard-brand" aria-label="User Dashboard Home">
+          <span className="dashboard-brand__logo">ME</span>
+          <span className="dashboard-brand__text">
+            <strong>My Visa Portal</strong>
+            <small>Applicant Workspace</small>
+          </span>
+        </a>
+
+        <nav className="dashboard-menu" aria-label="User dashboard navigation">
+          {userSidebarItems.map((item) => {
+            const active = activeSection === item.section;
+            return (
+              <a key={item.section} href={item.href} className={`dashboard-menu__item ${active ? 'is-active' : ''}`} aria-current={active ? 'page' : undefined}>
+                <span>{item.label}</span>
+                {item.badge ? <small>{item.badge}</small> : null}
+              </a>
+            );
+          })}
+        </nav>
+
+        <div className="dashboard-sidebar__foot">
+          <p>Need urgent help? Chat with support in Messages.</p>
+          <a href="/user-dashboard/messages">Open support center</a>
+        </div>
+      </aside>
+
+      <div className="dashboard-main">
+        <header className="dashboard-topbar">
+          <div className="dashboard-topbar__left">
+            <button type="button" className="dashboard-menu-toggle" onClick={() => setSidebarOpen((prev) => !prev)}>
+              Menu
+            </button>
+            <div>
+              <p className="dashboard-topbar__eyebrow">Applicant Portal</p>
+              <h1>{pageTitleMap[activeSection]}</h1>
+            </div>
+          </div>
+          <div className="dashboard-topbar__right">
+            <div className="dashboard-role-picker">
+              Logged in as
+              <strong>USER</strong>
+              <small>{session.email}</small>
+            </div>
+            <button
+              type="button"
+              className="dashboard-ghost-button"
+              onClick={() => {
+                clearAuthSession();
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/dashboard/login';
+                }
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        </header>
+
+        <main className="dashboard-content">
+          {activeSection === 'overview' ? <UserOverviewPanel /> : null}
+          {activeSection === 'applications' ? <UserApplicationsPanel /> : null}
+          {activeSection === 'documents' ? <UserDocumentsPanel /> : null}
+          {activeSection === 'payments' ? <UserPaymentsPanel /> : null}
+          {activeSection === 'messages' ? <UserMessagesPanel /> : null}
+          {activeSection === 'profile' ? <UserProfilePanel userEmail={session.email} /> : null}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function UserOverviewPanel() {
+  return (
+    <section className="dashboard-stack">
+      <div className="dashboard-kpi-grid dashboard-kpi-grid--short">
+        <article className="dashboard-kpi-card">
+          <p>Applications In Progress</p>
+          <strong>2</strong>
+          <span>1 waiting for documents</span>
+        </article>
+        <article className="dashboard-kpi-card">
+          <p>Completed Applications</p>
+          <strong>1</strong>
+          <span>Ready for travel</span>
+        </article>
+      </div>
+
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Next Actions</h2>
+        </div>
+        <ul className="dashboard-simple-list">
+          <li>Upload updated bank statement for case AUS-24020</li>
+          <li>Review payment invoice for premium processing add-on</li>
+          <li>Check support reply regarding travel insurance requirement</li>
+        </ul>
+      </article>
+    </section>
+  );
+}
+
+function UserApplicationsPanel() {
+  const myApplications = [
+    { id: 'AUS-24020', visaType: 'Business Visa', status: 'Documents Needed', submittedOn: '2026-04-10', eta: '3-5 days' },
+    { id: 'AUS-24022', visaType: 'Student Visa', status: 'Approved', submittedOn: '2026-04-06', eta: 'Completed' },
+    { id: 'AUS-24023', visaType: 'Tourist Visa', status: 'Completed', submittedOn: '2026-04-04', eta: 'Completed' }
+  ];
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Application Tracker</h2>
+        </div>
+        <div className="dashboard-table-wrap">
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Visa Type</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Estimated Timeline</th>
+              </tr>
+            </thead>
+            <tbody>
+              {myApplications.map((application) => (
+                <tr key={application.id}>
+                  <td>{application.id}</td>
+                  <td>{application.visaType}</td>
+                  <td>
+                    <span className={`dashboard-chip dashboard-chip--${toClassToken(application.status)}`}>{application.status}</span>
+                  </td>
+                  <td>{application.submittedOn}</td>
+                  <td>{application.eta}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function UserDocumentsPanel() {
+  const docs = [
+    { name: 'Passport Bio Page', status: 'Verified', note: 'Approved by reviewer' },
+    { name: 'Passport Photo', status: 'Verified', note: 'Meets size requirements' },
+    { name: 'Bank Statement', status: 'Action Required', note: 'Upload latest statement (last 3 months)' },
+    { name: 'Travel Itinerary', status: 'Pending Review', note: 'Under manual check' }
+  ];
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Document Checklist</h2>
+        </div>
+        <div className="dashboard-table-wrap">
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Document</th>
+                <th>Status</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {docs.map((doc) => (
+                <tr key={doc.name}>
+                  <td>{doc.name}</td>
+                  <td>
+                    <span className={`dashboard-chip dashboard-chip--${toClassToken(doc.status)}`}>{doc.status}</span>
+                  </td>
+                  <td>{doc.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function UserPaymentsPanel() {
+  const payments = [
+    { invoice: 'INV-1201', package: 'Business Visa Filing', amount: '$149', status: 'Paid', date: '2026-04-10' },
+    { invoice: 'INV-1204', package: 'Priority Review Add-on', amount: '$49', status: 'Pending', date: '2026-04-12' }
+  ];
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Payments and Receipts</h2>
+        </div>
+        <div className="dashboard-table-wrap">
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Invoice</th>
+                <th>Package</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((payment) => (
+                <tr key={payment.invoice}>
+                  <td>{payment.invoice}</td>
+                  <td>{payment.package}</td>
+                  <td>{payment.amount}</td>
+                  <td>
+                    <span className={`dashboard-chip dashboard-chip--${toClassToken(payment.status)}`}>{payment.status}</span>
+                  </td>
+                  <td>{payment.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function UserMessagesPanel() {
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Support Inbox</h2>
+        </div>
+        <ol className="dashboard-timeline">
+          <li>
+            <strong>Support: Please upload latest financial proof</strong>
+            <span>Today at 11:15</span>
+          </li>
+          <li>
+            <strong>You: Uploaded revised itinerary and accommodation voucher</strong>
+            <span>Yesterday at 19:42</span>
+          </li>
+          <li>
+            <strong>Support: Application moved to In Review</strong>
+            <span>Yesterday at 10:03</span>
+          </li>
+        </ol>
+      </article>
+    </section>
+  );
+}
+
+function UserProfilePanel({ userEmail }: { userEmail: string }) {
+  const [fullName, setFullName] = useState('John Doe');
+  const [phone, setPhone] = useState('+92 300 0000000');
+  const [country, setCountry] = useState('Pakistan');
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Profile and Preferences</h2>
+        </div>
+        <div className="dashboard-settings-grid">
+          <label>
+            Full Name
+            <input value={fullName} onChange={(event) => setFullName(event.target.value)} />
+          </label>
+          <label>
+            Email
+            <input value={userEmail} disabled />
+          </label>
+          <label>
+            Phone
+            <input value={phone} onChange={(event) => setPhone(event.target.value)} />
+          </label>
+          <label>
+            Country
+            <input value={country} onChange={(event) => setCountry(event.target.value)} />
+          </label>
+        </div>
+        <div className="dashboard-settings-actions">
+          <button type="button" className="dashboard-primary-button">
+            Save Profile
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function DashboardLoginPage() {
   const [role, setRole] = useState<DashboardRole>('admin');
   const [email, setEmail] = useState(dummyCredentials.admin.email);
   const [password, setPassword] = useState(dummyCredentials.admin.password);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+
+  useEffect(() => {
+    const existing = readAuthSession();
+    if (!existing || typeof window === 'undefined') {
+      return;
+    }
+    window.location.replace(existing.role === 'user' ? '/user-dashboard' : '/dashboard');
+  }, []);
 
   useEffect(() => {
     setEmail(dummyCredentials[role].email);
@@ -1054,7 +1490,33 @@ function DashboardLoginPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setMessage(`Demo login ready for ${role.toUpperCase()}. Continue to dashboard.`);
+    const expected = dummyCredentials[role];
+    const isValid = email.trim().toLowerCase() === expected.email.toLowerCase() && password === expected.password;
+
+    if (!isValid) {
+      setMessageType('error');
+      setMessage('Invalid demo credentials selected for this role. Please use the pre-filled credentials.');
+      return;
+    }
+
+    writeAuthSession({
+      role,
+      email: expected.email,
+      loginAt: new Date().toISOString()
+    });
+
+    if (typeof window !== 'undefined') {
+      const next = new URLSearchParams(window.location.search).get('next');
+      if (next) {
+        window.location.href = next;
+        return;
+      }
+      window.location.href = expected.route;
+      return;
+    }
+
+    setMessageType('success');
+    setMessage(`Login successful for ${role.toUpperCase()}.`);
   };
 
   return (
@@ -1104,9 +1566,9 @@ function DashboardLoginPage() {
               Sign In
             </button>
           </form>
-          {message ? <p className="dashboard-auth__message">{message}</p> : null}
+          {message ? <p className={`dashboard-auth__message ${messageType === 'error' ? 'is-error' : ''}`}>{message}</p> : null}
           <div className="dashboard-auth__links">
-            <a href={`${dummyCredentials[role].route}?role=${role}`}>Enter {roleOptions.find((item) => item.role === role)?.label} Dashboard</a>
+            <a href={dummyCredentials[role].route}>Enter {roleOptions.find((item) => item.role === role)?.label} Dashboard</a>
             <a href="/dashboard/signup">Need an account? Sign up</a>
           </div>
         </article>
