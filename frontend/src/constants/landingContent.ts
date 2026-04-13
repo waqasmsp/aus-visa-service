@@ -71,6 +71,32 @@ export const landingContent = {
       }
     ]
   },
+  serviceCatalog: {
+    eyebrow: 'OUR SERVICES',
+    title: 'Choose Your Required Services from our list',
+    intro:
+      "Australia offers several types of visitor visas under the subclass 600 and other visa subclasses, depending on the traveler's nationality, reason for visit, and duration of stay. Below are the main types:",
+    cards: [
+      {
+        label: 'SERVICE 1',
+        title: 'eVisitor Visa - Subclass 651',
+        description: 'Best for eligible passport holders making short tourist or business trips to Australia.',
+        variant: 'one'
+      },
+      {
+        label: 'SERVICE 2',
+        title: 'Visitor Visa under the subclass 600',
+        description: 'Flexible pathway for tourism, business visitor activity, or family visits with broader eligibility.',
+        variant: 'two'
+      },
+      {
+        label: 'SERVICE 3',
+        title: 'Sponsored Visitor Visa',
+        description: 'Ideal when support from family or contacts in Australia strengthens the application profile.',
+        variant: 'three'
+      }
+    ]
+  },
   stats: [
     { label: 'Success Rate', value: '99%' },
     { label: 'Years Experience', value: '12+' },

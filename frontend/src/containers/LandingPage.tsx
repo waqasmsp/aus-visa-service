@@ -10,10 +10,11 @@ import { StatsStrip } from '../components/landing/StatsStrip';
 import { Testimonials } from '../components/landing/Testimonials';
 import { VisiaChat } from '../components/landing/VisiaChat';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
+import { ServiceCatalogSection } from '../components/landing/ServiceCatalogSection';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage({ pathname }: { pathname: string }) {
-  const { hero, features, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
+  const { hero, features, serviceCatalog, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
     landingContent;
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
@@ -41,6 +42,15 @@ export function LandingPage({ pathname }: { pathname: string }) {
             ctaLabel={features.ctaLabel}
             items={features.items}
             onGetStarted={openApplicationPage}
+          />
+        </section>
+
+        <section className="landing-section landing-section--service-catalog">
+          <ServiceCatalogSection
+            eyebrow={serviceCatalog.eyebrow}
+            title={serviceCatalog.title}
+            intro={serviceCatalog.intro}
+            cards={serviceCatalog.cards}
           />
         </section>
 
