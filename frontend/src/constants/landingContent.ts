@@ -97,8 +97,8 @@ export const landingContent = {
       },
       {
         label: 'SERVICE 3',
-        title: 'Sponsored Visitor Visa',
-        description: 'Ideal when support from family or contacts in Australia strengthens the application profile.',
+        title: 'Electronic Travel Authority (ETA) - Subclass 601',
+        description: 'Suitable for eligible passport holders travelling to Australia for short tourism or business visits.',
         variant: 'three'
       }
     ] satisfies ServiceCatalogCard[]
