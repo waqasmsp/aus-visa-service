@@ -89,21 +89,21 @@ export const landingContent = {
         title: 'eVisitor Visa - Subclass 651',
         description: 'Best for eligible passport holders making short tourist or business trips to Australia.',
         variant: 'one',
-        href: '/application'
+        href: '/visa/evisitor-visa-subclass-651'
       },
       {
         label: 'SERVICE 2',
         title: 'Visitor Visa under the subclass 600',
         description: 'Flexible pathway for tourism, business visitor activity, or family visits with broader eligibility.',
         variant: 'two',
-        href: '/application'
+        href: '/visa/visitor-visa-subclass-600'
       },
       {
         label: 'SERVICE 3',
         title: 'Electronic Travel Authority (ETA) - Subclass 601',
         description: 'Suitable for eligible passport holders travelling to Australia for short tourism or business visits.',
         variant: 'three',
-        href: '/application'
+        href: '/visa/electronic-travel-authority-eta-subclass-601'
       }
     ] satisfies ServiceCatalogCard[]
   },

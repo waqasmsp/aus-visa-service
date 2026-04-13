@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import logo from '../../assets/logo-custom-variant.svg';
+import { visaNavItems } from '../../constants/visaContent';
 import { PrimaryButton } from '../primitives/PrimaryButton';
 
 type HeaderNavProps = {
@@ -13,6 +14,8 @@ const resolveNavHref = (item: string): string => {
   switch (item) {
     case 'Home':
       return '/';
+    case 'Visa Services':
+      return '/visa-services';
     case 'About Us':
       return '/about-us';
     case 'Pricing':
@@ -28,7 +31,7 @@ const normalizePathname = (value: string): string => value.toLowerCase().replace
 
 export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const hasDropdown = (item: string) => !['Home', 'About Us', 'Contact Us'].includes(item);
+  const hasDropdown = (item: string) => item === 'Visa Services';
   const currentPath = normalizePathname(pathname);
   const goToApplication = () => {
     if (typeof window !== 'undefined') {
@@ -97,13 +100,37 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
         <nav className="landing-nav top-header__nav" aria-label="Primary">
           {navItems.map((item) => {
             const href = resolveNavHref(item);
-            const isCurrent = normalizePathname(href) === currentPath;
+            const normalizedHref = normalizePathname(href);
+            const isCurrent =
+              normalizedHref === '/visa-services'
+                ? currentPath === '/visa-services' || currentPath.startsWith('/visa/')
+                : normalizedHref === currentPath;
+            const dropdownEnabled = hasDropdown(item);
 
             return (
-              <a key={item} href={href} aria-current={isCurrent ? 'page' : undefined}>
-              <span>{item}</span>
-              {hasDropdown(item) ? <span className="top-header__nav-indicator">&#9662;</span> : null}
-            </a>
+              <div key={item} className={`top-header__nav-item${dropdownEnabled ? ' top-header__nav-item--mega' : ''}`}>
+                <a href={href} aria-current={isCurrent ? 'page' : undefined}>
+                  <span>{item}</span>
+                  {dropdownEnabled ? <span className="top-header__nav-indicator">&#9662;</span> : null}
+                </a>
+
+                {dropdownEnabled ? (
+                  <div className="mega-menu" role="group" aria-label="Visa service types">
+                    <a href="/visa-services" className="mega-menu__overview">
+                      <strong>All Visa Services</strong>
+                      <span>View complete visa services page with detailed guidance.</span>
+                    </a>
+                    <div className="mega-menu__grid">
+                      {visaNavItems.map((visaItem) => (
+                        <a key={visaItem.href} href={visaItem.href} className="mega-menu__link">
+                          <span>{visaItem.title}</span>
+                          <small>{visaItem.summary}</small>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </nav>
@@ -138,18 +165,29 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
           <nav className="mobile-sidepanel__nav" aria-label="Mobile navigation">
             {navItems.map((item) => {
               const href = resolveNavHref(item);
-              const isCurrent = normalizePathname(href) === currentPath;
+              const normalizedHref = normalizePathname(href);
+              const isCurrent =
+                normalizedHref === '/visa-services'
+                  ? currentPath === '/visa-services' || currentPath.startsWith('/visa/')
+                  : normalizedHref === currentPath;
+              const dropdownEnabled = hasDropdown(item);
 
               return (
-                <a
-                  key={`mobile-${item}`}
-                  href={href}
-                  onClick={closeMobileMenu}
-                  aria-current={isCurrent ? 'page' : undefined}
-                >
-                <span>{item}</span>
-                {hasDropdown(item) ? <span className="mobile-sidepanel__nav-indicator">&#9662;</span> : null}
-              </a>
+                <div key={`mobile-${item}`} className="mobile-sidepanel__nav-group">
+                  <a href={href} onClick={closeMobileMenu} aria-current={isCurrent ? 'page' : undefined}>
+                    <span>{item}</span>
+                    {dropdownEnabled ? <span className="mobile-sidepanel__nav-indicator">&#9662;</span> : null}
+                  </a>
+                  {dropdownEnabled ? (
+                    <div className="mobile-sidepanel__subnav">
+                      {visaNavItems.map((visaItem) => (
+                        <a key={`mobile-${visaItem.href}`} href={visaItem.href} onClick={closeMobileMenu}>
+                          {visaItem.title}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               );
             })}
           </nav>
