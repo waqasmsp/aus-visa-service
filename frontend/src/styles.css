@@ -232,7 +232,7 @@ body.body--menu-open {
 
 .service-catalog {
   width: 100%;
-  padding: clamp(2rem, 4.6vw, 3.1rem) clamp(1rem, 5vw, 4rem) clamp(2rem, 4.8vw, 3.3rem);
+  padding: clamp(2rem, 4.6vw, 3.1rem) 0 clamp(2rem, 4.8vw, 3.3rem);
 }
 
 .service-catalog__header {
