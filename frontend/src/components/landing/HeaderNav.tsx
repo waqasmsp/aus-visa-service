@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import logo from '../../assets/logo-custom-variant.svg';
 import { visaNavItems } from '../../constants/visaContent';
 import { PrimaryButton } from '../primitives/PrimaryButton';
@@ -28,9 +28,25 @@ const resolveNavHref = (item: string): string => {
 };
 
 const normalizePathname = (value: string): string => value.toLowerCase().replace(/\/+$/, '') || '/';
+const MENU_CLOSE_DELAY_MS = 240;
+
+const getVisaIcon = (title: string): string => {
+  if (title.includes('Subclass 600')) {
+    return '🧳';
+  }
+  if (title.includes('601')) {
+    return '⚡';
+  }
+  if (title.includes('651')) {
+    return '🌍';
+  }
+  return '📊';
+};
 
 export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isVisaDropdownOpen, setIsVisaDropdownOpen] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
   const hasDropdown = (item: string) => item === 'Visa Services';
   const currentPath = normalizePathname(pathname);
   const goToApplication = () => {
@@ -73,6 +89,34 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
   }, []);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const clearCloseTimer = () => {
+    if (closeTimerRef.current !== null && typeof window !== 'undefined') {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  const openVisaDropdown = () => {
+    clearCloseTimer();
+    setIsVisaDropdownOpen(true);
+  };
+
+  const queueCloseVisaDropdown = () => {
+    clearCloseTimer();
+    if (typeof window !== 'undefined') {
+      closeTimerRef.current = window.setTimeout(() => {
+        setIsVisaDropdownOpen(false);
+        closeTimerRef.current = null;
+      }, MENU_CLOSE_DELAY_MS);
+    }
+  };
+
+  useEffect(
+    () => () => {
+      clearCloseTimer();
+    },
+    []
+  );
 
   return (
     <>
@@ -108,14 +152,25 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
             const dropdownEnabled = hasDropdown(item);
 
             return (
-              <div key={item} className={`top-header__nav-item${dropdownEnabled ? ' top-header__nav-item--mega' : ''}`}>
+              <div
+                key={item}
+                className={`top-header__nav-item${dropdownEnabled ? ' top-header__nav-item--mega' : ''}${isVisaDropdownOpen ? ' is-open' : ''}`}
+                onMouseEnter={dropdownEnabled ? openVisaDropdown : undefined}
+                onMouseLeave={dropdownEnabled ? queueCloseVisaDropdown : undefined}
+              >
                 <a href={href} aria-current={isCurrent ? 'page' : undefined}>
                   <span>{item}</span>
                   {dropdownEnabled ? <span className="top-header__nav-indicator">&#9662;</span> : null}
                 </a>
 
                 {dropdownEnabled ? (
-                  <div className="mega-menu" role="group" aria-label="Visa service types">
+                  <div
+                    className="mega-menu"
+                    role="group"
+                    aria-label="Visa service types"
+                    onMouseEnter={openVisaDropdown}
+                    onMouseLeave={queueCloseVisaDropdown}
+                  >
                     <div className="mega-menu__layout">
                       <div className="mega-menu__media" aria-hidden="true">
                         <div className="mega-menu__media-placeholder">Image Holder</div>
@@ -123,13 +178,23 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
 
                       <div className="mega-menu__content">
                         <a href="/visa-services" className="mega-menu__overview">
-                          <strong>All Visa Services</strong>
+                          <strong>
+                            <span className="mega-menu__icon" aria-hidden="true">
+                              🗂️
+                            </span>
+                            All Visa Services
+                          </strong>
                           <span>View complete visa services page with detailed guidance.</span>
                         </a>
                         <div className="mega-menu__grid">
                           {visaNavItems.map((visaItem) => (
                             <a key={visaItem.href} href={visaItem.href} className="mega-menu__link">
-                              <span>{visaItem.title}</span>
+                              <span>
+                                <span className="mega-menu__icon" aria-hidden="true">
+                                  {getVisaIcon(visaItem.title)}
+                                </span>
+                                {visaItem.title}
+                              </span>
                               <small>{visaItem.summary}</small>
                             </a>
                           ))}
@@ -190,6 +255,9 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
                     <div className="mobile-sidepanel__subnav">
                       {visaNavItems.map((visaItem) => (
                         <a key={`mobile-${visaItem.href}`} href={visaItem.href} onClick={closeMobileMenu}>
+                          <span className="mobile-sidepanel__subnav-icon" aria-hidden="true">
+                            {getVisaIcon(visaItem.title)}
+                          </span>
                           {visaItem.title}
                         </a>
                       ))}
