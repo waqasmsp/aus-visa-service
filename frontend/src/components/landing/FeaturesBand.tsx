@@ -6,12 +6,10 @@ type FeatureItem = {
 type FeaturesBandProps = {
   eyebrow: string;
   title: string;
-  ctaLabel: string;
   items: FeatureItem[];
-  onGetStarted: () => void;
 };
 
-export function FeaturesBand({ eyebrow, title, ctaLabel, items, onGetStarted }: FeaturesBandProps) {
+export function FeaturesBand({ eyebrow, title, items }: FeaturesBandProps) {
   return (
     <div className="content-container">
       <section className="features-band" aria-label="Our features">
@@ -20,9 +18,6 @@ export function FeaturesBand({ eyebrow, title, ctaLabel, items, onGetStarted }: 
             <p className="features-band__eyebrow">{eyebrow}</p>
             <h2>{title}</h2>
           </div>
-          <button type="button" className="features-band__cta" onClick={onGetStarted}>
-            {ctaLabel}
-          </button>
         </header>
 
         <div className="features-band__grid">
@@ -37,4 +32,3 @@ export function FeaturesBand({ eyebrow, title, ctaLabel, items, onGetStarted }: 
     </div>
   );
 }
-

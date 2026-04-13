@@ -59,7 +59,6 @@ export const landingContent = {
   features: {
     eyebrow: 'OUR FEATURES',
     title: 'Committed to delivering reliable visa solutions',
-    ctaLabel: 'Get Started',
     items: [
       {
         title: 'Quality Visa Services',

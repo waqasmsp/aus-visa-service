@@ -36,13 +36,7 @@ export function LandingPage({ pathname }: { pathname: string }) {
         </section>
 
         <section className="landing-section landing-section--features">
-          <FeaturesBand
-            eyebrow={features.eyebrow}
-            title={features.title}
-            ctaLabel={features.ctaLabel}
-            items={features.items}
-            onGetStarted={openApplicationPage}
-          />
+          <FeaturesBand eyebrow={features.eyebrow} title={features.title} items={features.items} />
         </section>
 
         <section className="landing-section landing-section--service-catalog">
