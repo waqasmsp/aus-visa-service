@@ -403,6 +403,53 @@ export function ApplicationStepOneForm() {
     }
   };
 
+  const goToPreviousStep = () => {
+    setValidationErrors(new Set());
+
+    if (applicationSubStep === 1) {
+      if (isTravelersStage) {
+        setApplicationSubStep(5);
+        return;
+      }
+
+      if (typeof window !== 'undefined') {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.assign('/');
+        }
+      }
+      return;
+    }
+
+    if (applicationSubStep === 2) {
+      setApplicationSubStep(1);
+      return;
+    }
+
+    if (applicationSubStep === 3) {
+      setApplicationSubStep(2);
+      return;
+    }
+
+    if (applicationSubStep === 4) {
+      setApplicationSubStep(3);
+      return;
+    }
+
+    if (applicationSubStep === 5) {
+      setApplicationSubStep(4);
+      return;
+    }
+
+    if (applicationSubStep === 6) {
+      setApplicationSubStep(5);
+      return;
+    }
+
+    setApplicationSubStep(6);
+  };
+
   return (
     <div className="application-form-screen" role="region" aria-label="Visa application form">
       {showTravelerPrompt ? (
@@ -559,7 +606,10 @@ export function ApplicationStepOneForm() {
                   </div>
                 </fieldset>
 
-                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                  <button type="submit" className="application-continue-button">Continue</button>
+                </div>
               </form>
             </>
           ) : applicationSubStep === 2 ? (
@@ -612,7 +662,10 @@ export function ApplicationStepOneForm() {
                   </>
                 ) : null}
 
-                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                  <button type="submit" className="application-continue-button">Continue</button>
+                </div>
               </form>
             </>
           ) : applicationSubStep === 3 ? (
@@ -641,7 +694,10 @@ export function ApplicationStepOneForm() {
                   <label className={`application-field${hasError('zipOrPostcode') ? ' application-field--error' : ''}`}><span>ZIP or postcode</span><input type="text" name="zipOrPostcode" value={zipOrPostcode} onChange={(event) => { setZipOrPostcode(event.target.value); clearError('zipOrPostcode'); }} aria-invalid={hasError('zipOrPostcode')} /></label>
                 </div>
 
-                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                  <button type="submit" className="application-continue-button">Continue</button>
+                </div>
               </form>
             </>
           ) : applicationSubStep === 4 ? (
@@ -690,7 +746,10 @@ export function ApplicationStepOneForm() {
                   </div>
                 ) : null}
 
-                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                  <button type="submit" className="application-continue-button">Continue</button>
+                </div>
               </form>
             </>
           ) : applicationSubStep === 5 ? (
@@ -710,7 +769,8 @@ export function ApplicationStepOneForm() {
                 </div>
 
                 <button type="button" className="traveler-add-button" onClick={startTravelerApplication}><span aria-hidden="true">+</span> Add Another Traveler</button>
-                <div className="application-form-actions">
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
                   <button type="button" className="application-continue-button" onClick={() => setApplicationSubStep(6)}>
                     Continue
                   </button>
@@ -736,7 +796,10 @@ export function ApplicationStepOneForm() {
                   </span>
                 </label>
 
-                <div className="application-form-actions"><button type="submit" className="application-continue-button">Continue</button></div>
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                  <button type="submit" className="application-continue-button">Continue</button>
+                </div>
               </form>
             </>
           ) : applicationSubStep === 7 ? (
@@ -762,6 +825,9 @@ export function ApplicationStepOneForm() {
                   <a href="#" onClick={(event) => event.preventDefault()}> Privacy policy</a>, and
                   <a href="#" onClick={(event) => event.preventDefault()}> Refund Policy</a>.
                 </p>
+                <div className="application-form-actions">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                </div>
               </div>
             </>
           ) : null}

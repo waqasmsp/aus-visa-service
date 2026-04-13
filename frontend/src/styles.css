@@ -1259,6 +1259,7 @@ body.body--menu-open {
 .application-field input:focus-visible,
 .application-field select:focus-visible,
 .application-gender-option:focus-visible,
+.application-back-button:focus-visible,
 .application-continue-button:focus-visible {
   outline: 2px solid rgb(37 99 235 / 0.5);
   outline-offset: 2px;
@@ -1580,6 +1581,33 @@ body.body--menu-open {
 .application-form-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.application-form-actions--split {
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.application-back-button {
+  min-width: 8.7rem;
+  height: 3rem;
+  border: 1px solid #8fb0cc;
+  border-radius: 1rem;
+  padding: 0 1.2rem;
+  font: inherit;
+  font-size: 1.08rem;
+  font-weight: var(--font-weight-semibold);
+  color: #1c4f79;
+  background: linear-gradient(180deg, #ffffff, #edf5fd);
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
+  cursor: pointer;
+  transition: transform 170ms ease, box-shadow 170ms ease, border-color 170ms ease;
+}
+
+.application-back-button:hover {
+  transform: translateY(-1px);
+  border-color: #7296ba;
+  box-shadow: 0 12px 22px rgb(15 23 42 / 0.12);
 }
 
 .application-continue-button {
@@ -3227,6 +3255,12 @@ body.body--menu-open {
     justify-content: stretch;
   }
 
+  .application-form-actions--split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .application-back-button,
   .application-continue-button {
     width: 100%;
   }
