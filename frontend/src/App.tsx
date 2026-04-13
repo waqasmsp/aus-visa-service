@@ -14,6 +14,7 @@ export default function App({ pathname }: AppProps) {
   const normalizedPath = pathname.toLowerCase().replace(/\/+$/, '') || '/';
   const isDashboardRoute =
     normalizedPath.startsWith('/dashboard') ||
+    normalizedPath.startsWith('/manager-dashboard') ||
     normalizedPath.startsWith('/user-dashboard') ||
     normalizedPath === '/login' ||
     normalizedPath === '/signup';

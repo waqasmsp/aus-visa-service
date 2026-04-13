@@ -11,6 +11,7 @@ type AuthSession = {
   loginAt: string;
 };
 type DashboardSection = 'overview' | 'pages' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'settings';
+type ManagerSection = 'overview' | 'team' | 'applications' | 'documents' | 'payments' | 'settings';
 type UserSection = 'overview' | 'applications' | 'documents' | 'payments' | 'messages' | 'profile';
 type PageStatus = 'Published' | 'Draft' | 'Archived';
 type UserSegment = 'Registered' | 'Lead';
@@ -72,6 +73,15 @@ const sidebarItems: Array<{ section: DashboardSection; label: string; href: stri
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
   { section: 'settings', label: 'Settings', href: '/dashboard/settings' }
+];
+
+const managerSidebarItems: Array<{ section: ManagerSection; label: string; href: string; badge?: string }> = [
+  { section: 'overview', label: 'Overview', href: '/manager-dashboard' },
+  { section: 'team', label: 'Team Queue', href: '/manager-dashboard/team', badge: 'Ops' },
+  { section: 'applications', label: 'Applications', href: '/manager-dashboard/applications', badge: 'Core' },
+  { section: 'documents', label: 'Documents', href: '/manager-dashboard/documents' },
+  { section: 'payments', label: 'Payments', href: '/manager-dashboard/payments' },
+  { section: 'settings', label: 'Settings', href: '/manager-dashboard/settings' }
 ];
 
 const userSidebarItems: Array<{ section: UserSection; label: string; href: string; badge?: string }> = [
@@ -246,7 +256,7 @@ const dummyCredentials: Record<DashboardRole, { email: string; password: string;
   manager: {
     email: 'manager@ausvisaservice.com',
     password: 'Manager@123',
-    route: '/dashboard/visa-applications'
+    route: '/manager-dashboard'
   },
   user: {
     email: 'user@ausvisaservice.com',
@@ -269,6 +279,27 @@ const getDashboardSectionFromPath = (pathname: string): DashboardSection => {
       return 'users';
     case 'visa-applications':
       return 'visa-applications';
+    case 'documents':
+      return 'documents';
+    case 'payments':
+      return 'payments';
+    case 'settings':
+      return 'settings';
+    default:
+      return 'overview';
+  }
+};
+
+const getManagerSectionFromPath = (pathname: string): ManagerSection => {
+  const normalized = normalizePathname(pathname);
+  const pieces = normalized.split('/').filter(Boolean);
+  const section = pieces[1];
+
+  switch (section) {
+    case 'team':
+      return 'team';
+    case 'applications':
+      return 'applications';
     case 'documents':
       return 'documents';
     case 'payments':
@@ -343,6 +374,7 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   const isLoginRoute = normalizedPath === '/dashboard/login' || normalizedPath === '/login';
   const isSignupRoute = normalizedPath === '/dashboard/signup' || normalizedPath === '/signup';
   const isAdminDashboardRoute = normalizedPath.startsWith('/dashboard');
+  const isManagerDashboardRoute = normalizedPath.startsWith('/manager-dashboard');
   const isUserDashboardRoute = normalizedPath.startsWith('/user-dashboard');
   const [session, setSession] = useState<AuthSession | null>(() => readAuthSession());
   const [authReady, setAuthReady] = useState(false);
@@ -360,7 +392,7 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
     return <DashboardSignupPage />;
   }
 
-  if (!isAdminDashboardRoute && !isUserDashboardRoute) {
+  if (!isAdminDashboardRoute && !isManagerDashboardRoute && !isUserDashboardRoute) {
     return null;
   }
 
@@ -376,18 +408,29 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
     return null;
   }
 
-  if (session.role === 'user' && isAdminDashboardRoute) {
+  if (session.role === 'user' && (isAdminDashboardRoute || isManagerDashboardRoute)) {
     if (typeof window !== 'undefined') {
       window.location.replace('/user-dashboard');
     }
     return null;
   }
 
-  if ((session.role === 'admin' || session.role === 'manager') && isUserDashboardRoute) {
+  if (session.role === 'manager' && (isAdminDashboardRoute || isUserDashboardRoute)) {
+    if (typeof window !== 'undefined') {
+      window.location.replace('/manager-dashboard');
+    }
+    return null;
+  }
+
+  if (session.role === 'admin' && (isManagerDashboardRoute || isUserDashboardRoute)) {
     if (typeof window !== 'undefined') {
       window.location.replace('/dashboard');
     }
     return null;
+  }
+
+  if (isManagerDashboardRoute) {
+    return <ManagerDashboardWorkspace pathname={normalizedPath} session={session} />;
   }
 
   if (isUserDashboardRoute) {
@@ -1147,6 +1190,272 @@ function SettingsPanel() {
   );
 }
 
+function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const activeSection = getManagerSectionFromPath(pathname);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  const titleMap: Record<ManagerSection, string> = {
+    overview: 'Manager Overview',
+    team: 'Team Queue',
+    applications: 'Application Pipeline',
+    documents: 'Document Review',
+    payments: 'Payment Oversight',
+    settings: 'Manager Settings'
+  };
+
+  return (
+    <div className="dashboard-shell">
+      <button
+        type="button"
+        className={`dashboard-backdrop ${sidebarOpen ? 'is-open' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-label="Close sidebar"
+      />
+
+      <aside className={`dashboard-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
+        <a href="/manager-dashboard" className="dashboard-brand" aria-label="Manager Dashboard Home">
+          <span className="dashboard-brand__logo">MG</span>
+          <span className="dashboard-brand__text">
+            <strong>Manager Console</strong>
+            <small>Operations Control</small>
+          </span>
+        </a>
+
+        <nav className="dashboard-menu" aria-label="Manager dashboard navigation">
+          {managerSidebarItems.map((item) => {
+            const active = activeSection === item.section;
+            return (
+              <a key={item.section} href={item.href} className={`dashboard-menu__item ${active ? 'is-active' : ''}`} aria-current={active ? 'page' : undefined}>
+                <span>{item.label}</span>
+                {item.badge ? <small>{item.badge}</small> : null}
+              </a>
+            );
+          })}
+        </nav>
+
+        <div className="dashboard-sidebar__foot">
+          <p>Escalations due in next 24h: 7</p>
+          <a href="/manager-dashboard/team">Review team assignments</a>
+        </div>
+      </aside>
+
+      <div className="dashboard-main">
+        <header className="dashboard-topbar">
+          <div className="dashboard-topbar__left">
+            <button type="button" className="dashboard-menu-toggle" onClick={() => setSidebarOpen((prev) => !prev)}>
+              Menu
+            </button>
+            <div>
+              <p className="dashboard-topbar__eyebrow">Manager Portal</p>
+              <h1>{titleMap[activeSection]}</h1>
+            </div>
+          </div>
+          <div className="dashboard-topbar__right">
+            <div className="dashboard-role-picker">
+              Logged in as
+              <strong>MANAGER</strong>
+              <small>{session.email}</small>
+            </div>
+            <button
+              type="button"
+              className="dashboard-ghost-button"
+              onClick={() => {
+                clearAuthSession();
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/dashboard/login';
+                }
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        </header>
+
+        <main className="dashboard-content">
+          {activeSection === 'overview' ? <ManagerOverviewPanel /> : null}
+          {activeSection === 'team' ? <ManagerTeamPanel /> : null}
+          {activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
+          {activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
+          {activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
+          {activeSection === 'settings' ? <ManagerSettingsPanel /> : null}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function ManagerOverviewPanel() {
+  return (
+    <section className="dashboard-stack">
+      <div className="dashboard-kpi-grid">
+        <article className="dashboard-kpi-card">
+          <p>Cases Assigned Today</p>
+          <strong>46</strong>
+          <span>+8 vs yesterday</span>
+        </article>
+        <article className="dashboard-kpi-card">
+          <p>Pending Reviews</p>
+          <strong>19</strong>
+          <span>Documents + compliance</span>
+        </article>
+        <article className="dashboard-kpi-card">
+          <p>Team SLA Breaches</p>
+          <strong>3</strong>
+          <span>Immediate escalation</span>
+        </article>
+        <article className="dashboard-kpi-card">
+          <p>Avg Turnaround</p>
+          <strong>31h</strong>
+          <span>Target: under 36h</span>
+        </article>
+      </div>
+      <div className="dashboard-grid dashboard-grid--2">
+        <article className="dashboard-panel">
+          <div className="dashboard-panel__header">
+            <h2>Team Capacity</h2>
+          </div>
+          <ul className="dashboard-simple-list">
+            <li>Intake Team: 82% utilized</li>
+            <li>Verification Team: 91% utilized</li>
+            <li>Final Review Team: 69% utilized</li>
+          </ul>
+        </article>
+        <article className="dashboard-panel">
+          <div className="dashboard-panel__header">
+            <h2>Priority Alerts</h2>
+          </div>
+          <ul className="dashboard-simple-list">
+            <li>7 high-priority files pending manager action</li>
+            <li>3 cases near SLA breach threshold</li>
+            <li>2 payment disputes awaiting final decision</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function ManagerTeamPanel() {
+  const team = [
+    { name: 'Nadia R.', openCases: 12, completedToday: 5, slaRisk: 'Low' },
+    { name: 'Jordan M.', openCases: 17, completedToday: 6, slaRisk: 'Medium' },
+    { name: 'Nina K.', openCases: 21, completedToday: 4, slaRisk: 'High' }
+  ];
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Team Workload Board</h2>
+        </div>
+        <div className="dashboard-table-wrap">
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Team Member</th>
+                <th>Open Cases</th>
+                <th>Completed Today</th>
+                <th>SLA Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {team.map((member) => (
+                <tr key={member.name}>
+                  <td>{member.name}</td>
+                  <td>{member.openCases}</td>
+                  <td>{member.completedToday}</td>
+                  <td>
+                    <span className={`dashboard-chip dashboard-chip--${toClassToken(member.slaRisk)}`}>{member.slaRisk}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function ManagerApplicationsPanel() {
+  return <VisaApplicationsPanel />;
+}
+
+function ManagerDocumentsPanel() {
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Document Escalation Queue</h2>
+        </div>
+        <ul className="dashboard-simple-list">
+          <li>9 passport scans rejected due to low quality</li>
+          <li>5 financial proof documents flagged for mismatch</li>
+          <li>3 applications blocked pending manual verification</li>
+        </ul>
+      </article>
+    </section>
+  );
+}
+
+function ManagerPaymentsPanel() {
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Payment Reconciliation</h2>
+        </div>
+        <ul className="dashboard-simple-list">
+          <li>Settlements pending: $11,290</li>
+          <li>Failed transactions (24h): 8</li>
+          <li>Refund approvals required: 3</li>
+        </ul>
+      </article>
+    </section>
+  );
+}
+
+function ManagerSettingsPanel() {
+  const [autoEscalation, setAutoEscalation] = useState(true);
+  const [slaTarget, setSlaTarget] = useState('36');
+  const [reviewThreshold, setReviewThreshold] = useState('High Priority Only');
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Operations Preferences</h2>
+        </div>
+        <div className="dashboard-settings-grid">
+          <label>
+            SLA Target (hours)
+            <input value={slaTarget} onChange={(event) => setSlaTarget(event.target.value)} />
+          </label>
+          <label>
+            Review Threshold
+            <input value={reviewThreshold} onChange={(event) => setReviewThreshold(event.target.value)} />
+          </label>
+        </div>
+        <div className="dashboard-toggle-list">
+          <label>
+            <input type="checkbox" checked={autoEscalation} onChange={(event) => setAutoEscalation(event.target.checked)} />
+            Enable auto-escalation for SLA risk
+          </label>
+        </div>
+        <div className="dashboard-settings-actions">
+          <button type="button" className="dashboard-primary-button">
+            Save Manager Settings
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function UserDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const activeSection = getUserSectionFromPath(pathname);
@@ -1480,7 +1789,15 @@ function DashboardLoginPage() {
     if (!existing || typeof window === 'undefined') {
       return;
     }
-    window.location.replace(existing.role === 'user' ? '/user-dashboard' : '/dashboard');
+    if (existing.role === 'user') {
+      window.location.replace('/user-dashboard');
+      return;
+    }
+    if (existing.role === 'manager') {
+      window.location.replace('/manager-dashboard');
+      return;
+    }
+    window.location.replace('/dashboard');
   }, []);
 
   useEffect(() => {
