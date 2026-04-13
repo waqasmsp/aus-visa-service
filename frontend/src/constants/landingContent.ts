@@ -9,6 +9,13 @@ export type VisaTypeOption = {
   name: string;
 };
 
+type ServiceCatalogCard = {
+  label: string;
+  title: string;
+  description: string;
+  variant: 'one' | 'two' | 'three';
+};
+
 export const landingContent = {
   brandName: 'Global Visas',
   navItems: ['Home', 'Visa Services', 'Blogs', 'About Us', 'Contact Us'],
@@ -95,7 +102,7 @@ export const landingContent = {
         description: 'Ideal when support from family or contacts in Australia strengthens the application profile.',
         variant: 'three'
       }
-    ]
+    ] satisfies ServiceCatalogCard[]
   },
   stats: [
     { label: 'Success Rate', value: '99%' },
