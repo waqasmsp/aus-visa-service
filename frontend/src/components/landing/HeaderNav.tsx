@@ -30,7 +30,8 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
   const currentPath = normalizePathname(pathname);
   const goToLogin = () => {
     if (typeof window !== 'undefined') {
-      window.location.assign('/dashboard/login');
+      window.history.pushState(null, '', '/dashboard/login');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
   };
 

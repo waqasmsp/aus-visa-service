@@ -363,6 +363,18 @@ const clearAuthSession = (): void => {
   window.localStorage.removeItem(AUTH_SESSION_KEY);
 };
 
+const navigateClient = (to: string, replace = false): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  if (replace) {
+    window.history.replaceState(null, '', to);
+  } else {
+    window.history.pushState(null, '', to);
+  }
+  window.dispatchEvent(new PopStateEvent('popstate'));
+};
+
 export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   const normalizedPath = normalizePathname(pathname);
   const isLoginRoute = normalizedPath === '/dashboard/login' || normalizedPath === '/login';
@@ -387,11 +399,9 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   }
 
   if (isLegacyManagerRoute || isLegacyUserRoute) {
-    if (typeof window !== 'undefined') {
-      const legacySuffix = normalizedPath.replace(/^\/(?:manager|user)-dashboard/, '');
-      const target = `/dashboard${legacySuffix || ''}`;
-      window.location.replace(target);
-    }
+    const legacySuffix = normalizedPath.replace(/^\/(?:manager|user)-dashboard/, '');
+    const target = `/dashboard${legacySuffix || ''}`;
+    navigateClient(target, true);
     return null;
   }
 
@@ -404,10 +414,8 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   }
 
   if (!session) {
-    if (typeof window !== 'undefined') {
-      const next = encodeURIComponent(normalizedPath);
-      window.location.replace(`/dashboard/login?next=${next}`);
-    }
+    const next = encodeURIComponent(normalizedPath);
+    navigateClient(`/dashboard/login?next=${next}`, true);
     return null;
   }
 
@@ -505,9 +513,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
               className="dashboard-ghost-button"
               onClick={() => {
                 clearAuthSession();
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/dashboard/login';
-                }
+                navigateClient('/dashboard/login', true);
               }}
             >
               Logout
@@ -1247,9 +1253,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
               className="dashboard-ghost-button"
               onClick={() => {
                 clearAuthSession();
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/dashboard/login';
-                }
+                navigateClient('/dashboard/login', true);
               }}
             >
               Logout
@@ -1513,9 +1517,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
               className="dashboard-ghost-button"
               onClick={() => {
                 clearAuthSession();
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/dashboard/login';
-                }
+                navigateClient('/dashboard/login', true);
               }}
             >
               Logout
@@ -1767,10 +1769,10 @@ function DashboardLoginPage() {
 
   useEffect(() => {
     const existing = readAuthSession();
-    if (!existing || typeof window === 'undefined') {
+    if (!existing) {
       return;
     }
-    window.location.replace('/dashboard');
+    navigateClient('/dashboard', true);
   }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -1796,10 +1798,10 @@ function DashboardLoginPage() {
     if (typeof window !== 'undefined') {
       const next = new URLSearchParams(window.location.search).get('next');
       if (next) {
-        window.location.href = next;
+        navigateClient(next, true);
         return;
       }
-      window.location.href = expected.route;
+      navigateClient(expected.route, true);
       return;
     }
 
