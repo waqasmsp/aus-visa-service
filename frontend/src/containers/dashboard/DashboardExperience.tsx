@@ -53,12 +53,6 @@ type VisaApplication = {
 
 const AUTH_SESSION_KEY = 'aus-visa-auth-session';
 
-const roleOptions: Array<{ role: DashboardRole; label: string; helper: string }> = [
-  { role: 'admin', label: 'Admin', helper: 'Full control over all modules' },
-  { role: 'manager', label: 'Manager', helper: 'Operations and team workflows' },
-  { role: 'user', label: 'User', helper: 'Personal and application-level view' }
-];
-
 const roleScope: Record<DashboardRole, DashboardSection[]> = {
   admin: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'settings'],
   manager: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'settings'],
@@ -1766,7 +1760,6 @@ function UserProfilePanel({ userEmail }: { userEmail: string }) {
 }
 
 function DashboardLoginPage() {
-  const [role, setRole] = useState<DashboardRole>('admin');
   const [email, setEmail] = useState(dummyCredentials.admin.email);
   const [password, setPassword] = useState(dummyCredentials.admin.password);
   const [message, setMessage] = useState('');
@@ -1780,24 +1773,22 @@ function DashboardLoginPage() {
     window.location.replace('/dashboard');
   }, []);
 
-  useEffect(() => {
-    setEmail(dummyCredentials[role].email);
-    setPassword(dummyCredentials[role].password);
-  }, [role]);
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const expected = dummyCredentials[role];
-    const isValid = email.trim().toLowerCase() === expected.email.toLowerCase() && password === expected.password;
+    const matchedRole = (Object.keys(dummyCredentials) as DashboardRole[]).find((role) => {
+      const credentials = dummyCredentials[role];
+      return email.trim().toLowerCase() === credentials.email.toLowerCase() && password === credentials.password;
+    });
 
-    if (!isValid) {
+    if (!matchedRole) {
       setMessageType('error');
-      setMessage('Invalid demo credentials selected for this role. Please use the pre-filled credentials.');
+      setMessage('Invalid credentials. Use one of the dummy accounts listed below.');
       return;
     }
 
+    const expected = dummyCredentials[matchedRole];
     writeAuthSession({
-      role,
+      role: matchedRole,
       email: expected.email,
       loginAt: new Date().toISOString()
     });
@@ -1813,7 +1804,7 @@ function DashboardLoginPage() {
     }
 
     setMessageType('success');
-    setMessage(`Login successful for ${role.toUpperCase()}.`);
+    setMessage('Login successful.');
   };
 
   return (
@@ -1835,37 +1826,28 @@ function DashboardLoginPage() {
 
         <article className="dashboard-auth__form-panel">
           <h2>Sign in to dashboard</h2>
-          <p>Dummy logins are pre-filled. Switch role cards below.</p>
-          <div className="dashboard-auth__roles">
-            {roleOptions.map((option) => (
-              <button
-                key={option.role}
-                type="button"
-                className={role === option.role ? 'is-active' : ''}
-                onClick={() => setRole(option.role)}
-                title={option.helper}
-              >
-                <strong>{option.label}</strong>
-                <span>{dummyCredentials[option.role].email}</span>
-              </button>
-            ))}
-          </div>
+          <p>Use your credentials. Role will be detected automatically.</p>
           <form onSubmit={handleSubmit}>
             <label>
               Email
-              <input value={email} onChange={(event) => setEmail(event.target.value)} />
+              <input className="dashboard-auth__input" value={email} onChange={(event) => setEmail(event.target.value)} />
             </label>
             <label>
               Password
-              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+              <input className="dashboard-auth__input" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
             </label>
             <button type="submit" className="dashboard-primary-button dashboard-primary-button--wide">
               Sign In
             </button>
           </form>
+          <div className="dashboard-auth__dummy-list">
+            <strong>Dummy Logins</strong>
+            <p>Admin: admin@ausvisaservice.com / Admin@123</p>
+            <p>Manager: manager@ausvisaservice.com / Manager@123</p>
+            <p>User: user@ausvisaservice.com / User@123</p>
+          </div>
           {message ? <p className={`dashboard-auth__message ${messageType === 'error' ? 'is-error' : ''}`}>{message}</p> : null}
           <div className="dashboard-auth__links">
-            <a href={dummyCredentials[role].route}>Enter {roleOptions.find((item) => item.role === role)?.label} Dashboard</a>
             <a href="/dashboard/signup">Need an account? Sign up</a>
           </div>
         </article>

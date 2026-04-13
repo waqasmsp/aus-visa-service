@@ -3919,6 +3919,17 @@ body.body--menu-open {
   font-weight: 700;
 }
 
+.dashboard-auth__input {
+  border: 1.5px solid #a8b9d4;
+  background: #ffffff;
+}
+
+.dashboard-auth__input:focus-visible {
+  outline: 2px solid rgb(37 99 235 / 0.4);
+  outline-offset: 2px;
+  border-color: #2563eb;
+}
+
 .dashboard-auth__checkbox {
   display: flex;
   align-items: center;
@@ -3945,6 +3956,26 @@ body.body--menu-open {
   color: #991b1b;
   background: rgb(239 68 68 / 0.12);
   border-color: rgb(239 68 68 / 0.3);
+}
+
+.dashboard-auth__dummy-list {
+  margin-top: 0.7rem;
+  border: 1px solid #d6e0ef;
+  background: #f8fbff;
+  border-radius: 0.75rem;
+  padding: 0.65rem;
+}
+
+.dashboard-auth__dummy-list strong {
+  display: block;
+  color: #0f2d52;
+  margin-bottom: 0.35rem;
+}
+
+.dashboard-auth__dummy-list p {
+  margin: 0.2rem 0;
+  color: #3d5d83;
+  font-size: 0.85rem;
 }
 
 .dashboard-auth__links {
