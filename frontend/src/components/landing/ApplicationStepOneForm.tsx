@@ -730,7 +730,7 @@ export function ApplicationStepOneForm() {
                 <label className="application-checkbox">
                   <input type="checkbox" checked={subscribeToUpdates} onChange={(event) => setSubscribeToUpdates(event.target.checked)} />
                   <span>
-                    I want to receive iVisa&apos;s updates, product launches and personalized offers. I can opt out anytime.
+                    I want to receive Global Visas updates, product launches and personalized offers. I can opt out anytime.
                     <a href="#" onClick={(event) => event.preventDefault()}> Terms and Privacy Policy </a>
                     apply.
                   </span>
@@ -757,7 +757,7 @@ export function ApplicationStepOneForm() {
                   &#128274; Submit payment
                 </button>
                 <p className="payment-note">
-                  By submitting payment I acknowledge that I have read and accept the iVisa
+                  By submitting payment I acknowledge that I have read and accept the Global Visas
                   <a href="#" onClick={(event) => event.preventDefault()}> Terms of Service</a>,
                   <a href="#" onClick={(event) => event.preventDefault()}> Privacy policy</a>, and
                   <a href="#" onClick={(event) => event.preventDefault()}> Refund Policy</a>.

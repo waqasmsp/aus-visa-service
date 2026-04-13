@@ -922,7 +922,10 @@ body.body--menu-open {
   width: min(1240px, calc(100% - 2rem));
   margin-inline: auto;
   padding: clamp(1.1rem, 2.5vw, 1.9rem) clamp(0.9rem, 2.8vw, 2.6rem) clamp(1.4rem, 3vw, 2rem);
-  background: #eef2f5;
+  background:
+    radial-gradient(circle at 4% 8%, rgb(14 165 233 / 0.08), transparent 26%),
+    radial-gradient(circle at 94% 12%, rgb(37 99 235 / 0.08), transparent 34%),
+    #eef4f8;
 }
 
 .application-form-close {
@@ -945,16 +948,19 @@ body.body--menu-open {
   top: clamp(4.8rem, 9vw, 6.4rem);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 2;
+  z-index: 12;
   width: min(42rem, calc(100% - 2rem));
-  border: 1px solid #fdba74;
+  border: 1px solid rgb(14 165 233 / 0.35);
   border-radius: 0.85rem;
-  background: #fffbeb;
-  color: #7c2d12;
+  background:
+    linear-gradient(120deg, rgb(255 255 255 / 0.92), rgb(239 246 255 / 0.92));
+  color: #0f3b61;
   padding: 0.72rem 2.2rem 0.72rem 0.85rem;
   display: grid;
   gap: 0.25rem;
-  box-shadow: 0 10px 24px rgb(15 23 42 / 0.08);
+  box-shadow:
+    0 12px 28px rgb(15 23 42 / 0.12),
+    0 0 0 1px rgb(255 255 255 / 0.6) inset;
 }
 
 .application-notice p,
@@ -974,8 +980,8 @@ body.body--menu-open {
   height: 1.6rem;
   border: 0;
   border-radius: 999px;
-  background: rgb(217 119 6 / 0.14);
-  color: #92400e;
+  background: rgb(14 165 233 / 0.14);
+  color: #0c4a60;
   font: inherit;
   cursor: pointer;
 }
@@ -991,7 +997,7 @@ body.body--menu-open {
 }
 
 .application-form-step {
-  color: #31506e;
+  color: #385778;
   font-size: 1.02rem;
   font-weight: var(--font-weight-semibold);
 }
@@ -1014,39 +1020,41 @@ body.body--menu-open {
 .application-form-step::after {
   content: '';
   grid-column: 1 / -1;
-  height: 2px;
+  height: 3px;
   border-radius: 999px;
-  background: #c8d5e2;
+  background: linear-gradient(90deg, rgb(203 213 225), rgb(191 219 254));
 }
 
 .application-form-step__index {
   width: 1.45rem;
   height: 1.45rem;
   border-radius: 999px;
-  border: 1.5px solid #31506e;
+  border: 1.5px solid #2a4f77;
   display: inline-grid;
   place-items: center;
   font-size: 0.78rem;
   line-height: 1;
+  background: rgb(255 255 255 / 0.84);
 }
 
 .application-form-step.is-active {
-  color: #082f49;
+  color: #0f3e69;
 }
 
 .application-form-step.is-active .application-form-step__index {
-  background: #08597f;
-  border-color: #08597f;
+  background: linear-gradient(140deg, #0ea5e9, #2563eb);
+  border-color: #1d4ed8;
   color: #ffffff;
+  box-shadow: 0 8px 16px rgb(37 99 235 / 0.28);
 }
 
 .application-form-step.is-active::after {
-  background: #9ad5e7;
+  background: linear-gradient(90deg, rgb(59 130 246 / 0.52), rgb(45 212 191 / 0.52));
 }
 
 .application-form-step.is-completed .application-form-step__index {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: linear-gradient(140deg, #0ea5e9, #22c55e);
+  border-color: #0891b2;
   color: #ffffff;
 }
 
@@ -1061,13 +1069,19 @@ body.body--menu-open {
 
 .application-visa-card,
 .application-form-card {
-  border: 1px solid #cad6df;
-  border-radius: 1.05rem;
-  background: #f6f8fa;
+  border: 1px solid rgb(148 163 184 / 0.34);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(155deg, rgb(255 255 255 / 0.92), rgb(241 248 255 / 0.9));
+  box-shadow:
+    0 16px 34px rgb(15 23 42 / 0.08),
+    0 0 0 1px rgb(255 255 255 / 0.62) inset;
 }
 
 .application-visa-card {
   padding: 1.05rem;
+  position: sticky;
+  top: 0.9rem;
 }
 
 .application-visa-card h2 {
@@ -1075,9 +1089,9 @@ body.body--menu-open {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 1.85rem;
+  font-size: 1.72rem;
   line-height: 1.18;
-  color: #0f172a;
+  color: #112d4e;
 }
 
 .application-visa-card__icon {
@@ -1096,7 +1110,7 @@ body.body--menu-open {
   display: grid;
   gap: 0.3rem;
   padding: 1rem 0;
-  border-top: 1px solid #d6e0e8;
+  border-top: 1px solid #d8e4ef;
 }
 
 .application-visa-card__line:first-of-type {
@@ -1105,12 +1119,12 @@ body.body--menu-open {
 
 .application-visa-card__line p {
   margin: 0;
-  color: #3f5b76;
+  color: #426486;
   font-size: 1rem;
 }
 
 .application-visa-card__line strong {
-  color: #0f2947;
+  color: #123f66;
   font-size: 1.05rem;
 }
 
@@ -1118,13 +1132,20 @@ body.body--menu-open {
   width: 100%;
   min-height: 2.8rem;
   margin-top: 0.9rem;
-  border: 1px dashed #4f46e5;
+  border: 1px dashed #2563eb;
   border-radius: 0.85rem;
-  background: rgb(99 102 241 / 0.05);
-  color: #4f46e5;
+  background: linear-gradient(135deg, rgb(37 99 235 / 0.05), rgb(14 165 233 / 0.08));
+  color: #1d4ed8;
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.application-view-travelers-button:hover {
+  border-color: #1d4ed8;
+  box-shadow: 0 10px 20px rgb(37 99 235 / 0.14);
+  transform: translateY(-1px);
 }
 
 .application-form-card {
@@ -1133,14 +1154,14 @@ body.body--menu-open {
 
 .application-form-card__header h1 {
   margin: 0;
-  color: #0f172a;
+  color: #0f2d4b;
   font-size: clamp(1.75rem, 3.2vw, 2.2rem);
   line-height: 1.1;
 }
 
 .application-form-card__header p {
   margin: 0.55rem 0 0;
-  color: #45607b;
+  color: #486787;
   font-size: 1.05rem;
 }
 
@@ -1169,7 +1190,7 @@ body.body--menu-open {
 }
 
 .application-field span {
-  color: #2d4f6d;
+  color: #294e73;
   font-weight: var(--font-weight-semibold);
   font-size: 1.02rem;
 }
@@ -1178,13 +1199,25 @@ body.body--menu-open {
 .application-field select {
   width: 100%;
   height: 3.2rem;
-  border: 1px solid #bfd0de;
+  border: 1px solid #b9ccdf;
   border-radius: 1rem;
-  background: #fbfdff;
-  color: #0f172a;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  color: #0f2947;
   padding: 0 1rem;
   font: inherit;
   font-size: 1.02rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.application-field input:hover,
+.application-field select:hover {
+  border-color: #89a6c2;
+}
+
+.application-field input:focus-visible,
+.application-field select:focus-visible {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.16);
 }
 
 .application-field--error input,
@@ -1205,7 +1238,7 @@ body.body--menu-open {
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 999px;
-  background: #4d7c0f;
+  background: linear-gradient(140deg, #0ea5e9, #1d4ed8);
   color: #ffffff;
   font-size: 0.55rem;
   font-weight: var(--font-weight-bold);
@@ -1226,8 +1259,7 @@ body.body--menu-open {
 .application-field input:focus-visible,
 .application-field select:focus-visible,
 .application-gender-option:focus-visible,
-.application-continue-button:focus-visible,
-.application-form-close:focus-visible {
+.application-continue-button:focus-visible {
   outline: 2px solid rgb(37 99 235 / 0.5);
   outline-offset: 2px;
 }
@@ -1243,7 +1275,7 @@ body.body--menu-open {
 .application-fieldset legend {
   padding: 0;
   margin-bottom: 0.2rem;
-  color: #2d4f6d;
+  color: #294e73;
   font-weight: var(--font-weight-semibold);
   font-size: 1.02rem;
 }
@@ -1259,14 +1291,14 @@ body.body--menu-open {
 
 .application-date-block p {
   margin: 0;
-  color: #2d4f6d;
+  color: #294e73;
   font-weight: var(--font-weight-semibold);
   font-size: 1.02rem;
 }
 
 .application-field-note {
   margin: -0.35rem 0 0;
-  color: #49647e;
+  color: #51708d;
   font-size: 0.95rem;
   line-height: 1.4;
 }
@@ -1277,7 +1309,7 @@ body.body--menu-open {
 }
 
 .traveler-row {
-  border: 1px solid #bfd0de;
+  border: 1px solid #b9ccdf;
   border-radius: 1rem;
   min-height: 3.35rem;
   padding: 0.45rem 0.75rem 0.45rem 0.95rem;
@@ -1285,13 +1317,14 @@ body.body--menu-open {
   align-items: center;
   justify-content: space-between;
   gap: 0.8rem;
+  background: linear-gradient(180deg, #ffffff, #f7fbff);
 }
 
 .traveler-row__name {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #0f2947;
+  color: #123f66;
   font-size: 1.05rem;
   font-weight: var(--font-weight-semibold);
 }
@@ -1317,9 +1350,9 @@ body.body--menu-open {
   width: 2.15rem;
   height: 2.15rem;
   border-radius: 0.65rem;
-  border: 1px solid #4f46e5;
-  background: rgb(99 102 241 / 0.06);
-  color: #4f46e5;
+  border: 1px solid #2563eb;
+  background: rgb(37 99 235 / 0.08);
+  color: #1d4ed8;
   font: inherit;
   cursor: pointer;
 }
@@ -1327,10 +1360,10 @@ body.body--menu-open {
 .traveler-add-button {
   width: 100%;
   min-height: 3.65rem;
-  border: 1.5px dashed #4f46e5;
+  border: 1.5px dashed #2563eb;
   border-radius: 1rem;
-  background: rgb(99 102 241 / 0.04);
-  color: #4f46e5;
+  background: linear-gradient(125deg, rgb(37 99 235 / 0.05), rgb(45 212 191 / 0.08));
+  color: #1d4ed8;
   font: inherit;
   font-size: 1.18rem;
   font-weight: var(--font-weight-semibold);
@@ -1346,7 +1379,7 @@ body.body--menu-open {
   grid-template-columns: auto 1fr;
   gap: 0.6rem;
   align-items: start;
-  color: #1d425f;
+  color: #1f4768;
   font-size: 1.02rem;
   line-height: 1.4;
 }
@@ -1359,14 +1392,14 @@ body.body--menu-open {
 
 .application-checkbox a,
 .payment-note a {
-  color: #0f4b77;
+  color: #1d4ed8;
 }
 
 .application-pricing-card {
   margin-top: 0.85rem;
-  border: 1px solid #cad6df;
+  border: 1px solid #c6d7e6;
   border-radius: 1rem;
-  background: #f6f8fa;
+  background: linear-gradient(165deg, #ffffff, #f2f8ff);
   overflow: hidden;
 }
 
@@ -1382,21 +1415,21 @@ body.body--menu-open {
 
 .application-pricing-card > p {
   padding: 0 1rem 0.85rem;
-  color: #1f3f58;
+  color: #2b5374;
 }
 
 .application-pricing-option {
   margin: 0 1rem 0.95rem;
   width: calc(100% - 2rem);
-  border: 1px solid #0f4b77;
+  border: 1px solid #1d4ed8;
   border-radius: 0.95rem;
-  background: #fbfdff;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
   min-height: 3.6rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.7rem 0.9rem;
-  color: #0f2947;
+  color: #123f66;
   font: inherit;
 }
 
@@ -1407,11 +1440,11 @@ body.body--menu-open {
 }
 
 .application-pricing-option small {
-  color: #49647e;
+  color: #51708d;
 }
 
 .application-pricing-breakdown {
-  border-top: 1px solid #d5e0e8;
+  border-top: 1px solid #d6e3ee;
   padding: 0.95rem 1rem;
   display: grid;
   gap: 0.45rem;
@@ -1427,9 +1460,9 @@ body.body--menu-open {
 .payment-wallet-button {
   width: 100%;
   min-height: 2.45rem;
-  border: 1px solid #111827;
+  border: 1px solid #0d3558;
   border-radius: 999px;
-  background: #000000;
+  background: linear-gradient(90deg, #0d3558, #0f4f7d);
   color: #ffffff;
   font: inherit;
   font-size: 1.2rem;
@@ -1441,33 +1474,33 @@ body.body--menu-open {
   grid-template-columns: 1fr auto 1fr;
   gap: 0.7rem;
   align-items: center;
-  color: #5b7690;
+  color: #53708c;
 }
 
 .payment-divider::before,
 .payment-divider::after {
   content: '';
   height: 1px;
-  background: #bfd0de;
+  background: #bfd1e1;
 }
 
 .payment-card-form {
-  border: 1px solid #bfd0de;
+  border: 1px solid #bfd1e1;
   border-radius: 1rem;
   overflow: hidden;
-  background: #fbfdff;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
 }
 
 .payment-card-form input {
   width: 100%;
   border: 0;
-  border-top: 1px solid #d8e3eb;
+  border-top: 1px solid #d8e4ee;
   min-height: 3rem;
   padding: 0 1rem;
   font: inherit;
   font-size: 1.02rem;
-  color: #0f2947;
-  background: #fbfdff;
+  color: #123f66;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
 }
 
 .payment-card-form > input:first-child {
@@ -1480,7 +1513,7 @@ body.body--menu-open {
 }
 
 .payment-card-form__row input + input {
-  border-left: 1px solid #d8e3eb;
+  border-left: 1px solid #d8e4ee;
 }
 
 .payment-submit-button {
@@ -1488,8 +1521,8 @@ body.body--menu-open {
   min-height: 3rem;
   border: 0;
   border-radius: 1rem;
-  background: #b7c9d0;
-  color: #5f7d8c;
+  background: #bfd2dd;
+  color: #547085;
   font: inherit;
   font-size: 1.25rem;
   font-weight: var(--font-weight-semibold);
@@ -1497,17 +1530,17 @@ body.body--menu-open {
 
 .payment-note {
   margin: 0;
-  color: #2f506c;
+  color: #365a79;
   font-size: 0.95rem;
   line-height: 1.45;
 }
 
 .application-gender-option {
   height: 3.35rem;
-  border: 1px solid #bfd0de;
+  border: 1px solid #b9ccdf;
   border-radius: 1rem;
-  background: #fbfdff;
-  color: #0f2947;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  color: #123f66;
   font: inherit;
   font-size: 1.02rem;
   display: inline-flex;
@@ -1527,13 +1560,13 @@ body.body--menu-open {
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 999px;
-  border: 1.6px solid #3b5772;
+  border: 1.6px solid #365b80;
   position: relative;
 }
 
 .application-gender-option.is-selected {
-  border-color: #0ea5e9;
-  background: rgb(236 254 255 / 0.65);
+  border-color: #1d4ed8;
+  background: linear-gradient(120deg, rgb(219 234 254 / 0.8), rgb(207 250 254 / 0.68));
 }
 
 .application-gender-option.is-selected .application-gender-option__dot::after {
@@ -1541,7 +1574,7 @@ body.body--menu-open {
   position: absolute;
   inset: 0.2rem;
   border-radius: 999px;
-  background: #0ea5e9;
+  background: linear-gradient(145deg, #0ea5e9, #2563eb);
 }
 
 .application-form-actions {
@@ -1558,9 +1591,17 @@ body.body--menu-open {
   font: inherit;
   font-size: 1.2rem;
   font-weight: var(--font-weight-semibold);
-  color: #032b2c;
-  background: linear-gradient(135deg, #22d3ee, #22c55e);
+  color: #ffffff;
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  box-shadow: 0 12px 22px rgb(37 99 235 / 0.28);
   cursor: pointer;
+  transition: transform 170ms ease, box-shadow 170ms ease, filter 170ms ease;
+}
+
+.application-continue-button:hover {
+  filter: saturate(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 26px rgb(37 99 235 / 0.34);
 }
 
 .comparison-panel h2,
@@ -3171,6 +3212,10 @@ body.body--menu-open {
 
   .application-visa-card h2 {
     font-size: 1.35rem;
+  }
+
+  .application-visa-card {
+    position: static;
   }
 
   .application-form-grid--two,
