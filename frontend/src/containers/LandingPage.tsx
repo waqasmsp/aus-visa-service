@@ -46,12 +46,14 @@ export function LandingPage({ pathname }: { pathname: string }) {
         </section>
 
         <section className="landing-section landing-section--service-catalog">
-          <ServiceCatalogSection
-            eyebrow={serviceCatalog.eyebrow}
-            title={serviceCatalog.title}
-            intro={serviceCatalog.intro}
-            cards={serviceCatalog.cards}
-          />
+          <div className="content-container">
+            <ServiceCatalogSection
+              eyebrow={serviceCatalog.eyebrow}
+              title={serviceCatalog.title}
+              intro={serviceCatalog.intro}
+              cards={serviceCatalog.cards}
+            />
+          </div>
         </section>
 
         <section className="landing-section landing-section--comparison">
