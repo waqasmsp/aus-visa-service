@@ -345,7 +345,7 @@ export function AboutPage({ pathname }: AboutPageProps) {
                       <p>{office.phone}</p>
                     </div>
                     <span className="office-card__arrow" aria-hidden="true">
-                      ->
+                      &rarr;
                     </span>
                   </article>
                 ))}
