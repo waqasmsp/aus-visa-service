@@ -3,6 +3,7 @@ type ServiceCard = {
   title: string;
   description: string;
   variant: 'one' | 'two' | 'three';
+  href: string;
 };
 
 type ServiceCatalogSectionProps = {
@@ -23,19 +24,23 @@ export function ServiceCatalogSection({ eyebrow, title, intro, cards }: ServiceC
 
       <div className="service-catalog__grid">
         {cards.map((card) => (
-          <article key={card.label} className={`service-card service-card--${card.variant}`}>
-            <button type="button" className="service-card__arrow" aria-label={`Open ${card.title}`}>
+          <a
+            key={card.label}
+            className={`service-card service-card--${card.variant}`}
+            href={card.href}
+            aria-label={`Open ${card.title}`}
+          >
+            <span className="service-card__arrow" aria-hidden="true">
               &#8594;
-            </button>
+            </span>
             <div className="service-card__content">
               <span className="service-card__label">{card.label}</span>
               <h3>{card.title}</h3>
               <p>{card.description}</p>
             </div>
-          </article>
+          </a>
         ))}
       </div>
     </section>
   );
 }
-
