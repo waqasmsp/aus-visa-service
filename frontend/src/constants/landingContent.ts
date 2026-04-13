@@ -49,6 +49,28 @@ export const landingContent = {
     rightTitle: 'With us',
     rightPoints: ['Quick, guided applications', 'Clear questions reviewed by experts', '24/7 support on chat, email, and WhatsApp', 'Progress auto-saved so you can return anytime', 'Multiple secure ways to pay']
   },
+  features: {
+    eyebrow: 'OUR FEATURES',
+    title: 'Committed to delivering reliable visa solutions',
+    ctaLabel: 'Get Started',
+    items: [
+      {
+        title: 'Quality Visa Services',
+        description:
+          'Global Visas provides professionally structured visitor visa services, ensuring each application clearly reflects genuine travel intent and complete documentation.'
+      },
+      {
+        title: 'Professional & Expert Team',
+        description:
+          'Our team works with a document-first, compliance-focused approach, reviewing every detail to reduce errors and improve application strength.'
+      },
+      {
+        title: 'Client Satisfaction Focused',
+        description:
+          'We prioritise transparency, timely communication, and clear next steps, so you always know where your application stands.'
+      }
+    ]
+  },
   stats: [
     { label: 'Success Rate', value: '99%' },
     { label: 'Years Experience', value: '12+' },

@@ -1,5 +1,6 @@
 import { ComparisonPanel } from '../components/landing/ComparisonPanel';
 import { EasyProcess } from '../components/landing/EasyProcess';
+import { FeaturesBand } from '../components/landing/FeaturesBand';
 import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { HeroVisaSearch } from '../components/landing/HeroVisaSearch';
@@ -12,7 +13,7 @@ import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { landingContent } from '../constants/landingContent';
 
 export function LandingPage({ pathname }: { pathname: string }) {
-  const { hero, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
+  const { hero, features, comparison, stats, process, testimonials, newsletter, footer, brandName, navItems, loginCta } =
     landingContent;
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
@@ -31,6 +32,16 @@ export function LandingPage({ pathname }: { pathname: string }) {
       <main className="landing-main">
         <section className="landing-section landing-section--hero">
           <HeroVisaSearch {...hero} onStartApplication={openApplicationPage} />
+        </section>
+
+        <section className="landing-section landing-section--features">
+          <FeaturesBand
+            eyebrow={features.eyebrow}
+            title={features.title}
+            ctaLabel={features.ctaLabel}
+            items={features.items}
+            onGetStarted={openApplicationPage}
+          />
         </section>
 
         <section className="landing-section landing-section--comparison">
