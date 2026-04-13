@@ -116,17 +116,25 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
 
                 {dropdownEnabled ? (
                   <div className="mega-menu" role="group" aria-label="Visa service types">
-                    <a href="/visa-services" className="mega-menu__overview">
-                      <strong>All Visa Services</strong>
-                      <span>View complete visa services page with detailed guidance.</span>
-                    </a>
-                    <div className="mega-menu__grid">
-                      {visaNavItems.map((visaItem) => (
-                        <a key={visaItem.href} href={visaItem.href} className="mega-menu__link">
-                          <span>{visaItem.title}</span>
-                          <small>{visaItem.summary}</small>
+                    <div className="mega-menu__layout">
+                      <div className="mega-menu__media" aria-hidden="true">
+                        <div className="mega-menu__media-placeholder">Image Holder</div>
+                      </div>
+
+                      <div className="mega-menu__content">
+                        <a href="/visa-services" className="mega-menu__overview">
+                          <strong>All Visa Services</strong>
+                          <span>View complete visa services page with detailed guidance.</span>
                         </a>
-                      ))}
+                        <div className="mega-menu__grid">
+                          {visaNavItems.map((visaItem) => (
+                            <a key={visaItem.href} href={visaItem.href} className="mega-menu__link">
+                              <span>{visaItem.title}</span>
+                              <small>{visaItem.summary}</small>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : null}
