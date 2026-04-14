@@ -1327,7 +1327,15 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
     <section className="dashboard-stack">
       <BlogsPanel role={role} actions={actions} />
       <div className="dashboard-grid dashboard-grid--2">
-        <BlogEditorPanel role={role} canCreate={canCreate} canEdit={canEdit} canManageSettings={canManageSettings} />
+        <BlogEditorPanel
+          role={role}
+          canCreate={canCreate}
+          canEdit={canEdit}
+          canManageSettings={canManageSettings}
+          canSubmitReview={canSubmitReview}
+          canPublish={canPublish}
+          canArchive={canArchive}
+        />
         <BlogReviewPanel role={role} canSubmitReview={canSubmitReview} canPublish={canPublish} canArchive={canArchive} canDelete={canDelete} />
       </div>
     </section>
