@@ -4,6 +4,7 @@ import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 import { addContactEntry } from '../utils/contactEntries';
 
@@ -77,12 +78,21 @@ export function ContactPage({ pathname }: ContactPageProps) {
       </section>
 
       <main className="landing-main contact-main">
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Contact Us' }
+          ]}
+          title="Contact our visa support team"
+          description="Share your details and our specialists will guide you with the next best step for your visa process."
+        />
+
         <section className="landing-section landing-section--contact">
           <div className="content-container">
             <article className="contact-card" aria-labelledby="contact-heading">
               <div className="contact-card__intro">
                 <p className="contact-card__eyebrow">Drop Us A Line</p>
-                <h1 id="contact-heading">Contact Our Visa Team</h1>
+                <h2 id="contact-heading">Contact Our Visa Team</h2>
                 <p>
                   Global Visas will arrange your first business consultation free of cost. Share your details and we
                   will guide you on the next best step.

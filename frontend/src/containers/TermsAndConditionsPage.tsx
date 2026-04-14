@@ -2,6 +2,7 @@ import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 
 type TermsAndConditionsPageProps = {
@@ -130,11 +131,20 @@ export function TermsAndConditionsPage({ pathname }: TermsAndConditionsPageProps
       </section>
 
       <main className="landing-main privacy-main">
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Terms and Conditions' }
+          ]}
+          title="Terms and Conditions"
+          description="Review the terms governing your use of Global Visas services, platform features, and legal notices."
+        />
+
         <section className="landing-section landing-section--privacy">
           <div className="content-container">
             <article className="privacy-policy-card" aria-labelledby="terms-and-conditions-title">
               <p className="privacy-policy-card__kicker">GLOBAL VISAS TERMS AND CONDITIONS</p>
-              <h1 id="terms-and-conditions-title">Terms and Conditions</h1>
+              <h2 id="terms-and-conditions-title">Terms and Conditions</h2>
               <p className="privacy-policy-card__effective-date">
                 <strong>Effective Date:</strong> <em>Jan 10 2025</em>
               </p>
