@@ -3057,11 +3057,6 @@ body.body--menu-open {
   transform: translateX(2px);
 }
 
-.footer-mega__divider {
-  margin-top: 1.8rem;
-  border-top: 1px solid rgb(148 163 184 / 0.28);
-}
-
 .footer-mega__copyright {
   margin: 0.95rem 0 0;
   color: rgb(147 197 253 / 0.7);

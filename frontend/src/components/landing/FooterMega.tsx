@@ -77,7 +77,6 @@ export function FooterMega({
         </div>
       </div>
 
-      <div className="footer-mega__divider" aria-hidden="true" />
       <p className="footer-mega__copyright">{copyright}</p>
     </SectionContainer>
   );
