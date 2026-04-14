@@ -5779,18 +5779,21 @@ body.body--menu-open {
   padding: clamp(1.2rem, 3vw, 2.5rem) 0 clamp(2.4rem, 5vw, 4rem);
 }
 
+.privacy-main > .landing-section:first-child {
+  padding-top: 0;
+}
+
 .landing-section--privacy .content-container {
-  display: flex;
-  justify-content: center;
+  display: block;
 }
 
 .privacy-policy-card {
-  width: min(100%, 980px);
-  background: #fff;
-  border: 1px solid rgb(203 213 225 / 0.72);
-  border-radius: 1.2rem;
-  padding: clamp(1.2rem, 2.8vw, 2.4rem);
-  box-shadow: 0 16px 38px rgb(15 41 71 / 0.08);
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   color: #1f3855;
 }
 
