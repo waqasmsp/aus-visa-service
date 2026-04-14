@@ -318,8 +318,7 @@ export function ApplicationStepOneForm() {
     'United Arab Emirates': { currency: 'AED', governmentFees: 535, standard: 965 },
     'United States': { currency: 'USD', governmentFees: 149, standard: 269 }
   };
-  const primaryTravelerCountry = travelers[0]?.country ?? 'United States';
-  const selectedPricing = pricingByCountry[primaryTravelerCountry] ?? pricingByCountry['United States'];
+  const selectedPricing = pricingByCountry['United States'];
   const applicantCount = Math.max(1, travelers.length);
   const totalPerApplicant = selectedPricing.governmentFees + selectedPricing.standard;
   const totalAllApplicants = totalPerApplicant * applicantCount;
@@ -570,6 +569,14 @@ export function ApplicationStepOneForm() {
         </aside>
 
         <section className="application-form-card" aria-label="Personal details">
+          {applicationSubStep === 7 ? (
+            <div className="application-payment-notice" role="status" aria-live="polite">
+              <p><span>Government fees</span><strong>{formatMoney(selectedPricing.governmentFees)}</strong></p>
+              <p><span>Standard processing</span><strong>{formatMoney(selectedPricing.standard)}</strong></p>
+              <p><span>Total ({applicantCount} applicant{applicantCount > 1 ? 's' : ''})</span><strong>{formatMoney(totalAllApplicants)}</strong></p>
+            </div>
+          ) : null}
+
           {applicationSubStep === 1 ? (
             <>
               <header className="application-form-card__header">
