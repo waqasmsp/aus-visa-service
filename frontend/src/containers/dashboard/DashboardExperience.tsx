@@ -1,6 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ContactEntry } from '../../types/contact';
 import { getContactEntries } from '../../utils/contactEntries';
+import { BlogEditorPanel } from '../../components/dashboard/blogs/BlogEditorPanel';
+import { BlogReviewPanel } from '../../components/dashboard/blogs/BlogReviewPanel';
+import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -12,9 +15,10 @@ type AuthSession = {
   email: string;
   loginAt: string;
 };
-type DashboardSection = 'overview' | 'pages' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
-type ManagerSection = 'overview' | 'team' | 'applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
+type DashboardSection = 'overview' | 'pages' | 'blogs' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
+type ManagerSection = 'overview' | 'team' | 'applications' | 'blogs' | 'documents' | 'payments' | 'contact-entries' | 'settings';
 type UserSection = 'overview' | 'applications' | 'documents' | 'payments' | 'messages' | 'profile';
+type BlogAction = 'create' | 'edit' | 'submit-review' | 'publish' | 'archive' | 'delete' | 'settings';
 type PageStatus = 'Published' | 'Draft' | 'Archived';
 type UserSegment = 'Registered' | 'Lead';
 type ApplicationStatus = 'Submitted' | 'In Review' | 'Documents Needed' | 'Approved' | 'Completed' | 'Rejected';
@@ -54,16 +58,24 @@ type VisaApplication = {
 };
 
 const AUTH_SESSION_KEY = 'aus-visa-auth-session';
+const DASHBOARD_ACCESS_NOTICE_KEY = 'aus-visa-dashboard-access-notice';
 
 const roleScope: Record<DashboardRole, DashboardSection[]> = {
-  admin: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
-  manager: ['overview', 'pages', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
+  admin: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
+  manager: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
   user: ['overview', 'visa-applications', 'documents', 'settings']
+};
+
+const roleBlogActions: Record<DashboardRole, BlogAction[]> = {
+  admin: ['create', 'edit', 'submit-review', 'publish', 'archive', 'delete', 'settings'],
+  manager: ['create', 'edit', 'submit-review', 'publish'],
+  user: []
 };
 
 const sidebarItems: Array<{ section: DashboardSection; label: string; href: string; badge?: string }> = [
   { section: 'overview', label: 'Dashboard', href: '/dashboard' },
   { section: 'pages', label: 'Pages', href: '/dashboard/pages', badge: 'CMS' },
+  { section: 'blogs', label: 'Blogs', href: '/dashboard/blogs', badge: 'SEO' },
   { section: 'users', label: 'Users', href: '/dashboard/users', badge: 'CRM' },
   { section: 'visa-applications', label: 'Visa Applications', href: '/dashboard/visa-applications', badge: 'Core' },
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
@@ -76,6 +88,7 @@ const managerSidebarItems: Array<{ section: ManagerSection; label: string; href:
   { section: 'overview', label: 'Overview', href: '/dashboard' },
   { section: 'team', label: 'Team Queue', href: '/dashboard/team', badge: 'Ops' },
   { section: 'applications', label: 'Applications', href: '/dashboard/applications', badge: 'Core' },
+  { section: 'blogs', label: 'Blogs', href: '/dashboard/blogs', badge: 'SEO' },
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
   { section: 'contact-entries', label: 'Contact Entries', href: '/dashboard/contact-entries', badge: 'Inbox' },
@@ -273,6 +286,8 @@ const getDashboardSectionFromPath = (pathname: string): DashboardSection => {
   switch (section) {
     case 'pages':
       return 'pages';
+    case 'blogs':
+      return 'blogs';
     case 'users':
       return 'users';
     case 'visa-applications':
@@ -300,6 +315,8 @@ const getManagerSectionFromPath = (pathname: string): ManagerSection => {
       return 'team';
     case 'applications':
       return 'applications';
+    case 'blogs':
+      return 'blogs';
     case 'documents':
       return 'documents';
     case 'payments':
@@ -371,6 +388,25 @@ const clearAuthSession = (): void => {
   window.localStorage.removeItem(AUTH_SESSION_KEY);
 };
 
+const readDashboardAccessNotice = (): string => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  const notice = window.sessionStorage.getItem(DASHBOARD_ACCESS_NOTICE_KEY) ?? '';
+  if (notice) {
+    window.sessionStorage.removeItem(DASHBOARD_ACCESS_NOTICE_KEY);
+  }
+  return notice;
+};
+
+const writeDashboardAccessNotice = (notice: string): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.sessionStorage.setItem(DASHBOARD_ACCESS_NOTICE_KEY, notice);
+};
+
 const navigateClient = (to: string, replace = false): void => {
   if (typeof window === 'undefined') {
     return;
@@ -427,6 +463,12 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
     return null;
   }
 
+  if (session.role === 'user' && normalizedPath.startsWith('/dashboard/blogs')) {
+    writeDashboardAccessNotice('You do not have access to blog management features.');
+    navigateClient('/dashboard', true);
+    return null;
+  }
+
   if (session.role === 'manager') {
     return <ManagerDashboardWorkspace pathname={normalizedPath} session={session} />;
   }
@@ -440,6 +482,7 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
 
 function DashboardWorkspace({ pathname, role, session }: { pathname: string; role: DashboardRole; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [accessNotice, setAccessNotice] = useState('');
   const sectionFromPath = getDashboardSectionFromPath(pathname);
   const canAccessSection = roleScope[role].includes(sectionFromPath);
   const activeSection = canAccessSection ? sectionFromPath : 'overview';
@@ -448,9 +491,18 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
     setSidebarOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const notice = readDashboardAccessNotice();
+    if (!notice) {
+      return;
+    }
+    setAccessNotice(notice);
+  }, [pathname]);
+
   const pageTitleMap: Record<DashboardSection, string> = {
     overview: 'Executive Overview',
     pages: 'Page Management',
+    blogs: 'Blog Management',
     users: 'User Intelligence',
     'visa-applications': 'Visa Applications',
     documents: 'Document Center',
@@ -531,8 +583,10 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
         </header>
 
         <main className="dashboard-content">
+          {accessNotice ? <p className="dashboard-auth__message is-error">{accessNotice}</p> : null}
           {activeSection === 'overview' ? <OverviewPanel role={role} /> : null}
           {activeSection === 'pages' ? <PagesPanel /> : null}
+          {activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
           {activeSection === 'users' ? <UsersPanel /> : null}
           {activeSection === 'visa-applications' ? <VisaApplicationsPanel /> : null}
           {activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
@@ -1259,6 +1313,27 @@ function formatDashboardDate(value: string): string {
   }).format(date);
 }
 
+function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
+  const actions = roleBlogActions[role];
+  const canCreate = actions.includes('create');
+  const canEdit = actions.includes('edit');
+  const canPublish = actions.includes('publish');
+  const canArchive = actions.includes('archive');
+  const canDelete = actions.includes('delete');
+  const canManageSettings = actions.includes('settings');
+  const canSubmitReview = actions.includes('submit-review');
+
+  return (
+    <section className="dashboard-stack">
+      <BlogsPanel role={role} actions={actions} />
+      <div className="dashboard-grid dashboard-grid--2">
+        <BlogEditorPanel role={role} canCreate={canCreate} canEdit={canEdit} canManageSettings={canManageSettings} />
+        <BlogReviewPanel role={role} canSubmitReview={canSubmitReview} canPublish={canPublish} canArchive={canArchive} canDelete={canDelete} />
+      </div>
+    </section>
+  );
+}
+
 function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const activeSection = getManagerSectionFromPath(pathname);
@@ -1271,6 +1346,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
     overview: 'Manager Overview',
     team: 'Team Queue',
     applications: 'Application Pipeline',
+    blogs: 'Blog Editorial',
     documents: 'Document Review',
     payments: 'Payment Oversight',
     'contact-entries': 'Contact Form Inbox',
@@ -1347,6 +1423,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
           {activeSection === 'overview' ? <ManagerOverviewPanel /> : null}
           {activeSection === 'team' ? <ManagerTeamPanel /> : null}
           {activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
+          {activeSection === 'blogs' ? <RoleBasedBlogsPanel role="manager" /> : null}
           {activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
           {activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
           {activeSection === 'contact-entries' ? <ContactEntriesPanel audience="manager" /> : null}
@@ -1527,10 +1604,19 @@ function ManagerSettingsPanel() {
 
 function UserDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [accessNotice, setAccessNotice] = useState('');
   const activeSection = getUserSectionFromPath(pathname);
 
   useEffect(() => {
     setSidebarOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const notice = readDashboardAccessNotice();
+    if (!notice) {
+      return;
+    }
+    setAccessNotice(notice);
   }, [pathname]);
 
   const pageTitleMap: Record<UserSection, string> = {
@@ -1609,6 +1695,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
         </header>
 
         <main className="dashboard-content">
+          {accessNotice ? <p className="dashboard-auth__message is-error">{accessNotice}</p> : null}
           {activeSection === 'overview' ? <UserOverviewPanel /> : null}
           {activeSection === 'applications' ? <UserApplicationsPanel /> : null}
           {activeSection === 'documents' ? <UserDocumentsPanel /> : null}
