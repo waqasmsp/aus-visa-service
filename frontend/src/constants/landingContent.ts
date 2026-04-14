@@ -160,16 +160,16 @@ export const landingContent = {
   footer: {
     tagline: 'Unlock the world with smarter, faster visa support.',
     visaRoutes: [
-      'United States to United Kingdom',
-      'France to United Kingdom',
-      'Germany to United Kingdom',
-      'United States to India',
-      'Canada to United Kingdom',
-      'United States to Philippines',
-      'Australia to India',
-      'United States to New Zealand',
-      'Netherlands to United Kingdom',
-      'Italy to United Kingdom'
+      'United States to Australia',
+      'France to Australia',
+      'Germany to Australia',
+      'India to Australia',
+      'Canada to Australia',
+      'Philippines to Australia',
+      'New Zealand to Australia',
+      'Netherlands to Australia',
+      'Italy to Australia',
+      'United Kingdom to Australia'
     ],
     visaNews: [
       'UK visa and immigration fees rise from April 2026',
@@ -185,16 +185,16 @@ export const landingContent = {
       'ETIAS Europe: how to apply for 2026 authorization'
     ],
     companyLinks: [
-      'About Us',
-      'Careers',
-      'Contact Us',
-      'Help Center',
-      'Refer a Friend',
-      'Testimonials',
-      'Blog',
-      'Press',
-      'Visa News',
-      'Affiliates and Partnerships'
+      { label: 'About Us', href: '/about-us' },
+      { label: 'Visa Services', href: '/visa-services' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Contact Us', href: '/contact-us' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms and Conditions', href: '/terms-and-conditions' },
+      { label: 'Careers', href: '#' },
+      { label: 'Help Center', href: '#' },
+      { label: 'Blog', href: '#' },
+      { label: 'Press', href: '#' }
     ],
     socialLinks: ['Instagram', 'LinkedIn', 'YouTube', 'Facebook'],
     copyright: `(c) ${new Date().getFullYear()} AUS Visa Service. All rights reserved.`

@@ -7,7 +7,10 @@ type FooterMegaProps = {
   visaRoutes: string[];
   visaNews: string[];
   blogs: string[];
-  companyLinks: string[];
+  companyLinks: Array<{
+    label: string;
+    href: string;
+  }>;
   socialLinks: string[];
   copyright: string;
 };
@@ -68,8 +71,8 @@ export function FooterMega({
           <h3>Company</h3>
           <ul>
             {companyLinks.map((link) => (
-              <li key={link}>
-                <a href="#">{link}</a>
+              <li key={link.label}>
+                <a href={link.href}>{link.label}</a>
               </li>
             ))}
           </ul>
