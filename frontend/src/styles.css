@@ -4822,6 +4822,24 @@ body.body--menu-open {
   gap: 0.6rem;
 }
 
+.dashboard-blog-checklist {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.85rem;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.dashboard-blog-review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.dashboard-blog-review-grid h3,
+.dashboard-blog-checklist h3 {
+  margin: 0 0 0.5rem;
+}
+
 .dashboard-blog-preview-drawer {
   position: fixed;
   right: 1rem;
