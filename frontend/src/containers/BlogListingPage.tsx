@@ -5,64 +5,17 @@ import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { VisiaChat } from '../components/landing/VisiaChat';
 import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
+import { blogPosts, isPublishedPost } from '../config/blog';
 
 type BlogListingPageProps = {
   pathname: string;
 };
 
-type BlogListItem = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  tags: string[];
-  publishedAt: string;
-  readingTime: string;
-};
-
-const blogPosts: BlogListItem[] = [
-  {
-    slug: 'australia-visitor-visa-subclass-600-document-checklist',
-    title: 'Australia Visitor Visa (Subclass 600): Document Checklist for Faster Review',
-    excerpt: 'A practical checklist to help you submit complete, consistent, and compliant visitor visa documentation.',
-    category: 'Visitor Visa',
-    tags: ['Subclass 600', 'Checklist'],
-    publishedAt: 'March 20, 2026',
-    readingTime: '7 min read'
-  },
-  {
-    slug: 'eta-601-vs-evisitor-651-which-one-to-choose',
-    title: 'ETA 601 vs eVisitor 651: Which Australian Travel Visa Should You Choose?',
-    excerpt: 'Understand eligibility, validity, and travel use-cases so you can choose the right short-stay pathway.',
-    category: 'Travel Planning',
-    tags: ['ETA 601', 'eVisitor 651'],
-    publishedAt: 'March 12, 2026',
-    readingTime: '6 min read'
-  },
-  {
-    slug: 'how-to-write-a-strong-genuine-temporary-entrant-statement',
-    title: 'How to Write a Strong Genuine Temporary Entrant Statement',
-    excerpt: 'Clear writing framework and common pitfalls to avoid when preparing your application narrative.',
-    category: 'Application Tips',
-    tags: ['GTE', 'Best Practices'],
-    publishedAt: 'March 4, 2026',
-    readingTime: '8 min read'
-  },
-  {
-    slug: 'common-reasons-visitor-visas-are-delayed',
-    title: '5 Common Reasons Visitor Visa Applications Are Delayed',
-    excerpt: 'Learn the most frequent causes of processing delays and proactive steps that reduce rework.',
-    category: 'Policy & Process',
-    tags: ['Processing', 'Avoid Delays'],
-    publishedAt: 'February 27, 2026',
-    readingTime: '5 min read'
-  }
-];
-
 export function BlogListingPage({ pathname }: BlogListingPageProps) {
   const { brandName, navItems, loginCta, newsletter, footer } = landingContent;
-  const featuredPost = blogPosts[0];
-  const latestPosts = blogPosts.slice(1);
+  const publishedPosts = blogPosts.filter((post) => isPublishedPost(post));
+  const featuredPost = publishedPosts[0];
+  const latestPosts = publishedPosts.slice(1);
 
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
@@ -89,14 +42,14 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
           <div className="content-container">
             <div className="blog-hero-panel">
               <p className="blog-kicker">Featured this week</p>
-              <h2>{featuredPost.title}</h2>
-              <p>{featuredPost.excerpt}</p>
+              <h2>{featuredPost?.title ?? 'Latest visa guidance'}</h2>
+              <p>{featuredPost?.excerpt ?? 'Explore actionable guidance from our editorial team.'}</p>
               <div className="blog-meta-row">
-                <span>{featuredPost.category}</span>
-                <span>{featuredPost.publishedAt}</span>
-                <span>{featuredPost.readingTime}</span>
+                <span>{featuredPost?.category ?? 'Blog'}</span>
+                <span>{featuredPost ? new Date(featuredPost.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Updated weekly'}</span>
+                <span>{featuredPost?.readingTime ?? '5 min read'}</span>
               </div>
-              <a className="blog-link-cta" href={`/blog/${featuredPost.slug}`}>
+              <a className="blog-link-cta" href={featuredPost ? `/blog/${featuredPost.slug}` : '/blog'}>
                 Read featured article
               </a>
             </div>
@@ -115,7 +68,7 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
                 <article key={post.slug} className="blog-card">
                   <div className="blog-card__meta">
                     <span>{post.category}</span>
-                    <span>{post.publishedAt}</span>
+                    <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                     <span>{post.readingTime}</span>
                   </div>
                   <h3>
