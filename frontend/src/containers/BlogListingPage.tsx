@@ -59,8 +59,8 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
     });
   }, [error, filters.category, filters.page, filters.tag, loading, posts.length, total]);
 
-  const featuredPost = posts[0];
-  const latestPosts = posts.slice(1);
+  const featuredPosts = posts.slice(0, 3);
+  const latestPosts = posts.slice(3);
 
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
@@ -120,21 +120,29 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
           </div>
         </section>
 
-        {!loading && !error && featuredPost ? (
+        {!loading && !error && featuredPosts.length > 0 ? (
           <section className="landing-section blog-hero-band">
             <div className="content-container">
-              <div className="blog-hero-panel">
-                <div className="blog-card-image-placeholder blog-card-image-placeholder--featured" aria-hidden="true" />
-                <p className="blog-kicker">Featured this week</p>
-                <h2>{featuredPost.title}</h2>
-                <p>{featuredPost.excerpt}</p>
-                <div className="blog-meta-row">
-                  <span>{featuredPost.categoryIds[0] ?? 'Blog'}</span>
-                  <span>{new Date(featuredPost.publishedAt ?? featuredPost.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                  <span>{featuredPost.readingTimeMinutes ?? 5} min read</span>
-                </div>
-                <a className="blog-link-cta" href={buildUtmSafeHref(`/blog/${featuredPost.slug}`)}>
-                  Read featured article
+              <p className="blog-kicker">Featured this week</p>
+              <div className="blog-card-grid blog-featured-grid">
+                {featuredPosts.map((post) => (
+                  <Card key={post.slug} className="blog-card blog-featured-card">
+                    <div className="blog-card-image-placeholder blog-card-image-placeholder--compact" aria-hidden="true" />
+                    <div className="blog-card__meta">
+                      <span>{post.categoryIds[0] ?? 'Blog'}</span>
+                      <span>{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                      <span>{post.readingTimeMinutes ?? 5} min read</span>
+                    </div>
+                    <h3>
+                      <a href={buildUtmSafeHref(`/blog/${post.slug}`)}>{post.title}</a>
+                    </h3>
+                    <p>{post.excerpt}</p>
+                  </Card>
+                ))}
+              </div>
+              <div className="blog-featured-cta-wrap">
+                <a className="blog-link-cta" href={buildUtmSafeHref('/blog')}>
+                  View all blog articles
                 </a>
               </div>
             </div>

@@ -5872,6 +5872,7 @@ body.body--menu-open {
 
 .blog-hero-band {
   background: var(--gradient-accent-soft);
+  margin-bottom: 50px;
 }
 
 .blog-hero-panel {
@@ -5976,6 +5977,24 @@ body.body--menu-open {
   margin-bottom: var(--space-2);
   aspect-ratio: 21 / 8;
   border-radius: var(--radius-lg);
+}
+
+.blog-card-image-placeholder--compact {
+  aspect-ratio: 16 / 6;
+}
+
+.blog-featured-grid {
+  margin-top: var(--space-2);
+}
+
+.blog-featured-card {
+  background: rgb(255 255 255 / 0.88);
+}
+
+.blog-featured-cta-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-2);
 }
 
 .blog-card h3,
