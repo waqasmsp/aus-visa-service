@@ -5389,9 +5389,12 @@ body.body--menu-open {
 }
 
 .visa-services-hero {
-  padding: clamp(2.2rem, 5vw, 3.4rem) 0 1.4rem;
-  background: linear-gradient(180deg, #eef3f9 0%, #e8eef6 100%);
-  border-top: 1px solid rgb(148 163 184 / 0.2);
+  padding: clamp(2.6rem, 6vw, 4rem) 0;
+  background:
+    radial-gradient(circle at 12% 22%, rgb(56 189 248 / 0.1), transparent 34%),
+    radial-gradient(circle at 88% 28%, rgb(59 130 246 / 0.1), transparent 36%),
+    linear-gradient(180deg, #eef3f9 0%, #e6edf7 100%);
+  border-top: 1px solid rgb(148 163 184 / 0.24);
   border-bottom: 1px solid rgb(148 163 184 / 0.2);
 }
 
