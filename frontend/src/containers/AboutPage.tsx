@@ -122,37 +122,6 @@ const legalItems = [
   { title: 'Sales Phone Number', value: '+1 510-288-5920' }
 ];
 
-const officeLocations = [
-  {
-    country: 'United States',
-    region: 'North America',
-    address: '19333 Collins Ave #804, Sunny Isles Beach, FL 33160',
-    phone: '+1 510-288-5920',
-    mediaClass: 'office-card__media--us'
-  },
-  {
-    country: 'Spain',
-    region: 'Europe',
-    address: 'Calle Estrecho de Mesina 13, 28023, Madrid 28043',
-    phone: '+34 919 01 62 78',
-    mediaClass: 'office-card__media--es'
-  },
-  {
-    country: 'Peru',
-    region: 'South America',
-    address: 'Calle Miguel Dasso 134, Piso 301, San Isidro, Lima 15073',
-    phone: '+51 01 705 8207',
-    mediaClass: 'office-card__media--pe'
-  },
-  {
-    country: 'India',
-    region: 'Asia',
-    address: 'E2/3, Block EP and GP, Sector V, Salt Lake, Kolkata 700091',
-    phone: '+91 01171816613',
-    mediaClass: 'office-card__media--in'
-  }
-];
-
 export function AboutPage({ pathname }: AboutPageProps) {
   const { brandName, navItems, loginCta, footer } = landingContent;
 
@@ -328,31 +297,6 @@ export function AboutPage({ pathname }: AboutPageProps) {
           </div>
         </section>
 
-        <section className="landing-section about-section">
-          <div className="content-container">
-            <div className="about-offices-card">
-              <div className="about-section-header about-section-header--center">
-                <h2>Our offices around the world</h2>
-              </div>
-              <div className="about-offices-grid">
-                {officeLocations.map((office) => (
-                  <article key={office.country} className="office-card">
-                    <div className={`office-card__media ${office.mediaClass}`} />
-                    <div className="office-card__body">
-                      <span>{office.region}</span>
-                      <h3>{office.country}</h3>
-                      <p>{office.address}</p>
-                      <p>{office.phone}</p>
-                    </div>
-                    <span className="office-card__arrow" aria-hidden="true">
-                      &rarr;
-                    </span>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <section className="landing-section landing-section--footer">
