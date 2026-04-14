@@ -20,7 +20,8 @@ export const isPrivateRoute = (pathname: string): boolean => {
 };
 
 export const buildCanonicalUrl = (pathname: string): string => {
-  const normalizedPath = pathname === '/' ? '' : pathname.replace(/\/+$/, '');
+  const [rawPath] = pathname.split(/[?#]/);
+  const normalizedPath = rawPath === '/' ? '' : rawPath.replace(/\/+$/, '');
   return `${siteUrl}${normalizedPath}`;
 };
 

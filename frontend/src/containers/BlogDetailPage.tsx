@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef } from 'react';
 import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
@@ -7,6 +8,8 @@ import { Card } from '../components/primitives/Card';
 import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 import { useBlogPost } from '../hooks/useBlogPost';
+import { trackBlogEvent, type BlogCtaType } from '../services/blogAnalyticsService';
+import { buildUtmSafeHref } from '../utils/utm';
 
 type BlogDetailPageProps = {
   pathname: string;
@@ -31,11 +34,66 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
   const { brandName, navItems, loginCta, newsletter, footer } = landingContent;
   const slug = pathname.toLowerCase().replace(/\/+$/, '').replace('/blog/', '');
   const { post, loading, error } = useBlogPost(slug);
+  const trackedDepths = useRef(new Set<number>());
+
+  useEffect(() => {
+    if (!post || loading || error) return;
+
+    trackBlogEvent('article_open', {
+      slug: post.slug,
+      metadata: {
+        title: post.title,
+        category: post.categoryIds[0] ?? 'blog'
+      }
+    });
+  }, [error, loading, post]);
+
+  useEffect(() => {
+    if (!post || typeof window === 'undefined') return;
+
+    trackedDepths.current.clear();
+
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const maxScroll = doc.scrollHeight - window.innerHeight;
+      if (maxScroll <= 0) return;
+
+      const depth = Math.round((window.scrollY / maxScroll) * 100);
+      const milestones = [25, 50, 75, 100] as const;
+
+      milestones.forEach((milestone) => {
+        if (depth < milestone || trackedDepths.current.has(milestone)) return;
+        trackedDepths.current.add(milestone);
+        trackBlogEvent('scroll_depth', { slug: post.slug, depth: milestone });
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [post]);
 
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
-      window.location.assign('/application');
+      window.location.assign(buildUtmSafeHref('/application'));
     }
+  };
+
+  const ctaLinks = useMemo(
+    () => [
+      { label: 'Start Application', href: '/application', type: 'apply' as const },
+      { label: 'Join Newsletter', href: '/#newsletter', type: 'newsletter' as const },
+      { label: 'Contact an Advisor', href: '/contact-us', type: 'contact' as const }
+    ],
+    []
+  );
+
+  const onCtaClick = (type: BlogCtaType) => {
+    if (!post) return;
+    trackBlogEvent('cta_click', { slug: post.slug, ctaType: type });
   };
 
   return (
@@ -58,7 +116,7 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
             <nav className="blog-breadcrumbs" aria-label="Breadcrumb">
               <a href="/">Home</a>
               <span>/</span>
-              <a href="/blog">Blog</a>
+              <a href={buildUtmSafeHref('/blog')}>Blog</a>
               <span>/</span>
               <span>{post?.title ?? 'Article'}</span>
             </nav>
@@ -87,13 +145,26 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
                 <article className="blog-article-content">
                   {post.contentHtml ? <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} /> : <p>{post.excerpt}</p>}
                 </article>
+
+                <div className="dashboard-actions-inline" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>
+                  {ctaLinks.map((cta) => (
+                    <a
+                      key={cta.type}
+                      href={buildUtmSafeHref(cta.href)}
+                      className="dashboard-primary-link"
+                      onClick={() => onCtaClick(cta.type)}
+                    >
+                      {cta.label}
+                    </a>
+                  ))}
+                </div>
               </>
             ) : null}
 
             {!loading && !error && !post ? (
               <article className="dashboard-panel">
                 <p className="dashboard-panel__note">This post is unavailable or has not been published yet.</p>
-                <a href="/blog" className="dashboard-primary-link">Return to blog listing</a>
+                <a href={buildUtmSafeHref('/blog')} className="dashboard-primary-link">Return to blog listing</a>
               </article>
             ) : null}
           </div>
@@ -108,7 +179,7 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
               {relatedPosts.map((postItem) => (
                 <Card key={postItem.href} className="blog-related-card">
                   <h3>
-                    <a href={postItem.href}>{postItem.title}</a>
+                    <a href={buildUtmSafeHref(postItem.href)}>{postItem.title}</a>
                   </h3>
                 </Card>
               ))}
