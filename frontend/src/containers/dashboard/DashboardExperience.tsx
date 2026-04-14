@@ -4,6 +4,7 @@ import { getContactEntries } from '../../utils/contactEntries';
 import { BlogEditorPanel } from '../../components/dashboard/blogs/BlogEditorPanel';
 import { BlogReviewPanel } from '../../components/dashboard/blogs/BlogReviewPanel';
 import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
+import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -1335,6 +1336,14 @@ function formatDashboardDate(value: string): string {
   }).format(date);
 }
 
+function toWorkflowStatus(status: string): BlogWorkflowStatus {
+  if (status === 'in_review') return 'In Review';
+  if (status === 'scheduled') return 'Scheduled';
+  if (status === 'published') return 'Published';
+  if (status === 'archived') return 'Archived';
+  return 'Draft';
+}
+
 function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   const actions = roleBlogActions[role];
   const canCreate = actions.includes('create');
@@ -1347,13 +1356,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   const canManageSettings = actions.includes('settings');
   const canSubmitReview = actions.includes('submit-review');
   const canRestoreRevision = role === 'admin';
-  const [posts, setPosts] = useState<Array<{ id: string; title: string; owner: string; updatedAt: string; status: BlogWorkflowStatus }>>([
-    { id: 'post-201', title: 'Visitor Visa Financial Evidence Standards', owner: 'Noah Farooq', updatedAt: '2026-04-13', status: 'Draft' as const },
-    { id: 'post-202', title: 'Partner Visa Interview Prep Questions', owner: 'Olivia Brown', updatedAt: '2026-04-12', status: 'In Review' as const },
-    { id: 'post-203', title: 'Policy Update: Biometrics Timelines', owner: 'Emma Wilson', updatedAt: '2026-04-11', status: 'Scheduled' as const },
-    { id: 'post-204', title: 'How to Document Travel History', owner: 'Arman Siddiqui', updatedAt: '2026-04-10', status: 'Published' as const },
-    { id: 'post-205', title: 'Legacy Covid Exemption Guidance', owner: 'Admin Team', updatedAt: '2026-03-19', status: 'Archived' as const }
-  ]);
+  const { filters, setFilters, posts: adminPosts, loading, error, onPublish, onSchedule, onArchive } = useBlogAdminTable();
   const [revisions, setRevisions] = useState<BlogRevision[]>([
     { id: 'rev-18', version: 'v1.8', editor: 'Noah Farooq', timestamp: '2026-04-13 11:10 UTC', fromStatus: 'In Review' as const, toStatus: 'In Review' as const },
     { id: 'rev-17', version: 'v1.7', editor: 'Olivia Brown', timestamp: '2026-04-12 09:42 UTC', fromStatus: 'Draft' as const, toStatus: 'In Review' as const },
@@ -1371,8 +1374,27 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
 
   const actorName = role === 'admin' ? 'Admin Team' : role === 'manager' ? 'Manager Reviewer' : 'Editor';
 
-  const handleGovernanceEvent = (event: { action: string; status: 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived' }) => {
-    setPosts((current) => current.map((post, index) => (index === 0 ? { ...post, status: event.status, updatedAt: '2026-04-14' } : post)));
+  const posts = adminPosts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    owner: post.authorName,
+    updatedAt: formatDashboardDate(post.updatedAt),
+    status: toWorkflowStatus(post.status)
+  }));
+
+  const handleGovernanceEvent = async (event: { action: string; status: 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived' }) => {
+    const firstPost = adminPosts[0];
+
+    if (firstPost) {
+      if (event.status === 'Published') {
+        await onPublish(firstPost.id);
+      } else if (event.status === 'Scheduled') {
+        await onSchedule(firstPost.id, new Date(Date.now() + 3600000).toISOString());
+      } else if (event.status === 'Archived') {
+        await onArchive(firstPost.id);
+      }
+    }
+
     setAuditEvents((current) => [
       { id: `evt-${current.length + 1}`, actor: actorName, action: event.action.toLowerCase().includes('publish') ? 'publish' : `status change → ${event.status}`, timestamp: '2026-04-14 12:00 UTC' },
       ...current
@@ -1385,7 +1407,30 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
 
   return (
     <section className="dashboard-stack">
-      <BlogsPanel role={role} actions={actions} posts={posts} />
+      <article className="dashboard-panel dashboard-panel--accent">
+        <div className="dashboard-actions-inline" style={{ flexWrap: 'wrap' }}>
+          <input
+            value={filters.q}
+            onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))}
+            placeholder="Search dashboard posts"
+            aria-label="Search dashboard posts"
+          />
+          <select
+            value={filters.status}
+            onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as typeof current.status }))}
+            aria-label="Filter dashboard post status"
+          >
+            <option value="all">All statuses</option>
+            <option value="draft">Draft</option>
+            <option value="in_review">In Review</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </article>
+
+      <BlogsPanel role={role} actions={actions} posts={posts} loading={loading} error={error} />
       <div className="dashboard-grid dashboard-grid--2">
         <BlogEditorPanel
           role={role}
@@ -1397,7 +1442,9 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
           canPublish={canPublish}
           canArchive={canArchive}
           canOverride={canOverride}
-          onGovernanceEvent={handleGovernanceEvent}
+          onGovernanceEvent={(event) => {
+            void handleGovernanceEvent(event);
+          }}
         />
         <BlogReviewPanel
           role={role}

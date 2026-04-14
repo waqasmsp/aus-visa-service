@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
@@ -5,7 +6,10 @@ import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { VisiaChat } from '../components/landing/VisiaChat';
 import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
-import { blogPosts, isPublishedPost } from '../config/blog';
+import { useBlogFilters } from '../hooks/useBlogFilters';
+import { useBlogPosts } from '../hooks/useBlogPosts';
+import { listCategories } from '../services/blogService';
+import type { BlogCategory } from '../types/blog';
 
 type BlogListingPageProps = {
   pathname: string;
@@ -13,9 +17,30 @@ type BlogListingPageProps = {
 
 export function BlogListingPage({ pathname }: BlogListingPageProps) {
   const { brandName, navItems, loginCta, newsletter, footer } = landingContent;
-  const publishedPosts = blogPosts.filter((post) => isPublishedPost(post));
-  const featuredPost = publishedPosts[0];
-  const latestPosts = publishedPosts.slice(1);
+  const { filters, setFilter, resetFilters } = useBlogFilters();
+  const { posts, total, hasNextPage, loading, error } = useBlogPosts(filters, 5);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    listCategories()
+      .then((items) => {
+        if (!active) return;
+        setCategories(items);
+      })
+      .catch(() => {
+        if (!active) return;
+        setCategories([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const featuredPost = posts[0];
+  const latestPosts = posts.slice(1);
 
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
@@ -38,57 +63,104 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
           description="Explore expert-written resources for planning, preparing, and submitting stronger visa applications."
         />
 
-        <section className="landing-section blog-hero-band">
+        <section className="landing-section blog-listing-section" aria-label="Blog filters">
           <div className="content-container">
-            <div className="blog-hero-panel">
-              <p className="blog-kicker">Featured this week</p>
-              <h2>{featuredPost?.title ?? 'Latest visa guidance'}</h2>
-              <p>{featuredPost?.excerpt ?? 'Explore actionable guidance from our editorial team.'}</p>
-              <div className="blog-meta-row">
-                <span>{featuredPost?.category ?? 'Blog'}</span>
-                <span>{featuredPost ? new Date(featuredPost.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Updated weekly'}</span>
-                <span>{featuredPost?.readingTime ?? '5 min read'}</span>
-              </div>
-              <a className="blog-link-cta" href={featuredPost ? `/blog/${featuredPost.slug}` : '/blog'}>
-                Read featured article
-              </a>
+            <div className="blog-section-header">
+              <h2>Find articles faster</h2>
+              <p>Search and filter by category, tag, and page with URL-synced filters.</p>
+            </div>
+
+            <div className="dashboard-actions-inline" style={{ flexWrap: 'wrap' }}>
+              <input
+                value={filters.q}
+                onChange={(event) => setFilter('q', event.target.value)}
+                placeholder="Search posts"
+                aria-label="Search blog posts"
+              />
+              <select value={filters.category} onChange={(event) => setFilter('category', event.target.value)} aria-label="Filter category">
+                <option value="">All categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.name.toLowerCase()}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={filters.tag}
+                onChange={(event) => setFilter('tag', event.target.value)}
+                placeholder="Tag"
+                aria-label="Filter tag"
+              />
+              <button type="button" onClick={resetFilters}>
+                Clear filters
+              </button>
             </div>
           </div>
         </section>
+
+        {!loading && !error && featuredPost ? (
+          <section className="landing-section blog-hero-band">
+            <div className="content-container">
+              <div className="blog-hero-panel">
+                <p className="blog-kicker">Featured this week</p>
+                <h2>{featuredPost.title}</h2>
+                <p>{featuredPost.excerpt}</p>
+                <div className="blog-meta-row">
+                  <span>{featuredPost.categoryIds[0] ?? 'Blog'}</span>
+                  <span>{new Date(featuredPost.publishedAt ?? featuredPost.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  <span>{featuredPost.readingTimeMinutes ?? 5} min read</span>
+                </div>
+                <a className="blog-link-cta" href={`/blog/${featuredPost.slug}`}>
+                  Read featured article
+                </a>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="landing-section blog-listing-section" aria-label="Latest blog posts">
           <div className="content-container">
             <div className="blog-section-header">
               <h2>Latest articles</h2>
-              <p>Stay up to date with policy updates, application strategy, and travel preparation guidance.</p>
+              <p>{total} result(s) found.</p>
             </div>
 
-            <div className="blog-card-grid">
-              {latestPosts.map((post) => (
-                <article key={post.slug} className="blog-card">
-                  <div className="blog-card__meta">
-                    <span>{post.category}</span>
-                    <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                    <span>{post.readingTime}</span>
-                  </div>
-                  <h3>
-                    <a href={`/blog/${post.slug}`}>{post.title}</a>
-                  </h3>
-                  <p>{post.excerpt}</p>
-                  <div className="blog-tag-row">
-                    {post.tags.map((tag) => (
-                      <a key={tag} href={`/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                        #{tag}
-                      </a>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
+            {loading ? <p className="dashboard-panel__note">Loading blog posts...</p> : null}
+            {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
+            {!loading && !error && posts.length === 0 ? (
+              <article className="dashboard-panel">
+                <p className="dashboard-panel__note">No posts match your current filters.</p>
+              </article>
+            ) : null}
+
+            {!loading && !error ? (
+              <div className="blog-card-grid">
+                {latestPosts.map((post) => (
+                  <article key={post.slug} className="blog-card">
+                    <div className="blog-card__meta">
+                      <span>{post.categoryIds[0] ?? 'blog'}</span>
+                      <span>{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                      <span>{post.readingTimeMinutes ?? 5} min read</span>
+                    </div>
+                    <h3>
+                      <a href={`/blog/${post.slug}`}>{post.title}</a>
+                    </h3>
+                    <p>{post.excerpt}</p>
+                    <div className="blog-tag-row">
+                      {post.tagIds.map((tag) => (
+                        <a key={tag} href={`/blog?tag=${encodeURIComponent(tag)}`}>
+                          #{tag}
+                        </a>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : null}
 
             <div className="blog-load-more-wrap">
-              <button type="button" className="blog-load-more-btn">
-                Load more posts
+              <button type="button" className="blog-load-more-btn" disabled={loading || !hasNextPage} onClick={() => setFilter('page', filters.page + 1)}>
+                {hasNextPage ? 'Load more posts' : 'No more posts'}
               </button>
             </div>
           </div>
