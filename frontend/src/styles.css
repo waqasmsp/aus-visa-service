@@ -28,6 +28,7 @@
   --space-4: 1rem;
   --space-5: 1.25rem;
   --space-6: 1.5rem;
+  --space-section-min: 35px;
 
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -80,6 +81,12 @@ body.body--menu-open {
 .landing-page {
   width: 100%;
   padding: 0;
+}
+
+.landing-page > .landing-main + .landing-section,
+.landing-page > .landing-section + .landing-section,
+.landing-main > .landing-section + .landing-section {
+  padding-top: var(--space-section-min);
 }
 
 .content-container {
