@@ -5,6 +5,12 @@ import { PublishingControls } from './PublishingControls';
 import { SeoSidebar } from './SeoSidebar';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
+type BlogWorkflowStatus = 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived';
+
+type GovernanceEvent = {
+  action: string;
+  status: BlogWorkflowStatus;
+};
 
 type BlogEditorState = {
   title: string;
@@ -64,7 +70,6 @@ const slugify = (value: string): string =>
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 
-
 const slugReadabilityHint = (slug: string): string => {
   if (!slug) return '';
   if (!/^[a-z0-9-]+$/.test(slug)) return 'Slug should use lowercase letters, numbers, and hyphens only.';
@@ -97,21 +102,27 @@ export function BlogEditorPanel({
   canEdit,
   canManageSettings,
   canSubmitReview,
+  canApproveReview,
   canPublish,
-  canArchive
+  canArchive,
+  canOverride,
+  onGovernanceEvent
 }: {
   role: DashboardRole;
   canCreate: boolean;
   canEdit: boolean;
   canManageSettings: boolean;
   canSubmitReview: boolean;
+  canApproveReview: boolean;
   canPublish: boolean;
   canArchive: boolean;
+  canOverride: boolean;
+  onGovernanceEvent: (event: GovernanceEvent) => void;
 }) {
   const [formState, setFormState] = useState<BlogEditorState>(initialState);
   const [savedState, setSavedState] = useState<BlogEditorState>(initialState);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-  const [status, setStatus] = useState('Draft');
+  const [status, setStatus] = useState<BlogWorkflowStatus>('Draft');
   const [scheduleAt, setScheduleAt] = useState('');
   const [timezone, setTimezone] = useState('UTC');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -175,7 +186,6 @@ export function BlogEditorPanel({
     ogImageWarning: formState.ogImage && (!isValidUrl(formState.ogImage) || !looksLikeImage(formState.ogImage)) ? 'OG image may be broken (invalid URL or non-image path).' : ''
   };
 
-
   const missingInlineAltCount = markdownImagesMissingAlt(formState.content) + htmlImagesMissingAlt(formState.content);
   const seoQualityChecks = [
     formState.slug && formState.slug.length < 20 ? 'Slug is short. Aim for 20-80 characters when possible.' : '',
@@ -201,8 +211,21 @@ export function BlogEditorPanel({
   };
 
   const hasBlockingError = Boolean(editorErrors.title || editorErrors.slug || editorErrors.content || seoValidation.canonicalUrl);
+  const publishChecklist = {
+    title: Boolean(formState.title.trim()),
+    slug: Boolean(formState.slug.trim()),
+    content: Boolean(formState.content.trim()),
+    featuredImageAlt: Boolean(formState.featuredImage.trim() && formState.imageAlt.trim()),
+    metaDescription: Boolean(formState.metaDescription.trim())
+  };
+  const checklistPassed = Object.values(publishChecklist).every(Boolean);
 
-  const handleWorkflowAction = (action: 'save-draft' | 'submit-review' | 'schedule' | 'publish-now' | 'archive' | 'reset') => {
+  const updateWorkflow = (nextStatus: BlogWorkflowStatus, action: string) => {
+    setStatus(nextStatus);
+    onGovernanceEvent({ action, status: nextStatus });
+  };
+
+  const handleWorkflowAction = (action: 'save-draft' | 'submit-review' | 'approve-review' | 'schedule' | 'publish-now' | 'archive' | 'override-publish' | 'reset') => {
     if (action === 'reset') {
       if (!dirty || window.confirm('Discard unsaved changes and revert to last saved state?')) {
         setFormState(savedState);
@@ -210,8 +233,13 @@ export function BlogEditorPanel({
       return;
     }
 
-    if ((action === 'submit-review' || action === 'schedule' || action === 'publish-now') && hasBlockingError) {
+    if ((action === 'submit-review' || action === 'schedule' || action === 'publish-now' || action === 'override-publish') && hasBlockingError) {
       window.alert('Please resolve title, slug, content, and canonical URL validation before continuing.');
+      return;
+    }
+
+    if ((action === 'schedule' || action === 'publish-now' || action === 'override-publish') && !checklistPassed) {
+      window.alert('Publish checklist is incomplete. Fill title, slug, content, featured image alt text, and meta description.');
       return;
     }
 
@@ -222,11 +250,13 @@ export function BlogEditorPanel({
 
     setSavedState(formState);
 
-    if (action === 'save-draft') setStatus('Draft saved');
-    if (action === 'submit-review') setStatus('In review');
-    if (action === 'schedule') setStatus(`Scheduled • ${scheduleAt} (${timezone})`);
-    if (action === 'publish-now') setStatus('Published');
-    if (action === 'archive') setStatus('Archived');
+    if (action === 'save-draft') updateWorkflow('Draft', 'Draft saved');
+    if (action === 'submit-review') updateWorkflow('In Review', 'Submitted for review');
+    if (action === 'approve-review') updateWorkflow('In Review', 'Review approved by manager');
+    if (action === 'schedule') updateWorkflow('Scheduled', `Scheduled for ${scheduleAt} (${timezone})`);
+    if (action === 'publish-now') updateWorkflow('Published', 'Published immediately');
+    if (action === 'override-publish') updateWorkflow('Published', 'Admin override publish');
+    if (action === 'archive') updateWorkflow('Archived', 'Archived post');
   };
 
   return (
@@ -287,12 +317,15 @@ export function BlogEditorPanel({
 
       <PublishingControls
         canSubmitReview={canSubmitReview}
+        canApproveReview={canApproveReview}
         canPublish={canPublish}
         canArchive={canArchive}
+        canOverride={canOverride}
         scheduleAt={scheduleAt}
         timezone={timezone}
         dirty={dirty}
         status={status}
+        checklist={publishChecklist}
         onScheduleChange={setScheduleAt}
         onTimezoneChange={setTimezone}
         onAction={handleWorkflowAction}

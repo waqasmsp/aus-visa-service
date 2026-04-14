@@ -18,7 +18,29 @@ type AuthSession = {
 type DashboardSection = 'overview' | 'pages' | 'blogs' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
 type ManagerSection = 'overview' | 'team' | 'applications' | 'blogs' | 'documents' | 'payments' | 'contact-entries' | 'settings';
 type UserSection = 'overview' | 'applications' | 'documents' | 'payments' | 'messages' | 'profile';
-type BlogAction = 'create' | 'edit' | 'submit-review' | 'publish' | 'archive' | 'delete' | 'settings';
+type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
+type BlogWorkflowStatus = 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived';
+type BlogRevision = {
+  id: string;
+  version: string;
+  editor: string;
+  timestamp: string;
+  fromStatus: BlogWorkflowStatus;
+  toStatus: BlogWorkflowStatus;
+};
+type BlogComment = {
+  id: string;
+  author: string;
+  role: 'Manager' | 'Admin' | 'Editor';
+  createdAt: string;
+  note: string;
+};
+type BlogAuditEvent = {
+  id: string;
+  actor: string;
+  action: string;
+  timestamp: string;
+};
 type PageStatus = 'Published' | 'Draft' | 'Archived';
 type UserSegment = 'Registered' | 'Lead';
 type ApplicationStatus = 'Submitted' | 'In Review' | 'Documents Needed' | 'Approved' | 'Completed' | 'Rejected';
@@ -67,8 +89,8 @@ const roleScope: Record<DashboardRole, DashboardSection[]> = {
 };
 
 const roleBlogActions: Record<DashboardRole, BlogAction[]> = {
-  admin: ['create', 'edit', 'submit-review', 'publish', 'archive', 'delete', 'settings'],
-  manager: ['create', 'edit', 'submit-review', 'publish'],
+  admin: ['create', 'edit', 'submit-review', 'publish', 'archive', 'delete', 'settings', 'override'],
+  manager: ['create', 'edit', 'submit-review', 'approve-review'],
   user: []
 };
 
@@ -1317,15 +1339,53 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   const actions = roleBlogActions[role];
   const canCreate = actions.includes('create');
   const canEdit = actions.includes('edit');
+  const canApproveReview = actions.includes('approve-review');
   const canPublish = actions.includes('publish');
   const canArchive = actions.includes('archive');
   const canDelete = actions.includes('delete');
+  const canOverride = actions.includes('override');
   const canManageSettings = actions.includes('settings');
   const canSubmitReview = actions.includes('submit-review');
+  const canRestoreRevision = role === 'admin';
+  const [posts, setPosts] = useState<Array<{ id: string; title: string; owner: string; updatedAt: string; status: BlogWorkflowStatus }>>([
+    { id: 'post-201', title: 'Visitor Visa Financial Evidence Standards', owner: 'Noah Farooq', updatedAt: '2026-04-13', status: 'Draft' as const },
+    { id: 'post-202', title: 'Partner Visa Interview Prep Questions', owner: 'Olivia Brown', updatedAt: '2026-04-12', status: 'In Review' as const },
+    { id: 'post-203', title: 'Policy Update: Biometrics Timelines', owner: 'Emma Wilson', updatedAt: '2026-04-11', status: 'Scheduled' as const },
+    { id: 'post-204', title: 'How to Document Travel History', owner: 'Arman Siddiqui', updatedAt: '2026-04-10', status: 'Published' as const },
+    { id: 'post-205', title: 'Legacy Covid Exemption Guidance', owner: 'Admin Team', updatedAt: '2026-03-19', status: 'Archived' as const }
+  ]);
+  const [revisions, setRevisions] = useState<BlogRevision[]>([
+    { id: 'rev-18', version: 'v1.8', editor: 'Noah Farooq', timestamp: '2026-04-13 11:10 UTC', fromStatus: 'In Review' as const, toStatus: 'In Review' as const },
+    { id: 'rev-17', version: 'v1.7', editor: 'Olivia Brown', timestamp: '2026-04-12 09:42 UTC', fromStatus: 'Draft' as const, toStatus: 'In Review' as const },
+    { id: 'rev-16', version: 'v1.6', editor: 'Emma Wilson', timestamp: '2026-04-11 16:24 UTC', fromStatus: 'Draft' as const, toStatus: 'Draft' as const }
+  ]);
+  const [comments, setComments] = useState<BlogComment[]>([
+    { id: 'cmt-1', author: 'Olivia Brown', role: 'Manager' as const, createdAt: '2026-04-12 09:50 UTC', note: 'Add stronger context around financial sufficiency calculations.' },
+    { id: 'cmt-2', author: 'Admin Team', role: 'Admin' as const, createdAt: '2026-04-13 08:22 UTC', note: 'Legal check complete. Ready for publish checklist verification.' }
+  ]);
+  const [auditEvents, setAuditEvents] = useState<BlogAuditEvent[]>([
+    { id: 'evt-1', actor: 'Olivia Brown', action: 'create', timestamp: '2026-04-12 09:30 UTC' },
+    { id: 'evt-2', actor: 'Olivia Brown', action: 'update', timestamp: '2026-04-12 09:42 UTC' },
+    { id: 'evt-3', actor: 'Noah Farooq', action: 'status change → In Review', timestamp: '2026-04-13 11:10 UTC' }
+  ]);
+
+  const actorName = role === 'admin' ? 'Admin Team' : role === 'manager' ? 'Manager Reviewer' : 'Editor';
+
+  const handleGovernanceEvent = (event: { action: string; status: 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived' }) => {
+    setPosts((current) => current.map((post, index) => (index === 0 ? { ...post, status: event.status, updatedAt: '2026-04-14' } : post)));
+    setAuditEvents((current) => [
+      { id: `evt-${current.length + 1}`, actor: actorName, action: event.action.toLowerCase().includes('publish') ? 'publish' : `status change → ${event.status}`, timestamp: '2026-04-14 12:00 UTC' },
+      ...current
+    ]);
+    setRevisions((current) => [
+      { id: `rev-${current.length + 19}`, version: `v1.${current.length + 9}`, editor: actorName, timestamp: '2026-04-14 12:00 UTC', fromStatus: current[0]?.toStatus ?? 'Draft', toStatus: event.status },
+      ...current
+    ]);
+  };
 
   return (
     <section className="dashboard-stack">
-      <BlogsPanel role={role} actions={actions} />
+      <BlogsPanel role={role} actions={actions} posts={posts} />
       <div className="dashboard-grid dashboard-grid--2">
         <BlogEditorPanel
           role={role}
@@ -1333,10 +1393,40 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
           canEdit={canEdit}
           canManageSettings={canManageSettings}
           canSubmitReview={canSubmitReview}
+          canApproveReview={canApproveReview}
           canPublish={canPublish}
           canArchive={canArchive}
+          canOverride={canOverride}
+          onGovernanceEvent={handleGovernanceEvent}
         />
-        <BlogReviewPanel role={role} canSubmitReview={canSubmitReview} canPublish={canPublish} canArchive={canArchive} canDelete={canDelete} />
+        <BlogReviewPanel
+          role={role}
+          canSubmitReview={canSubmitReview}
+          canApproveReview={canApproveReview}
+          canPublish={canPublish}
+          canArchive={canArchive}
+          canDelete={canDelete}
+          canOverride={canOverride}
+          canRestoreRevision={canRestoreRevision}
+          revisions={revisions}
+          comments={comments}
+          auditEvents={auditEvents}
+          onRestoreRevision={(revisionId) => {
+            if (!canRestoreRevision) return;
+            const revision = revisions.find((item) => item.id === revisionId);
+            if (!revision) return;
+            setAuditEvents((current) => [
+              { id: `evt-${current.length + 1}`, actor: actorName, action: `restore ${revision.version}`, timestamp: '2026-04-14 12:10 UTC' },
+              ...current
+            ]);
+          }}
+          onAddComment={(note) =>
+            setComments((current) => [
+              { id: `cmt-${current.length + 1}`, author: actorName, role: role === 'admin' ? 'Admin' : role === 'manager' ? 'Manager' : 'Editor', createdAt: '2026-04-14 12:05 UTC', note },
+              ...current
+            ])
+          }
+        />
       </div>
     </section>
   );
