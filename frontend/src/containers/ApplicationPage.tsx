@@ -26,7 +26,7 @@ export function ApplicationPage({ pathname }: ApplicationPageProps) {
         </div>
       </section>
 
-      <main className="landing-main">
+      <main className="landing-main landing-main--application">
         <section className="landing-section landing-section--application">
           <ApplicationStepOneForm />
         </section>
