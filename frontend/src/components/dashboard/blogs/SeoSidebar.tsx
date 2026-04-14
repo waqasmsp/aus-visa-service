@@ -29,7 +29,7 @@ export function SeoSidebar({ value, validation, onFieldChange }: SeoSidebarProps
         <label className="dashboard-settings-grid-label">
           <span>SEO title</span>
           <input value={value.seoTitle} onChange={(event) => onFieldChange('seoTitle', event.target.value)} maxLength={110} />
-          <small className="dashboard-blog-form-hint">{validation.seoTitle}</small>
+          <small className="dashboard-blog-form-hint">{validation.seoTitle} ({value.seoTitle.length} chars)</small>
         </label>
 
         <label className="dashboard-settings-grid-label">
@@ -40,7 +40,7 @@ export function SeoSidebar({ value, validation, onFieldChange }: SeoSidebarProps
             rows={4}
             maxLength={200}
           />
-          <small className="dashboard-blog-form-hint">{validation.metaDescription}</small>
+          <small className="dashboard-blog-form-hint">{validation.metaDescription} ({value.metaDescription.length} chars)</small>
         </label>
 
         <label className="dashboard-settings-grid-label">

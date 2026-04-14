@@ -64,6 +64,21 @@ const slugify = (value: string): string =>
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 
+
+const slugReadabilityHint = (slug: string): string => {
+  if (!slug) return '';
+  if (!/^[a-z0-9-]+$/.test(slug)) return 'Slug should use lowercase letters, numbers, and hyphens only.';
+  const parts = slug.split('-').filter(Boolean);
+  if (parts.length < 3) return 'Slug readability is low; use at least 3 descriptive words.';
+  if (parts.length > 12) return 'Slug is too dense; keep it under 12 words for readability.';
+  if (slug.length > 80) return 'Slug is long; keep it under 80 characters.';
+  return '';
+};
+
+const markdownImagesMissingAlt = (content: string): number => (content.match(/!\[\s*\]\([^)]*\)/g) ?? []).length;
+
+const htmlImagesMissingAlt = (content: string): number =>
+  (content.match(/<img\b(?![^>]*\balt=)[^>]*>/gi) ?? []).length;
 const looksLikeImage = (value: string): boolean => /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(value);
 
 const isValidUrl = (value: string): boolean => {
@@ -138,7 +153,7 @@ export function BlogEditorPanel({
         ? 'Slug must be at least 8 characters.'
         : slugTaken
           ? 'Slug already exists. Please choose a unique URL path.'
-          : '',
+          : slugReadabilityHint(formState.slug),
     excerpt: formState.excerpt.length > 220 ? 'Excerpt should be 220 characters or fewer.' : '',
     content: formState.content.length < 40 ? 'Add richer body content before publishing.' : ''
   };
@@ -159,6 +174,20 @@ export function BlogEditorPanel({
     canonicalUrl: formState.canonicalUrl && !isValidUrl(formState.canonicalUrl) ? 'Canonical URL must start with http:// or https://.' : '',
     ogImageWarning: formState.ogImage && (!isValidUrl(formState.ogImage) || !looksLikeImage(formState.ogImage)) ? 'OG image may be broken (invalid URL or non-image path).' : ''
   };
+
+
+  const missingInlineAltCount = markdownImagesMissingAlt(formState.content) + htmlImagesMissingAlt(formState.content);
+  const seoQualityChecks = [
+    formState.slug && formState.slug.length < 20 ? 'Slug is short. Aim for 20-80 characters when possible.' : '',
+    formState.slug ? slugReadabilityHint(formState.slug) : '',
+    formState.seoTitle && (formState.seoTitle.length < 30 || formState.seoTitle.length > 60)
+      ? `Meta title recommendation: keep between 30-60 characters (currently ${formState.seoTitle.length}).`
+      : '',
+    formState.metaDescription && (formState.metaDescription.length < 70 || formState.metaDescription.length > 160)
+      ? `Meta description recommendation: keep between 70-160 characters (currently ${formState.metaDescription.length}).`
+      : '',
+    missingInlineAltCount > 0 ? `${missingInlineAltCount} inline image(s) appear to be missing alt text.` : ''
+  ].filter(Boolean);
 
   const imageWarnings = [
     formState.featuredImage && (!isValidUrl(formState.featuredImage) || !looksLikeImage(formState.featuredImage))
@@ -214,9 +243,9 @@ export function BlogEditorPanel({
           <li>SEO/settings controls: {canManageSettings ? 'Allowed' : 'Restricted'}</li>
         </ul>
 
-        {imageWarnings.length > 0 ? (
+        {[...imageWarnings, ...seoQualityChecks].length > 0 ? (
           <div className="dashboard-blog-warnings">
-            {imageWarnings.map((warning) => (
+            {[...imageWarnings, ...seoQualityChecks].map((warning) => (
               <p key={warning}>{warning}</p>
             ))}
           </div>

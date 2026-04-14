@@ -24,11 +24,14 @@ export const buildCanonicalUrl = (pathname: string): string => {
   return `${siteUrl}${normalizedPath}`;
 };
 
+export const staticSitemapRoutes = ['/', '/about-us', '/contact-us', '/blog', '/pricing', '/visa-services'];
+
 export const defaultSeo = {
   siteName: 'AUS Visa Service',
   title: 'AUS Visa Service | Fast Australian Travel Visa Guidance',
   description:
     'Get guided support for Australian travel visa pathways with clear steps, fast processing help, and 24/7 assistance.',
   keywords: ['Australia visa', 'travel visa', 'visa application', 'AUS Visa Service', 'immigration support'],
-  image: `${siteUrl}/og-image.svg`
+  image: `${siteUrl}/og-image.svg`,
+  twitterCard: 'summary_large_image' as const
 };

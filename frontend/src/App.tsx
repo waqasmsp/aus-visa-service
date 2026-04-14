@@ -1,4 +1,5 @@
 import { Seo } from './components/seo/Seo';
+import { getBlogPostBySlug, isPublishedPost } from './config/blog';
 import { isPrivateRoute } from './config/seo';
 import { AboutPage } from './containers/AboutPage';
 import { ApplicationPage } from './containers/ApplicationPage';
@@ -19,7 +20,6 @@ type AppProps = {
 };
 
 export default function App({ pathname }: AppProps) {
-  const noIndex = isPrivateRoute(pathname);
   const normalizedPath = pathname.toLowerCase().replace(/\/+$/, '') || '/';
   const isDashboardRoute =
     normalizedPath.startsWith('/dashboard') ||
@@ -38,6 +38,11 @@ export default function App({ pathname }: AppProps) {
   const isVisaServicesPage = normalizedPath === '/visa-services';
   const isPrivacyPolicyPage = normalizedPath === '/privacy-policy';
   const isTermsAndConditionsPage = normalizedPath === '/terms-and-conditions' || normalizedPath === '/terms-and-condition';
+
+  const blogSlug = isBlogDetailPage ? normalizedPath.replace('/blog/', '') : '';
+  const blogPost = blogSlug ? getBlogPostBySlug(blogSlug) : undefined;
+  const isPublicPublishedBlogPost = blogPost ? isPublishedPost(blogPost) : false;
+  const noIndex = isPrivateRoute(pathname) || (isBlogDetailPage && !isPublicPublishedBlogPost);
   const seoTitle = isDashboardRoute
     ? 'Dashboard | AUS Visa Service'
     : isAboutPage
@@ -51,7 +56,7 @@ export default function App({ pathname }: AppProps) {
           : isBlogCategoryPage
             ? 'Blog Topics | Global Visas'
             : isBlogDetailPage
-              ? 'Blog Article | Global Visas'
+              ? `${blogPost?.title ?? 'Blog Article'} | Global Visas`
         : isVisaServicesPage
           ? 'Visa Services | Global Visas'
           : isVisaDetailsPage
@@ -74,7 +79,7 @@ export default function App({ pathname }: AppProps) {
           : isBlogCategoryPage
             ? 'Browse curated visa and travel topics to find practical guidance and updates relevant to your journey.'
             : isBlogDetailPage
-              ? 'Explore in-depth visa and travel insights with practical, step-by-step guidance for better application outcomes.'
+              ? blogPost?.excerpt ?? 'Explore in-depth visa and travel insights with practical, step-by-step guidance for better application outcomes.'
         : isVisaServicesPage
           ? 'Browse all Australian visa services with structured guidance, service comparisons, and direct links to detailed pages.'
           : isVisaDetailsPage
@@ -97,7 +102,7 @@ export default function App({ pathname }: AppProps) {
           : isBlogCategoryPage
             ? ['visa categories', 'blog topics', 'travel advice tags', 'visa education', 'application insights']
             : isBlogDetailPage
-              ? ['visa article', 'travel blog post', 'application tips', 'policy updates', 'visa knowledge base']
+              ? blogPost?.tags ?? ['visa article', 'travel blog post', 'application tips', 'policy updates', 'visa knowledge base']
         : isVisaServicesPage
           ? ['visa services australia', 'australian visa types', 'visitor visa options', 'visa comparison', 'global visas']
           : isVisaDetailsPage
@@ -110,7 +115,23 @@ export default function App({ pathname }: AppProps) {
 
   return (
     <>
-      <Seo pathname={pathname} noIndex={noIndex} title={seoTitle} description={seoDescription} keywords={seoKeywords} />
+      <Seo
+        pathname={pathname}
+        noIndex={noIndex}
+        noArchive={isBlogDetailPage && !isPublicPublishedBlogPost}
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        type={isBlogDetailPage ? 'article' : 'website'}
+        publishedTime={isBlogDetailPage ? blogPost?.publishedAt : undefined}
+        modifiedTime={isBlogDetailPage ? blogPost?.updatedAt : undefined}
+        author={isBlogDetailPage ? blogPost?.author : undefined}
+        section={isBlogDetailPage ? blogPost?.category : undefined}
+        tags={isBlogDetailPage ? blogPost?.tags : undefined}
+        ogImage={isBlogDetailPage ? blogPost?.featuredImage : undefined}
+        twitterCard={isBlogDetailPage ? blogPost?.twitterCardType : undefined}
+        canonicalOverride={isBlogDetailPage ? `/blog/${blogPost?.slug ?? blogSlug}` : undefined}
+      />
       {isDashboardRoute ? (
         <DashboardExperience pathname={pathname} />
       ) : isApplicationPage ? (
