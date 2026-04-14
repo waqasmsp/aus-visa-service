@@ -936,11 +936,11 @@ body.body--menu-open {
   position: relative;
   justify-content: flex-end;
   gap: 0.2rem;
-  padding: 0.22rem 0.35rem;
-  border: 1px solid rgb(148 163 184 / 0.22);
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.52), rgb(226 232 240 / 0.32));
-  backdrop-filter: blur(2px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
 }
 
 .top-header__nav-item {
@@ -972,14 +972,13 @@ body.body--menu-open {
 
 .top-header__nav > .top-header__nav-item > a:hover {
   color: #1d4ed8;
-  background: rgb(219 234 254 / 0.62);
 }
 
 .top-header__nav > .top-header__nav-item > a[aria-current='page'] {
   color: #1d4ed8;
   font-weight: var(--font-weight-semibold);
-  background: linear-gradient(180deg, rgb(219 234 254 / 0.86), rgb(191 219 254 / 0.66));
-  box-shadow: inset 0 0 0 1px rgb(37 99 235 / 0.22), 0 8px 16px rgb(37 99 235 / 0.14);
+  background: transparent;
+  box-shadow: none;
 }
 
 .top-header__nav-indicator {
