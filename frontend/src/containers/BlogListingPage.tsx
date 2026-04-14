@@ -11,8 +11,10 @@ import { SectionContainer } from '../components/primitives/SectionContainer';
 import { landingContent } from '../constants/landingContent';
 import { useBlogFilters } from '../hooks/useBlogFilters';
 import { useBlogPosts } from '../hooks/useBlogPosts';
+import { trackBlogEvent } from '../services/blogAnalyticsService';
 import { listCategories } from '../services/blogService';
 import type { BlogCategory } from '../types/blog';
+import { buildUtmSafeHref } from '../utils/utm';
 
 type BlogListingPageProps = {
   pathname: string;
@@ -42,12 +44,27 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
     };
   }, []);
 
+
+  useEffect(() => {
+    if (loading || error || posts.length === 0) return;
+
+    trackBlogEvent('blog_list_impression', {
+      metadata: {
+        visiblePosts: posts.length,
+        totalResults: total,
+        page: filters.page,
+        category: filters.category || 'all',
+        tag: filters.tag || 'all'
+      }
+    });
+  }, [error, filters.category, filters.page, filters.tag, loading, posts.length, total]);
+
   const featuredPost = posts[0];
   const latestPosts = posts.slice(1);
 
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
-      window.location.assign('/application');
+      window.location.assign(buildUtmSafeHref('/application'));
     }
   };
 
@@ -115,7 +132,7 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
                   <span>{new Date(featuredPost.publishedAt ?? featuredPost.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                   <span>{featuredPost.readingTimeMinutes ?? 5} min read</span>
                 </div>
-                <a className="blog-link-cta" href={`/blog/${featuredPost.slug}`}>
+                <a className="blog-link-cta" href={buildUtmSafeHref(`/blog/${featuredPost.slug}`)}>
                   Read featured article
                 </a>
               </div>
@@ -148,12 +165,12 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
                       <span>{post.readingTimeMinutes ?? 5} min read</span>
                     </div>
                     <h3>
-                      <a href={`/blog/${post.slug}`}>{post.title}</a>
+                      <a href={buildUtmSafeHref(`/blog/${post.slug}`)}>{post.title}</a>
                     </h3>
                     <p>{post.excerpt}</p>
                     <div className="blog-tag-row">
                       {post.tagIds.map((tag) => (
-                        <a key={tag} href={`/blog?tag=${encodeURIComponent(tag)}`}>
+                        <a key={tag} href={buildUtmSafeHref(`/blog?tag=${encodeURIComponent(tag)}`)}>
                           #{tag}
                         </a>
                       ))}

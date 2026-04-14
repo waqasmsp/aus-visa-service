@@ -4,7 +4,9 @@ import { getContactEntries } from '../../utils/contactEntries';
 import { BlogEditorPanel } from '../../components/dashboard/blogs/BlogEditorPanel';
 import { BlogReviewPanel } from '../../components/dashboard/blogs/BlogReviewPanel';
 import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
+import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPerformanceWidgets';
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
+import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -1382,6 +1384,12 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
     status: toWorkflowStatus(post.status)
   }));
 
+  const staleThresholdDays = 45;
+  const performanceSnapshot = useMemo(
+    () => getBlogPerformanceSnapshot(adminPosts, { staleThresholdDays }),
+    [adminPosts]
+  );
+
   const handleGovernanceEvent = async (event: { action: string; status: 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived' }) => {
     const firstPost = adminPosts[0];
 
@@ -1430,6 +1438,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
         </div>
       </article>
 
+      <BlogPerformanceWidgets snapshot={performanceSnapshot} staleThresholdDays={staleThresholdDays} />
       <BlogsPanel role={role} actions={actions} posts={posts} loading={loading} error={error} />
       <div className="dashboard-grid dashboard-grid--2">
         <BlogEditorPanel
