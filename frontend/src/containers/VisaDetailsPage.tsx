@@ -2,6 +2,7 @@ import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 import { visaNavItems, visaPages } from '../constants/visaContent';
 
@@ -31,6 +32,15 @@ export function VisaDetailsPage({ pathname }: VisaDetailsPageProps) {
       </section>
 
       <main className="landing-main visa-details-main">
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Visa Services', href: '/visa-services' },
+            { label: content.title }
+          ]}
+          title={content.title}
+          description={content.intro}
+        />
         <section className="landing-section visa-details-section">
           <div className="content-container visa-details-layout">
             <aside className="visa-side-nav" aria-label="Visa categories">
@@ -47,7 +57,7 @@ export function VisaDetailsPage({ pathname }: VisaDetailsPageProps) {
 
             <section className="visa-content" aria-label={content.title}>
               <div className="visa-content__hero">
-                <h1>{content.title}</h1>
+                <h2>{content.title}</h2>
                 <p>{content.intro}</p>
               </div>
 

@@ -3,6 +3,7 @@ import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { SectionContainer } from '../components/primitives/SectionContainer';
 import { landingContent } from '../constants/landingContent';
 
@@ -134,12 +135,21 @@ export function AboutPage({ pathname }: AboutPageProps) {
       </section>
 
       <main className="landing-main about-main">
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'About Us' }
+          ]}
+          title="Turning your travel dreams into reality"
+          description="Global Visas makes obtaining your visa simple, reliable, and stress-free with transparent guidance at every step."
+        />
+
         <section className="landing-section landing-section--hero about-hero-band">
           <div className="content-container">
             <div className="about-hero-shell">
               <SectionContainer className="about-hero-card about-hero-card--mini">
                 <p className="about-kicker">About Global Visas</p>
-                <h1>Turning Your Travel Dreams into Reality</h1>
+                <h2>Turning Your Travel Dreams into Reality</h2>
                 <p>
                   Global Visas makes obtaining your visa simple, reliable and stress-free. We provide guidance through
                   clear eligibility assessments, step-by-step documentation support and transparent assistance

@@ -2,6 +2,7 @@ import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 
 type PrivacyPolicyPageProps = {
@@ -122,11 +123,20 @@ export function PrivacyPolicyPage({ pathname }: PrivacyPolicyPageProps) {
       </section>
 
       <main className="landing-main privacy-main">
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Privacy Policy' }
+          ]}
+          title="Privacy Policy"
+          description="Learn how Global Visas collects, uses, stores, and protects your personal information while you use our services."
+        />
+
         <section className="landing-section landing-section--privacy">
           <div className="content-container">
             <article className="privacy-policy-card" aria-labelledby="privacy-policy-title">
               <p className="privacy-policy-card__kicker">GLOBAL VISAS PRIVACY AND POLICY</p>
-              <h1 id="privacy-policy-title">Privacy Policy</h1>
+              <h2 id="privacy-policy-title">Privacy Policy</h2>
               <p className="privacy-policy-card__effective-date">
                 <strong>Effective Date:</strong> <em>Jan 10 2025</em>
               </p>
