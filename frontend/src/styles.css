@@ -100,7 +100,7 @@ body.body--menu-open {
   gap: 0;
 }
 
-.landing-page > .landing-section + .landing-main.landing-main--application > .landing-section:first-child {
+.landing-main--application > .landing-section:first-child {
   padding-top: 0;
 }
 
