@@ -11,7 +11,6 @@ type FooterMegaProps = {
     label: string;
     href: string;
   }>;
-  socialLinks: string[];
   copyright: string;
 };
 
@@ -22,7 +21,6 @@ export function FooterMega({
   visaNews,
   blogs,
   companyLinks,
-  socialLinks,
   copyright
 }: FooterMegaProps) {
   return (
@@ -76,32 +74,6 @@ export function FooterMega({
               </li>
             ))}
           </ul>
-        </div>
-      </div>
-
-      <div className="footer-mega__bottom">
-        <div className="footer-mega__social-wrap">
-          <span>Connect with us:</span>
-          <ul className="footer-social-links" aria-label="Social links">
-            {socialLinks.map((label) => (
-              <li key={label}>
-                <a href="#" aria-label={label}>
-                  {label.slice(0, 2).toUpperCase()}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="footer-mega__stores" aria-label="App download links">
-          <a href="#" className="footer-store-badge">
-            <strong>Available on</strong>
-            <span>App Store</span>
-          </a>
-          <a href="#" className="footer-store-badge">
-            <strong>Available on</strong>
-            <span>Google Play</span>
-          </a>
         </div>
       </div>
 
