@@ -4,7 +4,10 @@ import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { Card } from '../components/primitives/Card';
 import { PageHero } from '../components/primitives/PageHero';
+import { PrimaryButton } from '../components/primitives/PrimaryButton';
+import { SectionContainer } from '../components/primitives/SectionContainer';
 import { landingContent } from '../constants/landingContent';
 import { useBlogFilters } from '../hooks/useBlogFilters';
 import { useBlogPosts } from '../hooks/useBlogPosts';
@@ -65,36 +68,38 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
 
         <section className="landing-section blog-listing-section" aria-label="Blog filters">
           <div className="content-container">
-            <div className="blog-section-header">
-              <h2>Find articles faster</h2>
-              <p>Search and filter by category, tag, and page with URL-synced filters.</p>
-            </div>
+            <SectionContainer className="blog-filters">
+              <div className="blog-section-header">
+                <h2>Find articles faster</h2>
+                <p>Search and filter by category, tag, and page with URL-synced filters.</p>
+              </div>
 
-            <div className="dashboard-actions-inline" style={{ flexWrap: 'wrap' }}>
-              <input
-                value={filters.q}
-                onChange={(event) => setFilter('q', event.target.value)}
-                placeholder="Search posts"
-                aria-label="Search blog posts"
-              />
-              <select value={filters.category} onChange={(event) => setFilter('category', event.target.value)} aria-label="Filter category">
-                <option value="">All categories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.name.toLowerCase()}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                value={filters.tag}
-                onChange={(event) => setFilter('tag', event.target.value)}
-                placeholder="Tag"
-                aria-label="Filter tag"
-              />
-              <button type="button" onClick={resetFilters}>
-                Clear filters
-              </button>
-            </div>
+              <div className="blog-filter-row">
+                <input
+                  value={filters.q}
+                  onChange={(event) => setFilter('q', event.target.value)}
+                  placeholder="Search posts"
+                  aria-label="Search blog posts"
+                />
+                <select value={filters.category} onChange={(event) => setFilter('category', event.target.value)} aria-label="Filter category">
+                  <option value="">All categories</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.name.toLowerCase()}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={filters.tag}
+                  onChange={(event) => setFilter('tag', event.target.value)}
+                  placeholder="Tag"
+                  aria-label="Filter tag"
+                />
+                <PrimaryButton type="button" variant="outline" onClick={resetFilters}>
+                  Clear filters
+                </PrimaryButton>
+              </div>
+            </SectionContainer>
           </div>
         </section>
 
@@ -136,7 +141,7 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
             {!loading && !error ? (
               <div className="blog-card-grid">
                 {latestPosts.map((post) => (
-                  <article key={post.slug} className="blog-card">
+                  <Card key={post.slug} className="blog-card">
                     <div className="blog-card__meta">
                       <span>{post.categoryIds[0] ?? 'blog'}</span>
                       <span>{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
@@ -153,15 +158,15 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
                         </a>
                       ))}
                     </div>
-                  </article>
+                  </Card>
                 ))}
               </div>
             ) : null}
 
             <div className="blog-load-more-wrap">
-              <button type="button" className="blog-load-more-btn" disabled={loading || !hasNextPage} onClick={() => setFilter('page', filters.page + 1)}>
+              <PrimaryButton type="button" variant="outline" className="blog-load-more-btn" disabled={loading || !hasNextPage} onClick={() => setFilter('page', filters.page + 1)}>
                 {hasNextPage ? 'Load more posts' : 'No more posts'}
-              </button>
+              </PrimaryButton>
             </div>
           </div>
         </section>
