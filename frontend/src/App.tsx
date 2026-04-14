@@ -7,6 +7,7 @@ import { DashboardExperience } from './containers/dashboard/DashboardExperience'
 import { LandingPage } from './containers/LandingPage';
 import { PricingPage } from './containers/PricingPage';
 import { PrivacyPolicyPage } from './containers/PrivacyPolicyPage';
+import { TermsAndConditionsPage } from './containers/TermsAndConditionsPage';
 import { VisaDetailsPage } from './containers/VisaDetailsPage';
 import { VisaServicesPage } from './containers/VisaServicesPage';
 
@@ -30,6 +31,7 @@ export default function App({ pathname }: AppProps) {
   const isVisaDetailsPage = normalizedPath.startsWith('/visa/');
   const isVisaServicesPage = normalizedPath === '/visa-services';
   const isPrivacyPolicyPage = normalizedPath === '/privacy-policy';
+  const isTermsAndConditionsPage = normalizedPath === '/terms-and-conditions' || normalizedPath === '/terms-and-condition';
   const seoTitle = isDashboardRoute
     ? 'Dashboard | AUS Visa Service'
     : isAboutPage
@@ -44,6 +46,8 @@ export default function App({ pathname }: AppProps) {
             ? 'Visa Details | Global Visas'
             : isPrivacyPolicyPage
               ? 'Privacy Policy | Global Visas'
+              : isTermsAndConditionsPage
+                ? 'Terms and Conditions | Global Visas'
       : undefined;
   const seoDescription = isDashboardRoute
     ? 'AUS Visa Service dashboards for admins, managers, and users to manage applications, profiles, pages, and settings.'
@@ -59,6 +63,8 @@ export default function App({ pathname }: AppProps) {
             ? 'Explore Australian visitor visa options, compare subclass pathways, and apply online with guided support.'
             : isPrivacyPolicyPage
               ? 'Read Global Visas privacy policy to understand how personal information is collected, used, stored, and protected.'
+              : isTermsAndConditionsPage
+                ? 'Review Global Visas terms and conditions for service use, user responsibilities, payments, and legal notices.'
       : undefined;
   const seoKeywords = isDashboardRoute
     ? ['dashboard', 'visa applications', 'admin panel', 'users management', 'visa workflow']
@@ -74,6 +80,8 @@ export default function App({ pathname }: AppProps) {
             ? ['visitor visa 600', 'eta 601', 'evisitor 651', 'australia visa options', 'apply australia visa']
             : isPrivacyPolicyPage
               ? ['privacy policy', 'global visas privacy', 'data protection', 'personal information', 'cookies policy']
+              : isTermsAndConditionsPage
+                ? ['terms and conditions', 'global visas terms', 'service terms', 'visa service agreement', 'legal terms']
       : undefined;
 
   return (
@@ -95,6 +103,8 @@ export default function App({ pathname }: AppProps) {
         <VisaDetailsPage pathname={pathname} />
       ) : isPrivacyPolicyPage ? (
         <PrivacyPolicyPage pathname={pathname} />
+      ) : isTermsAndConditionsPage ? (
+        <TermsAndConditionsPage pathname={pathname} />
       ) : (
         <LandingPage pathname={pathname} />
       )}
