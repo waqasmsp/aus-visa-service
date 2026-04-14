@@ -5776,7 +5776,7 @@ body.body--menu-open {
 }
 
 .privacy-main {
-  padding: clamp(1.2rem, 3vw, 2.5rem) 0 clamp(2.4rem, 5vw, 4rem);
+  padding: 0 0 clamp(2.4rem, 5vw, 4rem);
 }
 
 .privacy-main > .landing-section:first-child {
