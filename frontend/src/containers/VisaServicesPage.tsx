@@ -127,7 +127,6 @@ export function VisaServicesPage({ pathname }: { pathname: string }) {
             visaNews={footer.visaNews}
             blogs={footer.blogs}
             companyLinks={footer.companyLinks}
-            socialLinks={footer.socialLinks}
             copyright={footer.copyright}
           />
         </div>

@@ -52,7 +52,6 @@ export function ApplicationPage({ pathname }: ApplicationPageProps) {
             visaNews={footer.visaNews}
             blogs={footer.blogs}
             companyLinks={footer.companyLinks}
-            socialLinks={footer.socialLinks}
             copyright={footer.copyright}
           />
         </div>
