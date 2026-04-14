@@ -936,7 +936,11 @@ body.body--menu-open {
   position: relative;
   justify-content: flex-end;
   gap: 0.2rem;
-  padding: 0.22rem 0;
+  padding: 0.22rem 0.35rem;
+  border: 1px solid rgb(148 163 184 / 0.22);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.52), rgb(226 232 240 / 0.32));
+  backdrop-filter: blur(2px);
 }
 
 .top-header__nav-item {
