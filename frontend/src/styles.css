@@ -100,6 +100,10 @@ body.body--menu-open {
   gap: 0;
 }
 
+.landing-main--application > .landing-section:first-child {
+  padding-top: 0;
+}
+
 .landing-section {
   width: 100%;
 }
