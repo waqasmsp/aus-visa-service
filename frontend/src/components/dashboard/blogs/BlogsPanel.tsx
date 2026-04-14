@@ -1,3 +1,6 @@
+import { Card } from '../../primitives/Card';
+import { PrimaryButton } from '../../primitives/PrimaryButton';
+
 type DashboardRole = 'admin' | 'manager' | 'user';
 type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
 type BlogWorkflowStatus = 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived';
@@ -24,7 +27,7 @@ export function BlogsPanel({
   error?: string | null;
 }) {
   return (
-    <article className="dashboard-panel">
+    <Card className="dashboard-panel dashboard-blog-list-panel" as="article">
       <div className="dashboard-panel__header">
         <h2>Blogs Workspace</h2>
         <small>{role.toUpperCase()} permissions</small>
@@ -39,8 +42,8 @@ export function BlogsPanel({
       {loading ? <p className="dashboard-panel__note">Loading dashboard posts...</p> : null}
       {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
 
-      <div className="dashboard-table-wrap">
-        <table className="dashboard-table">
+      <div className="dashboard-table-wrap dashboard-blog-list-table-wrap">
+        <table className="dashboard-table dashboard-blog-list-table">
           <thead>
             <tr>
               <th>Post</th>
@@ -71,6 +74,9 @@ export function BlogsPanel({
           </tbody>
         </table>
       </div>
-    </article>
+      <div className="dashboard-blog-list-cta">
+        <PrimaryButton type="button">Create new post</PrimaryButton>
+      </div>
+    </Card>
   );
 }

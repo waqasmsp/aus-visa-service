@@ -3,6 +3,8 @@ import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { Card } from '../components/primitives/Card';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 import { useBlogPost } from '../hooks/useBlogPost';
 
@@ -45,6 +47,12 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
       </section>
 
       <main className="landing-main blog-main">
+        <PageHero
+          breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Blog', href: '/blog' }, { label: post?.title ?? 'Article' }]}
+          title={post?.title ?? 'Blog article'}
+          description={post?.excerpt ?? 'Read practical visa guidance and detailed preparation tips from our editorial team.'}
+        />
+
         <section className="landing-section blog-detail-shell">
           <div className="content-container">
             <nav className="blog-breadcrumbs" aria-label="Breadcrumb">
@@ -98,11 +106,11 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
             </div>
             <div className="blog-related-grid">
               {relatedPosts.map((postItem) => (
-                <article key={postItem.href} className="blog-related-card">
+                <Card key={postItem.href} className="blog-related-card">
                   <h3>
                     <a href={postItem.href}>{postItem.title}</a>
                   </h3>
-                </article>
+                </Card>
               ))}
             </div>
           </div>
