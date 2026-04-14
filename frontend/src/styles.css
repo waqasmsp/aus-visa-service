@@ -3057,82 +3057,16 @@ body.body--menu-open {
   transform: translateX(2px);
 }
 
-.footer-mega__bottom {
+.footer-mega__divider {
   margin-top: 1.8rem;
-  padding-top: 1.15rem;
   border-top: 1px solid rgb(148 163 184 / 0.28);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.footer-mega__social-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.8rem;
-  color: rgb(191 219 254 / 0.9);
-}
-
-.footer-social-links {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: inline-flex;
-  gap: 0.5rem;
-}
-
-.footer-social-links a {
-  width: 2rem;
-  height: 2rem;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid rgb(147 197 253 / 0.42);
-  border-radius: 999px;
-  background: rgb(15 23 42 / 0.52);
-  color: #eff6ff;
-  font-size: 0.68rem;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.03em;
-  text-decoration: none;
-}
-
-.footer-mega__stores {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.footer-store-badge {
-  min-width: 9.7rem;
-  border: 1px solid rgb(148 163 184 / 0.42);
-  border-radius: 0.75rem;
-  background: rgb(2 6 23 / 0.68);
-  color: #f8fafc;
-  text-decoration: none;
-  padding: 0.45rem 0.75rem;
-  display: grid;
-  line-height: 1.15;
-}
-
-.footer-store-badge strong {
-  font-size: 0.66rem;
-  color: #93c5fd;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.footer-store-badge span {
-  margin-top: 0.15rem;
-  font-size: 1.05rem;
-  font-weight: var(--font-weight-semibold);
 }
 
 .footer-mega__copyright {
   margin: 0.95rem 0 0;
   color: rgb(147 197 253 / 0.7);
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .visia-chat {
@@ -3793,19 +3727,6 @@ body.body--menu-open {
 
   .footer-mega__column:last-child {
     grid-column: auto;
-  }
-
-  .footer-mega__bottom {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .footer-mega__stores {
-    width: 100%;
-  }
-
-  .footer-store-badge {
-    flex: 1 1 11rem;
   }
 
   .footer-mega__column li a {

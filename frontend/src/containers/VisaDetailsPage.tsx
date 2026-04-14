@@ -138,7 +138,6 @@ export function VisaDetailsPage({ pathname }: VisaDetailsPageProps) {
             visaNews={footer.visaNews}
             blogs={footer.blogs}
             companyLinks={footer.companyLinks}
-            socialLinks={footer.socialLinks}
             copyright={footer.copyright}
           />
         </div>
