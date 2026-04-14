@@ -34,6 +34,70 @@ export function VisaServicesPage({ pathname }: { pathname: string }) {
           </div>
         </section>
 
+        <section className="landing-section visa-services-summary" aria-label="Visa types summary table">
+          <div className="content-container visa-services-summary__inner">
+            <p className="visa-services-summary__title">
+              <strong>Summary Table</strong>
+            </p>
+            <div className="visa-services-summary__table-wrap">
+              <table className="visa-services-summary__table">
+                <thead>
+                  <tr>
+                    <th>Visa Type</th>
+                    <th>Purpose</th>
+                    <th>Who Can Apply</th>
+                    <th>Stay Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Subclass 600 – Tourist</td>
+                    <td>Tourism, visiting family</td>
+                    <td>All nationalities</td>
+                    <td>Up to 3, 6, or 12 months</td>
+                  </tr>
+                  <tr>
+                    <td>Subclass 600 – Sponsored</td>
+                    <td>Visiting family (with sponsor)</td>
+                    <td>All nationalities (with Aussie sponsor)</td>
+                    <td>Up to 12 months</td>
+                  </tr>
+                  <tr>
+                    <td>Subclass 600 – Business</td>
+                    <td>Business-related visits</td>
+                    <td>All nationalities</td>
+                    <td>Up to 3 months</td>
+                  </tr>
+                  <tr>
+                    <td>Subclass 601 – ETA</td>
+                    <td>Tourism/Business</td>
+                    <td>Certain countries (e.g., US, Canada)</td>
+                    <td>12 months, 3 months/visit</td>
+                  </tr>
+                  <tr>
+                    <td>Subclass 651 – eVisitor</td>
+                    <td>Tourism/Business</td>
+                    <td>EU and some European countries</td>
+                    <td>12 months, 3 months/visit</td>
+                  </tr>
+                  <tr>
+                    <td>Subclass 600 – ADS</td>
+                    <td>Organized tour groups</td>
+                    <td>Chinese citizens</td>
+                    <td>Per tour duration</td>
+                  </tr>
+                  <tr>
+                    <td>Subclass 600 – Frequent Traveller</td>
+                    <td>Repeat travel</td>
+                    <td>Chinese citizens</td>
+                    <td>Up to 10 years, 3 months/visit</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <section className="landing-section visa-services-list" aria-label="Visa services list">
           <div className="content-container visa-services-list__inner">
             {visaNavItems.map((item, index) => {

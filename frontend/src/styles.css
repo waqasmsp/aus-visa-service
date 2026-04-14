@@ -5418,6 +5418,51 @@ body.body--menu-open {
   line-height: 1.62;
 }
 
+.visa-services-summary {
+  padding: 0.3rem 0 1.2rem;
+}
+
+.visa-services-summary__inner {
+  max-width: 100%;
+}
+
+.visa-services-summary__title {
+  margin: 0 0 0.65rem;
+  color: #0f2d4b;
+}
+
+.visa-services-summary__table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgb(203 213 225 / 0.7);
+  border-radius: 0.8rem;
+  background: #fff;
+}
+
+.visa-services-summary__table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.visa-services-summary__table th,
+.visa-services-summary__table td {
+  padding: 0.82rem 0.95rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  color: #254867;
+  font-size: 0.95rem;
+}
+
+.visa-services-summary__table th {
+  background: #eff6ff;
+  color: #123a62;
+  font-weight: 700;
+}
+
+.visa-services-summary__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .visa-services-list {
   padding: 1.15rem 0 3.4rem;
 }
