@@ -25,12 +25,14 @@ export function VisaServicesPage({ pathname }: { pathname: string }) {
       <main className="landing-main visa-services-main">
         <section className="landing-section visa-services-hero">
           <div className="content-container visa-services-hero__inner">
-            <p className="visa-services-hero__eyebrow">VISA SERVICES</p>
+            <nav className="visa-services-hero__breadcrumbs" aria-label="Breadcrumb">
+              <a href="/">Home</a>
+              <span aria-hidden="true">→</span>
+              <a href="/visa-services" aria-current="page">
+                Visa Services
+              </a>
+            </nav>
             <h1>Explore Australian visa options with clear guidance for every pathway</h1>
-            <p>
-              Compare all major visitor visa types, understand eligibility faster, and move from research to application
-              with confidence. Every service below has a dedicated details page and a direct action path.
-            </p>
           </div>
         </section>
 
