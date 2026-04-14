@@ -83,10 +83,11 @@ body.body--menu-open {
   padding: 0;
 }
 
+.landing-page > .landing-section + .landing-main,
 .landing-page > .landing-main + .landing-section,
 .landing-page > .landing-section + .landing-section,
 .landing-main > .landing-section + .landing-section {
-  padding-top: var(--space-section-min);
+  margin-top: var(--space-section-min);
 }
 
 .content-container {
