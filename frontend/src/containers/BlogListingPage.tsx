@@ -124,6 +124,7 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
           <section className="landing-section blog-hero-band">
             <div className="content-container">
               <div className="blog-hero-panel">
+                <div className="blog-card-image-placeholder blog-card-image-placeholder--featured" aria-hidden="true" />
                 <p className="blog-kicker">Featured this week</p>
                 <h2>{featuredPost.title}</h2>
                 <p>{featuredPost.excerpt}</p>
@@ -159,6 +160,7 @@ export function BlogListingPage({ pathname }: BlogListingPageProps) {
               <div className="blog-card-grid">
                 {latestPosts.map((post) => (
                   <Card key={post.slug} className="blog-card">
+                    <div className="blog-card-image-placeholder" aria-hidden="true" />
                     <div className="blog-card__meta">
                       <span>{post.categoryIds[0] ?? 'blog'}</span>
                       <span>{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
