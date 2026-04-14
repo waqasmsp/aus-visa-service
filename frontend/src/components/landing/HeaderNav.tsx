@@ -212,9 +212,6 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
         </nav>
 
         <div className="top-header__actions">
-          <button className="top-header__icon-button" type="button" aria-label="Change language">
-            &#127760;
-          </button>
           <PrimaryButton variant="outline" onClick={goToApplication}>
             {loginCta}
           </PrimaryButton>

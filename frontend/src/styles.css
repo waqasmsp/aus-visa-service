@@ -1153,18 +1153,6 @@ body.body--menu-open {
   gap: var(--space-3);
 }
 
-.top-header__icon-button {
-  border: 1px solid rgb(14 116 144 / 0.2);
-  background: rgb(255 255 255 / 0.75);
-  border-radius: var(--radius-pill);
-  width: 2.25rem;
-  height: 2.25rem;
-  display: inline-grid;
-  place-items: center;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
 .top-header__actions .primary-button {
   padding: 0.52rem 1.1rem;
   font-size: var(--text-sm);
@@ -3597,12 +3585,6 @@ body.body--menu-open {
   .landing-header .top-header__actions {
     grid-area: actions;
     justify-self: end;
-  }
-
-  .landing-header .top-header__icon-button {
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.9rem;
   }
 
   .landing-header .top-header__actions .primary-button {
