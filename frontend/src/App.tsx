@@ -2,6 +2,9 @@ import { Seo } from './components/seo/Seo';
 import { isPrivateRoute } from './config/seo';
 import { AboutPage } from './containers/AboutPage';
 import { ApplicationPage } from './containers/ApplicationPage';
+import { BlogCategoryPage } from './containers/BlogCategoryPage';
+import { BlogDetailPage } from './containers/BlogDetailPage';
+import { BlogListingPage } from './containers/BlogListingPage';
 import { ContactPage } from './containers/ContactPage';
 import { DashboardExperience } from './containers/dashboard/DashboardExperience';
 import { LandingPage } from './containers/LandingPage';
@@ -28,6 +31,9 @@ export default function App({ pathname }: AppProps) {
   const isApplicationPage = normalizedPath === '/application' || normalizedPath === '/application-form';
   const isContactPage = normalizedPath === '/contact-us';
   const isPricingPage = normalizedPath === '/pricing';
+  const isBlogListingPage = normalizedPath === '/blog';
+  const isBlogCategoryPage = /^\/blog\/(category|tag)\/[^/]+$/.test(normalizedPath);
+  const isBlogDetailPage = /^\/blog\/[^/]+$/.test(normalizedPath) && !isBlogCategoryPage;
   const isVisaDetailsPage = normalizedPath.startsWith('/visa/');
   const isVisaServicesPage = normalizedPath === '/visa-services';
   const isPrivacyPolicyPage = normalizedPath === '/privacy-policy';
@@ -40,6 +46,12 @@ export default function App({ pathname }: AppProps) {
         ? 'Pricing | Global Visas'
       : isContactPage
         ? 'Contact Us | Global Visas'
+        : isBlogListingPage
+          ? 'Blog | Global Visas'
+          : isBlogCategoryPage
+            ? 'Blog Topics | Global Visas'
+            : isBlogDetailPage
+              ? 'Blog Article | Global Visas'
         : isVisaServicesPage
           ? 'Visa Services | Global Visas'
           : isVisaDetailsPage
@@ -56,7 +68,13 @@ export default function App({ pathname }: AppProps) {
       : isPricingPage
         ? 'Explore Global Visas pricing packages for ETA and Visitor Visa services with transparent per-attempt costs.'
       : isContactPage
-        ? 'Get in touch with Global Visas for consultation, visa support, and application guidance from our specialist team.'
+      ? 'Get in touch with Global Visas for consultation, visa support, and application guidance from our specialist team.'
+        : isBlogListingPage
+          ? 'Read travel and visa insights, policy updates, and practical application guidance from Global Visas experts.'
+          : isBlogCategoryPage
+            ? 'Browse curated visa and travel topics to find practical guidance and updates relevant to your journey.'
+            : isBlogDetailPage
+              ? 'Explore in-depth visa and travel insights with practical, step-by-step guidance for better application outcomes.'
         : isVisaServicesPage
           ? 'Browse all Australian visa services with structured guidance, service comparisons, and direct links to detailed pages.'
           : isVisaDetailsPage
@@ -73,7 +91,13 @@ export default function App({ pathname }: AppProps) {
       : isPricingPage
         ? ['visa pricing', 'eta 601 price', 'visitor visa 600 fee', 'australia visa packages', 'global visas pricing']
       : isContactPage
-        ? ['contact global visas', 'visa support contact', 'visa consultation', 'help center', 'contact us']
+      ? ['contact global visas', 'visa support contact', 'visa consultation', 'help center', 'contact us']
+        : isBlogListingPage
+          ? ['visa blog', 'travel updates', 'visa guidance articles', 'global visas blog', 'immigration insights']
+          : isBlogCategoryPage
+            ? ['visa categories', 'blog topics', 'travel advice tags', 'visa education', 'application insights']
+            : isBlogDetailPage
+              ? ['visa article', 'travel blog post', 'application tips', 'policy updates', 'visa knowledge base']
         : isVisaServicesPage
           ? ['visa services australia', 'australian visa types', 'visitor visa options', 'visa comparison', 'global visas']
           : isVisaDetailsPage
@@ -95,6 +119,12 @@ export default function App({ pathname }: AppProps) {
         <AboutPage pathname={pathname} />
       ) : isContactPage ? (
         <ContactPage pathname={pathname} />
+      ) : isBlogListingPage ? (
+        <BlogListingPage pathname={pathname} />
+      ) : isBlogCategoryPage ? (
+        <BlogCategoryPage pathname={pathname} />
+      ) : isBlogDetailPage ? (
+        <BlogDetailPage pathname={pathname} />
       ) : isPricingPage ? (
         <PricingPage pathname={pathname} />
       ) : isVisaServicesPage ? (
