@@ -8,6 +8,7 @@ import { Card } from '../components/primitives/Card';
 import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 import { useBlogPost } from '../hooks/useBlogPost';
+import { useBlogPosts } from '../hooks/useBlogPosts';
 import { trackBlogEvent, type BlogCtaType } from '../services/blogAnalyticsService';
 import { buildUtmSafeHref } from '../utils/utm';
 
@@ -34,6 +35,7 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
   const { brandName, navItems, loginCta, newsletter, footer } = landingContent;
   const slug = pathname.toLowerCase().replace(/\/+$/, '').replace('/blog/', '');
   const { post, loading, error } = useBlogPost(slug);
+  const { posts: latestPosts } = useBlogPosts({ q: '', category: '', tag: '', page: 1 }, 5);
   const trackedDepths = useRef(new Set<number>());
 
   useEffect(() => {
@@ -96,6 +98,16 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
     trackBlogEvent('cta_click', { slug: post.slug, ctaType: type });
   };
 
+  const heroMeta = post
+    ? [
+        `By ${post.authorName}`,
+        new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        `${post.readingTimeMinutes ?? 5} min read`
+      ]
+    : undefined;
+
+  const latestSidebarPosts = latestPosts.filter((postItem) => postItem.slug !== post?.slug).slice(0, 4);
+
   return (
     <div className="landing-page blog-page blog-detail-page">
       <section className="landing-section landing-section--header">
@@ -109,56 +121,69 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Blog', href: '/blog' }, { label: post?.title ?? 'Article' }]}
           title={post?.title ?? 'Blog article'}
           description={post?.excerpt ?? 'Read practical visa guidance and detailed preparation tips from our editorial team.'}
+          metaItems={heroMeta}
         />
 
         <section className="landing-section blog-detail-shell">
           <div className="content-container">
-            <nav className="blog-breadcrumbs" aria-label="Breadcrumb">
-              <a href="/">Home</a>
-              <span>/</span>
-              <a href={buildUtmSafeHref('/blog')}>Blog</a>
-              <span>/</span>
-              <span>{post?.title ?? 'Article'}</span>
-            </nav>
-
             {loading ? <p className="dashboard-panel__note">Loading article...</p> : null}
             {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
 
             {!loading && !error && post ? (
-              <>
-                <header className="blog-detail-header">
+              <div className="blog-detail-layout">
+                <div className="blog-detail-main">
                   <p className="blog-kicker">{post.categoryIds[0] ?? 'Blog'} · Updated {new Date(post.updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                  <h1>{post.title}</h1>
-                  <p className="blog-detail-excerpt">{post.excerpt}</p>
-                  <div className="blog-meta-row">
-                    <span>By {post.authorName}</span>
-                    <span>{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                    <span>{post.readingTimeMinutes ?? 5} min read</span>
+                  <figure className="blog-featured-image" aria-label="Featured article image">
+                    <div className="blog-featured-image__placeholder" aria-hidden="true" />
+                    <figcaption>{post.imageAlt ?? 'Article image'}</figcaption>
+                  </figure>
+
+                  <article className="blog-article-content">
+                    {post.contentHtml ? <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} /> : <p>{post.excerpt}</p>}
+                  </article>
+
+                  <div className="dashboard-actions-inline" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>
+                    {ctaLinks.map((cta) => (
+                      <a
+                        key={cta.type}
+                        href={buildUtmSafeHref(cta.href)}
+                        className="dashboard-primary-link"
+                        onClick={() => onCtaClick(cta.type)}
+                      >
+                        {cta.label}
+                      </a>
+                    ))}
                   </div>
-                </header>
-
-                <figure className="blog-featured-image" aria-label="Featured article image">
-                  <div className="blog-featured-image__placeholder" aria-hidden="true" />
-                  <figcaption>{post.imageAlt ?? 'Article image'}</figcaption>
-                </figure>
-
-                <article className="blog-article-content">
-                  {post.contentHtml ? <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} /> : <p>{post.excerpt}</p>}
-                </article>
-
-                <div className="dashboard-actions-inline" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>
-                  {ctaLinks.map((cta) => (
-                    <a
-                      key={cta.type}
-                      href={buildUtmSafeHref(cta.href)}
-                      className="dashboard-primary-link"
-                      onClick={() => onCtaClick(cta.type)}
-                    >
-                      {cta.label}
-                    </a>
-                  ))}
                 </div>
-              </>
+
+                <aside className="blog-detail-sidebar" aria-label="Blog sidebar">
+                  <article className="blog-sidebar-card blog-sidebar-card--cta">
+                    <div className="blog-sidebar-card__image" aria-hidden="true" />
+                    <div className="blog-sidebar-card__content">
+                      <h3>Need faster visa support?</h3>
+                      <p>Start your Australia visa application with expert checks before submission.</p>
+                      <a href={buildUtmSafeHref('/application')} className="dashboard-primary-link" onClick={() => onCtaClick('apply')}>
+                        Apply Now
+                      </a>
+                    </div>
+                  </article>
+
+                  <article className="blog-sidebar-card">
+                    <h3>Latest posts</h3>
+                    <div className="blog-sidebar-list">
+                      {latestSidebarPosts.map((postItem) => (
+                        <a key={postItem.id} href={buildUtmSafeHref(`/blog/${postItem.slug}`)} className="blog-sidebar-list__item">
+                          <span className="blog-sidebar-list__thumb" aria-hidden="true" />
+                          <span className="blog-sidebar-list__text">
+                            <strong>{postItem.title}</strong>
+                            <small>{postItem.readingTimeMinutes ?? 5} min read</small>
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </article>
+                </aside>
+              </div>
             ) : null}
 
             {!loading && !error && !post ? (
