@@ -4,6 +4,7 @@ import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { VisiaChat } from '../components/landing/VisiaChat';
 import { landingContent } from '../constants/landingContent';
+import { useBlogPost } from '../hooks/useBlogPost';
 
 type BlogDetailPageProps = {
   pathname: string;
@@ -26,6 +27,8 @@ const relatedPosts = [
 
 export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
   const { brandName, navItems, loginCta, newsletter, footer } = landingContent;
+  const slug = pathname.toLowerCase().replace(/\/+$/, '').replace('/blog/', '');
+  const { post, loading, error } = useBlogPost(slug);
 
   const openApplicationPage = () => {
     if (typeof window !== 'undefined') {
@@ -49,50 +52,42 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
               <span>/</span>
               <a href="/blog">Blog</a>
               <span>/</span>
-              <span>Australia Visitor Visa Document Checklist</span>
+              <span>{post?.title ?? 'Article'}</span>
             </nav>
 
-            <header className="blog-detail-header">
-              <p className="blog-kicker">Visitor Visa · Updated April 9, 2026</p>
-              <h1>Australia Visitor Visa (Subclass 600): Document Checklist for Faster Review</h1>
-              <p className="blog-detail-excerpt">
-                Build a complete and consistent application packet with this practical checklist covering identity,
-                finances, travel intent, and ties to your home country.
-              </p>
-              <div className="blog-meta-row">
-                <span>By Global Visas Editorial Team</span>
-                <span>April 9, 2026</span>
-                <span>7 min read</span>
-              </div>
-            </header>
+            {loading ? <p className="dashboard-panel__note">Loading article...</p> : null}
+            {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
 
-            <figure className="blog-featured-image" aria-label="Featured article image">
-              <div className="blog-featured-image__placeholder" aria-hidden="true" />
-              <figcaption>Organized documentation helps reduce avoidable review delays.</figcaption>
-            </figure>
+            {!loading && !error && post ? (
+              <>
+                <header className="blog-detail-header">
+                  <p className="blog-kicker">{post.categoryIds[0] ?? 'Blog'} · Updated {new Date(post.updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                  <h1>{post.title}</h1>
+                  <p className="blog-detail-excerpt">{post.excerpt}</p>
+                  <div className="blog-meta-row">
+                    <span>By {post.authorName}</span>
+                    <span>{new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                    <span>{post.readingTimeMinutes ?? 5} min read</span>
+                  </div>
+                </header>
 
-            <article className="blog-article-content">
-              <p>
-                A well-prepared Subclass 600 application is easier for case officers to assess and often reduces
-                back-and-forth requests. The goal is not to submit more files, but to submit the right evidence in a
-                clear format.
-              </p>
-              <h2>Start with identity and travel context</h2>
-              <p>
-                Ensure your passport, personal details, and travel purpose align across every uploaded document.
-                Inconsistent naming, outdated IDs, or unclear itinerary notes can trigger unnecessary follow-ups.
-              </p>
-              <h2>Prove financial capacity with traceable evidence</h2>
-              <p>
-                Include recent bank statements, income proof, and supporting documents that explain major inflows or
-                sponsor support. Keep all records current and legible.
-              </p>
-              <h2>Demonstrate strong ties to your home country</h2>
-              <p>
-                Employment letters, study enrollment, property records, and family commitments can strengthen your
-                intent to return. Use concise cover notes when context is needed.
-              </p>
-            </article>
+                <figure className="blog-featured-image" aria-label="Featured article image">
+                  <div className="blog-featured-image__placeholder" aria-hidden="true" />
+                  <figcaption>{post.imageAlt ?? 'Article image'}</figcaption>
+                </figure>
+
+                <article className="blog-article-content">
+                  {post.contentHtml ? <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} /> : <p>{post.excerpt}</p>}
+                </article>
+              </>
+            ) : null}
+
+            {!loading && !error && !post ? (
+              <article className="dashboard-panel">
+                <p className="dashboard-panel__note">This post is unavailable or has not been published yet.</p>
+                <a href="/blog" className="dashboard-primary-link">Return to blog listing</a>
+              </article>
+            ) : null}
           </div>
         </section>
 
@@ -102,10 +97,10 @@ export function BlogDetailPage({ pathname }: BlogDetailPageProps) {
               <h2>Related articles</h2>
             </div>
             <div className="blog-related-grid">
-              {relatedPosts.map((post) => (
-                <article key={post.href} className="blog-related-card">
+              {relatedPosts.map((postItem) => (
+                <article key={postItem.href} className="blog-related-card">
                   <h3>
-                    <a href={post.href}>{post.title}</a>
+                    <a href={postItem.href}>{postItem.title}</a>
                   </h3>
                 </article>
               ))}

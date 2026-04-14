@@ -13,11 +13,15 @@ type BlogRow = {
 export function BlogsPanel({
   role,
   actions,
-  posts
+  posts,
+  loading = false,
+  error = null
 }: {
   role: DashboardRole;
   actions: BlogAction[];
   posts: BlogRow[];
+  loading?: boolean;
+  error?: string | null;
 }) {
   return (
     <article className="dashboard-panel">
@@ -32,6 +36,9 @@ export function BlogsPanel({
         <li>Route: /dashboard/blogs</li>
       </ul>
 
+      {loading ? <p className="dashboard-panel__note">Loading dashboard posts...</p> : null}
+      {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
+
       <div className="dashboard-table-wrap">
         <table className="dashboard-table">
           <thead>
@@ -43,6 +50,11 @@ export function BlogsPanel({
             </tr>
           </thead>
           <tbody>
+            {!loading && !error && posts.length === 0 ? (
+              <tr>
+                <td colSpan={4}>No posts available for the current filter.</td>
+              </tr>
+            ) : null}
             {posts.map((post) => (
               <tr key={post.id}>
                 <td>
