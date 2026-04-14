@@ -20,6 +20,9 @@ const resolveNavHref = (item: string): string => {
       return '/about-us';
     case 'Pricing':
       return '/pricing';
+    case 'Blog':
+    case 'Blogs':
+      return '/blog';
     case 'Contact Us':
       return '/contact-us';
     default:
