@@ -791,7 +791,7 @@ export function ApplicationStepOneForm() {
                   <input type="checkbox" checked={subscribeToUpdates} onChange={(event) => setSubscribeToUpdates(event.target.checked)} />
                   <span>
                     I want to receive Global Visas updates, product launches and personalized offers. I can opt out anytime.
-                    <a href="#" onClick={(event) => event.preventDefault()}> Terms and Privacy Policy </a>
+                    <a href="/privacy-policy"> Terms and Privacy Policy </a>
                     apply.
                   </span>
                 </label>
@@ -822,7 +822,7 @@ export function ApplicationStepOneForm() {
                 <p className="payment-note">
                   By submitting payment I acknowledge that I have read and accept the Global Visas
                   <a href="#" onClick={(event) => event.preventDefault()}> Terms of Service</a>,
-                  <a href="#" onClick={(event) => event.preventDefault()}> Privacy policy</a>, and
+                  <a href="/privacy-policy"> Privacy policy</a>, and
                   <a href="#" onClick={(event) => event.preventDefault()}> Refund Policy</a>.
                 </p>
                 <div className="application-form-actions">

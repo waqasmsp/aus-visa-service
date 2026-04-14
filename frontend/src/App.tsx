@@ -6,6 +6,7 @@ import { ContactPage } from './containers/ContactPage';
 import { DashboardExperience } from './containers/dashboard/DashboardExperience';
 import { LandingPage } from './containers/LandingPage';
 import { PricingPage } from './containers/PricingPage';
+import { PrivacyPolicyPage } from './containers/PrivacyPolicyPage';
 import { VisaDetailsPage } from './containers/VisaDetailsPage';
 import { VisaServicesPage } from './containers/VisaServicesPage';
 
@@ -28,6 +29,7 @@ export default function App({ pathname }: AppProps) {
   const isPricingPage = normalizedPath === '/pricing';
   const isVisaDetailsPage = normalizedPath.startsWith('/visa/');
   const isVisaServicesPage = normalizedPath === '/visa-services';
+  const isPrivacyPolicyPage = normalizedPath === '/privacy-policy';
   const seoTitle = isDashboardRoute
     ? 'Dashboard | AUS Visa Service'
     : isAboutPage
@@ -40,6 +42,8 @@ export default function App({ pathname }: AppProps) {
           ? 'Visa Services | Global Visas'
           : isVisaDetailsPage
             ? 'Visa Details | Global Visas'
+            : isPrivacyPolicyPage
+              ? 'Privacy Policy | Global Visas'
       : undefined;
   const seoDescription = isDashboardRoute
     ? 'AUS Visa Service dashboards for admins, managers, and users to manage applications, profiles, pages, and settings.'
@@ -53,6 +57,8 @@ export default function App({ pathname }: AppProps) {
           ? 'Browse all Australian visa services with structured guidance, service comparisons, and direct links to detailed pages.'
           : isVisaDetailsPage
             ? 'Explore Australian visitor visa options, compare subclass pathways, and apply online with guided support.'
+            : isPrivacyPolicyPage
+              ? 'Read Global Visas privacy policy to understand how personal information is collected, used, stored, and protected.'
       : undefined;
   const seoKeywords = isDashboardRoute
     ? ['dashboard', 'visa applications', 'admin panel', 'users management', 'visa workflow']
@@ -66,6 +72,8 @@ export default function App({ pathname }: AppProps) {
           ? ['visa services australia', 'australian visa types', 'visitor visa options', 'visa comparison', 'global visas']
           : isVisaDetailsPage
             ? ['visitor visa 600', 'eta 601', 'evisitor 651', 'australia visa options', 'apply australia visa']
+            : isPrivacyPolicyPage
+              ? ['privacy policy', 'global visas privacy', 'data protection', 'personal information', 'cookies policy']
       : undefined;
 
   return (
@@ -85,6 +93,8 @@ export default function App({ pathname }: AppProps) {
         <VisaServicesPage pathname={pathname} />
       ) : isVisaDetailsPage ? (
         <VisaDetailsPage pathname={pathname} />
+      ) : isPrivacyPolicyPage ? (
+        <PrivacyPolicyPage pathname={pathname} />
       ) : (
         <LandingPage pathname={pathname} />
       )}
