@@ -2,6 +2,7 @@ import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 import { visaNavItems } from '../constants/visaContent';
 
@@ -23,18 +24,13 @@ export function VisaServicesPage({ pathname }: { pathname: string }) {
       </section>
 
       <main className="landing-main visa-services-main">
-        <section className="landing-section visa-services-hero">
-          <div className="content-container visa-services-hero__inner">
-            <nav className="visa-services-hero__breadcrumbs" aria-label="Breadcrumb">
-              <a href="/">Home</a>
-              <span aria-hidden="true">→</span>
-              <a href="/visa-services" aria-current="page">
-                Visa Services
-              </a>
-            </nav>
-            <h1>Explore Australian visa options with clear guidance for every pathway</h1>
-          </div>
-        </section>
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Visa Services' }
+          ]}
+          title="Explore Australian visa options with clear guidance for every pathway"
+        />
 
         <section className="landing-section visa-services-summary" aria-label="Visa types summary table">
           <div className="content-container visa-services-summary__inner">
