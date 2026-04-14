@@ -5389,23 +5389,47 @@ body.body--menu-open {
 }
 
 .visa-services-hero {
-  padding: clamp(2.2rem, 5vw, 3.4rem) 0 1.1rem;
+  padding: clamp(2.2rem, 5vw, 3.4rem) 0 1.4rem;
+  background: linear-gradient(180deg, #eef3f9 0%, #e8eef6 100%);
+  border-top: 1px solid rgb(148 163 184 / 0.2);
+  border-bottom: 1px solid rgb(148 163 184 / 0.2);
 }
 
 .visa-services-hero__inner {
   max-width: 58rem;
+  padding: clamp(1.4rem, 2vw, 1.8rem) 0;
 }
 
-.visa-services-hero__eyebrow {
+.visa-services-hero__breadcrumbs {
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.visa-services-hero__breadcrumbs a {
   color: #1d4ed8;
-  letter-spacing: 0.13em;
-  font-weight: 700;
-  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.visa-services-hero__breadcrumbs a:hover,
+.visa-services-hero__breadcrumbs a:focus-visible {
+  text-decoration: underline;
+}
+
+.visa-services-hero__breadcrumbs span {
+  color: #315274;
+}
+
+.visa-services-hero__breadcrumbs a[aria-current='page'] {
+  color: #123a62;
 }
 
 .visa-services-hero h1 {
-  margin: 0.55rem 0 0;
+  margin: 0.9rem 0 0;
   font-size: clamp(2rem, 4.8vw, 3.2rem);
   line-height: 1.12;
   color: #0f2d4b;
