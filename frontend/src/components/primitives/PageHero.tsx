@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 type BreadcrumbItem = {
   label: string;
   href?: string;
@@ -7,9 +9,11 @@ type PageHeroProps = {
   title: string;
   description?: string;
   breadcrumbs: BreadcrumbItem[];
+  metaItems?: string[];
+  children?: ReactNode;
 };
 
-export function PageHero({ title, description, breadcrumbs }: PageHeroProps) {
+export function PageHero({ title, description, breadcrumbs, metaItems, children }: PageHeroProps) {
   const lastIndex = breadcrumbs.length - 1;
 
   return (
@@ -30,6 +34,16 @@ export function PageHero({ title, description, breadcrumbs }: PageHeroProps) {
         </nav>
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
+        {metaItems?.length ? (
+          <div className="page-hero__meta-row" aria-label="Article metadata">
+            {metaItems.map((item) => (
+              <span key={item} className="page-hero__meta-item">
+                {item}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {children ? <div className="page-hero__extra">{children}</div> : null}
       </div>
     </section>
   );
