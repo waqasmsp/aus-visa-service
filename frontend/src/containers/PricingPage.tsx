@@ -2,6 +2,7 @@ import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { MobileBottomNav } from '../components/landing/MobileBottomNav';
 import { VisiaChat } from '../components/landing/VisiaChat';
+import { PageHero } from '../components/primitives/PageHero';
 import { landingContent } from '../constants/landingContent';
 
 type PricingPageProps = {
@@ -62,14 +63,14 @@ export function PricingPage({ pathname }: PricingPageProps) {
       </section>
 
       <main className="landing-main pricing-main">
-        <section className="landing-section pricing-hero">
-          <div className="content-container">
-            <div className="pricing-hero__content">
-              <p>Pricing Packages</p>
-              <h1>Get the best packages for every exam preparation</h1>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Pricing' }
+          ]}
+          title="Choose the right visa package with transparent pricing"
+          description="Compare Global Visas pricing for ETA and Visitor Visa services and get started with guided support."
+        />
 
         <section className="landing-section pricing-packages">
           <div className="content-container">
