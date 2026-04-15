@@ -38,17 +38,6 @@ export function LandingPage({ pathname }: { pathname: string }) {
           <FeaturesBand eyebrow={features.eyebrow} title={features.title} items={features.items} />
         </section>
 
-        <section className="landing-section landing-section--service-catalog">
-          <div className="content-container">
-            <ServiceCatalogSection
-              eyebrow={serviceCatalog.eyebrow}
-              title={serviceCatalog.title}
-              intro={serviceCatalog.intro}
-              cards={serviceCatalog.cards}
-            />
-          </div>
-        </section>
-
         <section className="landing-section landing-section--comparison">
           <div className="content-container">
             <ComparisonPanel {...comparison} onGetStarted={openApplicationPage} />
@@ -70,6 +59,17 @@ export function LandingPage({ pathname }: { pathname: string }) {
         <section className="landing-section landing-section--testimonials">
           <div className="content-container">
             <Testimonials title={testimonials.title} items={testimonials.items} />
+          </div>
+        </section>
+
+        <section className="landing-section landing-section--service-catalog">
+          <div className="content-container">
+            <ServiceCatalogSection
+              eyebrow={serviceCatalog.eyebrow}
+              title={serviceCatalog.title}
+              intro={serviceCatalog.intro}
+              cards={serviceCatalog.cards}
+            />
           </div>
         </section>
       </main>
