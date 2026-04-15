@@ -52,9 +52,9 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
   const closeTimerRef = useRef<number | null>(null);
   const hasDropdown = (item: string) => item === 'Visa Services';
   const currentPath = normalizePathname(pathname);
-  const goToApplication = () => {
+  const goToLogin = () => {
     if (typeof window !== 'undefined') {
-      window.location.assign('/application');
+      window.location.assign('/login');
     }
   };
 
@@ -211,7 +211,7 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
         </nav>
 
         <div className="top-header__actions">
-          <PrimaryButton variant="outline" onClick={goToApplication}>
+          <PrimaryButton variant="outline" onClick={goToLogin}>
             {loginCta}
           </PrimaryButton>
         </div>
@@ -266,7 +266,7 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
             })}
           </nav>
 
-          <PrimaryButton variant="outline" className="mobile-sidepanel__login-button" onClick={goToApplication}>
+          <PrimaryButton variant="outline" className="mobile-sidepanel__login-button" onClick={goToLogin}>
             {loginCta}
           </PrimaryButton>
         </aside>

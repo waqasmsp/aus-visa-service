@@ -20,7 +20,7 @@ type ServiceCatalogCard = {
 export const landingContent = {
   brandName: 'Global Visas',
   navItems: ['Home', 'Visa Services', 'Pricing', 'Blogs', 'About Us', 'Contact Us'],
-  loginCta: 'Apply Now',
+  loginCta: 'Login',
   hero: {
     title: '[[Simplest|Fastest|Quickest]] Way to Get Your Australian Visitor Visa',
     subtitle:
