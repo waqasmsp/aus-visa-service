@@ -3,12 +3,15 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import App from './App';
 import './styles/tokens.css';
 import './styles.css';
+import { applyThemeSettings, loadThemeSettings } from './utils/themeSettings';
 
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
   throw new Error('Root element not found');
 }
+
+applyThemeSettings(loadThemeSettings());
 
 function AppRouter() {
   const [pathname, setPathname] = React.useState(window.location.pathname);

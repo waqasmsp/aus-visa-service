@@ -7,6 +7,7 @@ import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
 import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPerformanceWidgets';
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
+import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../utils/themeSettings';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -84,6 +85,7 @@ type VisaApplication = {
 
 const AUTH_SESSION_KEY = 'aus-visa-auth-session';
 const DASHBOARD_ACCESS_NOTICE_KEY = 'aus-visa-dashboard-access-notice';
+const DASHBOARD_SETTINGS_STORAGE_KEY = 'aus-visa-dashboard-settings';
 
 const roleScope: Record<DashboardRole, DashboardSection[]> = {
   admin: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
@@ -617,7 +619,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
           {activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
           {activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
-          {activeSection === 'settings' ? <SettingsPanel /> : null}
+          {activeSection === 'settings' ? <SettingsPanel role={role} /> : null}
         </main>
       </div>
     </div>
@@ -1178,20 +1180,106 @@ function PaymentsPanel({ role }: { role: DashboardRole }) {
   );
 }
 
-function SettingsPanel() {
-  const [settings, setSettings] = useState({
-    maintenanceMode: false,
-    requireMfaForAdmins: true,
-    autoAssignCases: true,
-    abandonedEmailAutomation: true,
-    paymentAutoRetry: true,
-    supportSlaHours: '8',
-    defaultApplicationSla: '48',
-    primaryBrand: 'var(--color-text)'
-  });
+type PlatformSettings = {
+  maintenanceMode: boolean;
+  requireMfaForAdmins: boolean;
+  autoAssignCases: boolean;
+  abandonedEmailAutomation: boolean;
+  paymentAutoRetry: boolean;
+  supportSlaHours: string;
+  defaultApplicationSla: string;
+  primaryBrand: string;
+};
 
-  const updateSetting = (key: keyof typeof settings, value: string | boolean) => {
+const defaultPlatformSettings: PlatformSettings = {
+  maintenanceMode: false,
+  requireMfaForAdmins: true,
+  autoAssignCases: true,
+  abandonedEmailAutomation: true,
+  paymentAutoRetry: true,
+  supportSlaHours: '8',
+  defaultApplicationSla: '48',
+  primaryBrand: 'var(--color-text)'
+};
+
+const loadPlatformSettings = (): PlatformSettings => {
+  if (typeof window === 'undefined') {
+    return defaultPlatformSettings;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DASHBOARD_SETTINGS_STORAGE_KEY);
+    if (!raw) {
+      return defaultPlatformSettings;
+    }
+    const parsed = JSON.parse(raw) as Partial<PlatformSettings>;
+    return {
+      maintenanceMode: typeof parsed.maintenanceMode === 'boolean' ? parsed.maintenanceMode : defaultPlatformSettings.maintenanceMode,
+      requireMfaForAdmins:
+        typeof parsed.requireMfaForAdmins === 'boolean' ? parsed.requireMfaForAdmins : defaultPlatformSettings.requireMfaForAdmins,
+      autoAssignCases: typeof parsed.autoAssignCases === 'boolean' ? parsed.autoAssignCases : defaultPlatformSettings.autoAssignCases,
+      abandonedEmailAutomation:
+        typeof parsed.abandonedEmailAutomation === 'boolean' ? parsed.abandonedEmailAutomation : defaultPlatformSettings.abandonedEmailAutomation,
+      paymentAutoRetry: typeof parsed.paymentAutoRetry === 'boolean' ? parsed.paymentAutoRetry : defaultPlatformSettings.paymentAutoRetry,
+      supportSlaHours: typeof parsed.supportSlaHours === 'string' ? parsed.supportSlaHours : defaultPlatformSettings.supportSlaHours,
+      defaultApplicationSla:
+        typeof parsed.defaultApplicationSla === 'string' ? parsed.defaultApplicationSla : defaultPlatformSettings.defaultApplicationSla,
+      primaryBrand: typeof parsed.primaryBrand === 'string' ? parsed.primaryBrand : defaultPlatformSettings.primaryBrand
+    };
+  } catch {
+    return defaultPlatformSettings;
+  }
+};
+
+function SettingsPanel({ role }: { role: DashboardRole }) {
+  const isAdmin = role === 'admin';
+  const [settings, setSettings] = useState<PlatformSettings>(() => loadPlatformSettings());
+  const [themeSettings, setThemeSettings] = useState<ThemeSettings>(() => loadThemeSettings());
+  const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
+
+  const updateSetting = (key: keyof PlatformSettings, value: string | boolean) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateThemeGlobalSetting = (key: keyof ThemeSettings['global'], value: string) => {
+    setThemeSettings((prev) => ({ ...prev, global: { ...prev.global, [key]: value } }));
+  };
+
+  const updateThemeSectionSetting = <K extends keyof ThemeSettings['sections']>(key: K, value: ThemeSettings['sections'][K]) => {
+    setThemeSettings((prev) => ({ ...prev, sections: { ...prev.sections, [key]: value } }));
+  };
+
+  const resetThemeDefaults = () => {
+    setThemeSettings(defaultThemeSettings);
+    setSaveMessage('');
+    setSaveError('');
+  };
+
+  const saveSettings = () => {
+    try {
+      window.localStorage.setItem(DASHBOARD_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+      if (isAdmin) {
+        saveThemeSettings(themeSettings);
+        applyThemeSettings(themeSettings);
+      }
+      setSaveError('');
+      setSaveMessage('Settings saved successfully.');
+    } catch {
+      setSaveMessage('');
+      setSaveError('Unable to save settings. Please try again.');
+    }
+  };
+
+  const resetSettings = () => {
+    setSettings(defaultPlatformSettings);
+    if (isAdmin) {
+      setThemeSettings(defaultThemeSettings);
+      saveThemeSettings(defaultThemeSettings);
+      applyThemeSettings(defaultThemeSettings);
+    }
+    setSaveMessage('');
+    setSaveError('');
   };
 
   return (
@@ -1254,14 +1342,115 @@ function SettingsPanel() {
             Payment Auto Retry
           </label>
         </div>
+      </article>
+
+      {isAdmin ? (
+        <article className="dashboard-panel">
+          <div className="dashboard-panel__header">
+            <h2>Theme &amp; Colors</h2>
+            <small>Admin only</small>
+          </div>
+          <div className="dashboard-settings-grid">
+            <label>
+              App Background
+              <input
+                type="text"
+                value={themeSettings.global.appBackground}
+                onChange={(event) => updateThemeGlobalSetting('appBackground', event.target.value)}
+                placeholder="#f8fafc or CSS var()/gradient"
+              />
+            </label>
+            <label>
+              Header Background
+              <input
+                type="text"
+                value={themeSettings.global.headerBackground}
+                onChange={(event) => updateThemeGlobalSetting('headerBackground', event.target.value)}
+                placeholder="#ffffff or CSS var()/gradient"
+              />
+            </label>
+            <label>
+              Button Background
+              <input
+                type="text"
+                value={themeSettings.global.buttonBackground}
+                onChange={(event) => updateThemeGlobalSetting('buttonBackground', event.target.value)}
+                placeholder="#1d4ed8 or CSS var()/gradient"
+              />
+            </label>
+            <label>
+              Button Text Color
+              <input
+                type="text"
+                value={themeSettings.global.buttonText}
+                onChange={(event) => updateThemeGlobalSetting('buttonText', event.target.value)}
+                placeholder="#ffffff"
+              />
+            </label>
+            <label>
+              Footer Background
+              <input
+                type="text"
+                value={themeSettings.global.footerBackground}
+                onChange={(event) => updateThemeGlobalSetting('footerBackground', event.target.value)}
+                placeholder="#04101f or CSS var()/gradient"
+              />
+            </label>
+          </div>
+          <div className="dashboard-toggle-list">
+            <label>
+              <input
+                type="checkbox"
+                checked={themeSettings.sections.enableApplicationSectionBackground}
+                onChange={(event) => updateThemeSectionSetting('enableApplicationSectionBackground', event.target.checked)}
+              />
+              Override Application Section Background
+            </label>
+            <label>
+              Application Section Background
+              <input
+                type="text"
+                value={themeSettings.sections.applicationSectionBackground}
+                onChange={(event) => updateThemeSectionSetting('applicationSectionBackground', event.target.value)}
+                placeholder="#eef2f5 or CSS var()/gradient"
+                disabled={!themeSettings.sections.enableApplicationSectionBackground}
+              />
+            </label>
+            <label>
+              <input type="checkbox" checked={themeSettings.sections.enableHeroBackground} disabled />
+              Override Page Hero Background (Locked for now)
+            </label>
+          </div>
+          <p className="dashboard-panel__note">
+            Hero token remains unchanged by global palette updates unless a future explicit toggle is enabled.
+          </p>
+          <div className="dashboard-settings-actions">
+            <button type="button" className="dashboard-ghost-button" onClick={resetThemeDefaults}>
+              Reset Theme Defaults
+            </button>
+          </div>
+        </article>
+      ) : (
+        <article className="dashboard-panel">
+          <div className="dashboard-panel__header">
+            <h2>Theme &amp; Colors</h2>
+            <small>Admin only</small>
+          </div>
+          <p className="dashboard-panel__note">Theme controls are hidden for non-admin roles.</p>
+        </article>
+      )}
+
+      <article className="dashboard-panel">
         <div className="dashboard-settings-actions">
-          <button type="button" className="dashboard-primary-button">
+          <button type="button" className="dashboard-primary-button" onClick={saveSettings}>
             Save Settings
           </button>
-          <button type="button" className="dashboard-ghost-button">
+          <button type="button" className="dashboard-ghost-button" onClick={resetSettings}>
             Reset to Default
           </button>
         </div>
+        {saveMessage ? <p className="dashboard-auth__message is-success">{saveMessage}</p> : null}
+        {saveError ? <p className="dashboard-auth__message is-error">{saveError}</p> : null}
       </article>
     </section>
   );
