@@ -106,7 +106,7 @@ body.body--menu-open {
   background: var(--theme-section-bg-major, transparent);
 }
 
-.landing-main--application > .landing-section:first-child {
+.landing-page > .landing-section + .landing-main.landing-main--application > .landing-section:first-child {
   padding-top: 0;
 }
 
@@ -254,7 +254,8 @@ body.body--menu-open {
 }
 
 .landing-section--application {
-  background: var(--theme-application-surface, var(--theme-section-bg-alt, var(--color-neutral-100, #eef2f5)));
+  background: var(--theme-hero-bg, var(--theme-page-hero-bg));
+  padding-block: 50px;
 }
 
 .landing-section--service-catalog {
@@ -1749,10 +1750,6 @@ body.body--menu-open {
   width: min(1240px, calc(100% - 2rem));
   margin-inline: auto;
   padding: clamp(1.1rem, 2.5vw, 1.9rem) clamp(0.9rem, 2.8vw, 2.6rem) clamp(1.4rem, 3vw, 2rem);
-  background:
-    radial-gradient(circle at 4% 8%, rgb(14 165 233 / 0.08), transparent 26%),
-    radial-gradient(circle at 94% 12%, rgb(37 99 235 / 0.08), transparent 34%),
-    #eef4f8;
 }
 
 .application-form-close {
