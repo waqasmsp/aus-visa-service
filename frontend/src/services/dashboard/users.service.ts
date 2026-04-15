@@ -10,15 +10,11 @@ import {
 import { DashboardListResponse } from '../../types/dashboard/query';
 import { DashboardUserRole } from '../../types/dashboard/applications';
 import { delay } from './async';
+import { assertPermission, DestructiveApprovalContext, enforceDestructiveApproval } from './authPolicy';
+import { writeAuditEvent } from './audit.service';
 import { mapUserDtoToUi } from './mappers/users.mapper';
 
 const normalizePhone = (value: string): string => value.replace(/[^\d+]/g, '').replace(/^00/, '+');
-
-const authorize = (role: DashboardUserRole, allowed: DashboardUserRole[]) => {
-  if (!allowed.includes(role)) {
-    throw new Error('You do not have permission for this action.');
-  }
-};
 
 let userStore: UserDto[] = [
   {
@@ -167,7 +163,7 @@ export const usersService = {
 
   async create(payload: UpsertUserRequest, role: DashboardUserRole): Promise<PortalUser> {
     await delay();
-    authorize(role, ['admin', 'manager']);
+    assertPermission(role, 'users', 'create');
     const duplicate = findDuplicate(payload.email, payload.phone);
     if (duplicate) {
       throw new Error(`Duplicate detected with ${duplicate.email} / ${duplicate.phone}.`);
@@ -193,14 +189,16 @@ export const usersService = {
       timeline: [{ id: `${id}-1`, label: 'Profile created', occurredAt: now, actor: role, type: 'activity' }]
     };
     userStore = [record, ...userStore];
+    writeAuditEvent({ actor: role, action: 'create', entityType: 'users', entityId: id, before: null, after: record });
     return mapUserDtoToUi(record);
   },
 
   async update(id: string, payload: Partial<UpsertUserRequest>, role: DashboardUserRole): Promise<PortalUser> {
     await delay();
-    authorize(role, ['admin', 'manager', 'user']);
+    assertPermission(role, 'users', 'edit');
     const existing = userStore.find((item) => item.id === id);
     if (!existing) throw new Error('User record not found.');
+    const before = { ...existing };
 
     const nextEmail = payload.email ?? existing.email;
     const nextPhone = payload.phone ?? existing.phone;
@@ -226,12 +224,13 @@ export const usersService = {
       ]
     };
     userStore = userStore.map((item) => (item.id === id ? updated : item));
+    writeAuditEvent({ actor: role, action: 'edit', entityType: 'users', entityId: id, before, after: updated });
     return mapUserDtoToUi(updated);
   },
 
   async setActive(id: string, active: boolean, role: DashboardUserRole): Promise<void> {
     await delay();
-    authorize(role, ['admin', 'manager']);
+    assertPermission(role, 'users', 'edit');
     userStore = userStore.map((item) =>
       item.id === id
         ? {
@@ -252,9 +251,12 @@ export const usersService = {
     );
   },
 
-  async softDelete(id: string, role: DashboardUserRole): Promise<void> {
+  async softDelete(id: string, role: DashboardUserRole, approval: DestructiveApprovalContext): Promise<void> {
     await delay();
-    authorize(role, ['admin']);
+    assertPermission(role, 'users', 'delete');
+    enforceDestructiveApproval('users', 'delete', approval);
+    const existing = userStore.find((item) => item.id === id);
+    const before = existing ? { ...existing } : null;
     userStore = userStore.map((item) =>
       item.id === id
         ? {
@@ -267,6 +269,10 @@ export const usersService = {
           }
         : item
     );
+    const after = userStore.find((item) => item.id === id);
+    if (after) {
+      writeAuditEvent({ actor: role, action: 'delete', entityType: 'users', entityId: id, before, after: { ...after, ...approval } });
+    }
   },
 
   async exportCsv(filters: ListUsersRequestDto['filters']): Promise<string> {
@@ -298,7 +304,7 @@ export const usersService = {
 
   async importRows(rows: UserImportRow[], role: DashboardUserRole): Promise<UserImportReport> {
     await delay();
-    authorize(role, ['admin', 'manager']);
+    assertPermission(role, 'users', 'create');
 
     const errors: UserImportValidationError[] = [];
     let importedCount = 0;

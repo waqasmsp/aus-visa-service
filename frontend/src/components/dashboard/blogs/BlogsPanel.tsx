@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card } from '../../primitives/Card';
 import { PrimaryButton } from '../../primitives/PrimaryButton';
+import { collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
@@ -111,6 +112,11 @@ export function BlogsPanel({
       if (onArchive) {
         onArchive(post.id);
       }
+      return;
+    }
+    const approval = collectDestructiveApproval('blogs', 'delete', post.title);
+    if (!approval) {
+      setWorkflowMessage('Delete canceled by policy safeguards.');
       return;
     }
 
@@ -226,7 +232,7 @@ export function BlogsPanel({
         </table>
       </div>
       <div className="dashboard-blog-list-cta">
-        <PrimaryButton type="button" onClick={onCreate}>Create new post</PrimaryButton>
+        <PrimaryButton type="button" onClick={onCreate} disabled={!actions.includes('create')}>Create new post</PrimaryButton>
       </div>
     </Card>
   );

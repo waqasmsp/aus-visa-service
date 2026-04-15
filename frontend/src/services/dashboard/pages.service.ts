@@ -14,7 +14,10 @@ import {
 } from '../../types/dashboard/pages';
 import { DashboardListResponse } from '../../types/dashboard/query';
 import { delay } from './async';
+import { assertPermission, DestructiveApprovalContext, enforceDestructiveApproval } from './authPolicy';
+import { writeAuditEvent } from './audit.service';
 import { mapPageDtoToUi, mapPageUiToDto } from './mappers/pages.mapper';
+import { DashboardUserRole } from '../../types/dashboard/applications';
 
 const TODAY = '2026-04-15';
 const FALLBACK_EDITOR = 'Admin Team';
@@ -263,8 +266,9 @@ export const pagesService = {
     return { ...dto, items: dto.items.map(mapPageDtoToUi) };
   },
 
-  async create(payload: CreatePageRequestDto): Promise<CmsPage> {
+  async create(payload: CreatePageRequestDto, role: DashboardUserRole): Promise<CmsPage> {
     await delay();
+    assertPermission(role, 'pages', 'create');
     requireValidSchema(payload);
     const normalizedSlug = toSlug(payload.slug);
     ensureSlugUnique(normalizedSlug);
@@ -293,12 +297,15 @@ export const pagesService = {
     };
     pageStore = [next, ...pageStore];
     createVersionSnapshot(next, FALLBACK_EDITOR, 'Page created');
+    writeAuditEvent({ actor: role, action: 'create', entityType: 'pages', entityId: next.id, before: null, after: next });
     return mapPageDtoToUi(next);
   },
 
-  async update(id: string, payload: UpdatePageRequestDto): Promise<CmsPage> {
+  async update(id: string, payload: UpdatePageRequestDto, role: DashboardUserRole): Promise<CmsPage> {
     await delay();
+    assertPermission(role, 'pages', 'edit');
     const existing = getPageById(id);
+    const before = { ...existing };
     const mergedSchema = {
       title: payload.title ?? existing.title,
       slug: payload.slug ?? existing.slug,
@@ -352,15 +359,20 @@ export const pagesService = {
 
     pageStore = pageStore.map((page) => (page.id === id ? updatedDto : page));
     createVersionSnapshot(updatedDto, FALLBACK_EDITOR, 'Page updated');
+    writeAuditEvent({ actor: role, action: 'edit', entityType: 'pages', entityId: id, before, after: updatedDto });
     return mapPageDtoToUi(updatedDto);
   },
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, role: DashboardUserRole, approval: DestructiveApprovalContext): Promise<void> {
     await delay();
+    assertPermission(role, 'pages', 'delete');
+    enforceDestructiveApproval('pages', 'delete', approval);
+    const before = pageStore.find((page) => page.id === id);
     if (!pageStore.some((page) => page.id === id)) {
       throw new Error('Page not found');
     }
     pageStore = pageStore.filter((page) => page.id !== id);
+    writeAuditEvent({ actor: role, action: 'delete', entityType: 'pages', entityId: id, before, after: { removed: true, ...approval } });
   },
 
   async getVersionHistory(pageId: string): Promise<PageVersionSnapshot[]> {
@@ -379,8 +391,9 @@ export const pagesService = {
     return { fromVersion, toVersion, changes: buildCompare(from.snapshot, to.snapshot) };
   },
 
-  async rollbackToVersion(pageId: string, version: number): Promise<CmsPage> {
+  async rollbackToVersion(pageId: string, version: number, role: DashboardUserRole): Promise<CmsPage> {
     await delay();
+    assertPermission(role, 'pages', 'edit');
     const page = getPageById(pageId);
     const target = versionStore.find((entry) => entry.pageId === pageId && entry.version === version);
     if (!target) {
@@ -397,6 +410,7 @@ export const pagesService = {
     };
     pageStore = pageStore.map((entry) => (entry.id === pageId ? next : entry));
     createVersionSnapshot(next, FALLBACK_EDITOR, `Rollback to version ${version}`);
+    writeAuditEvent({ actor: role, action: 'rollback', entityType: 'pages', entityId: pageId, before: page, after: next });
     return mapPageDtoToUi(next);
   },
 
@@ -415,8 +429,12 @@ export const pagesService = {
     return { canPublish: warnings.length === 0, warnings };
   },
 
-  async batchTransition(payload: BatchTransitionRequestDto): Promise<BatchTransitionResponse> {
+  async batchTransition(payload: BatchTransitionRequestDto, role: DashboardUserRole, approval?: DestructiveApprovalContext): Promise<BatchTransitionResponse> {
     await delay();
+    assertPermission(role, 'pages', payload.action === 'publish' ? 'publish' : 'edit');
+    if (payload.action === 'publish') {
+      enforceDestructiveApproval('pages', 'publish', approval);
+    }
     const warnings: string[] = [];
     const updated: CmsPage[] = [];
 
@@ -435,6 +453,17 @@ export const pagesService = {
       pageStore = pageStore.map((entry) => (entry.id === id ? next : entry));
       createVersionSnapshot(next, FALLBACK_EDITOR, `Batch ${payload.action}`);
       updated.push(mapPageDtoToUi(next));
+    }
+
+    if (updated.length > 0) {
+      writeAuditEvent({
+        actor: role,
+        action: `batch_${payload.action}`,
+        entityType: 'pages',
+        entityId: payload.ids.join(','),
+        before: { ids: payload.ids },
+        after: { updated: updated.map((entry) => entry.id), approval }
+      });
     }
 
     return { updated, warnings };

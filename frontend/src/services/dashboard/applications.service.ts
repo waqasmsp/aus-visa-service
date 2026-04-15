@@ -12,6 +12,8 @@ import {
 } from '../../types/dashboard/applications';
 import { DashboardListResponse } from '../../types/dashboard/query';
 import { delay } from './async';
+import { assertPermission, DestructiveApprovalContext, enforceDestructiveApproval } from './authPolicy';
+import { writeAuditEvent } from './audit.service';
 import { mapApplicationDtoToUi, mapApplicationStatusToDto } from './mappers/applications.mapper';
 
 const DELETE_RESTORE_WINDOW_MS = 1000 * 60 * 15;
@@ -53,18 +55,6 @@ const applicationStore: VisaApplicationDto[] = [
     timeline: [{ id: 't5', label: 'Completed', occurredAt: '2026-04-05T16:45:00Z', actor: 'Nina K.' }], notes: [], document_summary: { total: 5, verified: 5, pending: 0, rejected: 0 }, audit_events: [{ id: 'a5', action: 'application_completed', actor: 'Nina K.', timestamp: '2026-04-05T16:45:00Z' }]
   }
 ];
-
-const hasPermission = (role: DashboardUserRole, action: 'create' | 'edit' | 'delete' | 'restore' | 'bulk'): boolean => {
-  if (role === 'admin') return true;
-  if (role === 'manager') return action !== 'restore' ? true : true;
-  return action === 'create' || action === 'edit';
-};
-
-const ensureAllowed = (role: DashboardUserRole, action: 'create' | 'edit' | 'delete' | 'restore' | 'bulk') => {
-  if (!hasPermission(role, action)) {
-    throw { message: 'Your role does not have permission for this action.' };
-  }
-};
 
 const toTimestamp = (date: string): number => new Date(`${date}T00:00:00Z`).getTime();
 
@@ -116,7 +106,7 @@ export const applicationsService = {
 
   async create(payload: CreateApplicationRequestDto, actorRole: DashboardUserRole): Promise<VisaApplication> {
     await delay();
-    ensureAllowed(actorRole, 'create');
+    assertPermission(actorRole, 'applications', 'create');
     const nextId = `AUS-${24000 + applicationStore.length + 1}`;
     const now = new Date().toISOString();
     const created: VisaApplicationDto = {
@@ -139,32 +129,59 @@ export const applicationsService = {
       audit_events: [{ id: `${nextId}-audit-1`, action: 'application_created', actor: payload.assigned_to, timestamp: now }]
     };
     applicationStore.unshift(created);
+    writeAuditEvent({
+      actor: actorRole,
+      action: 'create',
+      entityType: 'applications',
+      entityId: created.id,
+      before: null,
+      after: created
+    });
     return mapApplicationDtoToUi(created);
   },
 
   async update(id: string, payload: UpdateApplicationRequestDto, actorRole: DashboardUserRole): Promise<VisaApplication> {
     await delay();
-    ensureAllowed(actorRole, 'edit');
+    assertPermission(actorRole, 'applications', 'edit');
     const record = applicationStore.find((entry) => entry.id === id);
     if (!record) throw { message: 'Application not found.' };
+    const before = { ...record };
     Object.assign(record, payload);
     record.audit_events.unshift({ id: `${id}-audit-${Date.now()}`, action: 'application_updated', actor: payload.assigned_to ?? 'System', timestamp: new Date().toISOString() });
+    writeAuditEvent({
+      actor: actorRole,
+      action: 'edit',
+      entityType: 'applications',
+      entityId: id,
+      before,
+      after: record
+    });
     return mapApplicationDtoToUi(record);
   },
 
-  async softDelete(id: string, actorRole: DashboardUserRole): Promise<void> {
+  async softDelete(id: string, actorRole: DashboardUserRole, approval?: DestructiveApprovalContext): Promise<void> {
     await delay();
-    ensureAllowed(actorRole, 'delete');
+    assertPermission(actorRole, 'applications', 'delete');
+    enforceDestructiveApproval('applications', 'delete', approval);
     const record = applicationStore.find((entry) => entry.id === id);
     if (!record) throw { message: 'Application not found.' };
+    const before = { ...record };
     record.is_deleted = true;
     record.deleted_at = new Date().toISOString();
     record.audit_events.unshift({ id: `${id}-audit-${Date.now()}`, action: 'application_soft_deleted', actor: actorRole, timestamp: new Date().toISOString() });
+    writeAuditEvent({
+      actor: actorRole,
+      action: 'delete',
+      entityType: 'applications',
+      entityId: id,
+      before,
+      after: { ...record, reason: approval?.reason, secondApprover: approval?.secondApprover }
+    });
   },
 
   async restore(id: string, actorRole: DashboardUserRole): Promise<void> {
     await delay();
-    ensureAllowed(actorRole, 'restore');
+    assertPermission(actorRole, 'applications', 'edit');
     const record = applicationStore.find((entry) => entry.id === id);
     if (!record || !record.deleted_at) throw { message: 'Application cannot be restored.' };
     const deletedAt = new Date(record.deleted_at).getTime();
@@ -172,11 +189,19 @@ export const applicationsService = {
     record.is_deleted = false;
     record.deleted_at = null;
     record.audit_events.unshift({ id: `${id}-audit-${Date.now()}`, action: 'application_restored', actor: actorRole, timestamp: new Date().toISOString() });
+    writeAuditEvent({
+      actor: actorRole,
+      action: 'restore',
+      entityType: 'applications',
+      entityId: id,
+      before: { ...record, is_deleted: true },
+      after: record
+    });
   },
 
   async bulkAssignOwner(payload: BulkAssignOwnerRequest, actorRole: DashboardUserRole): Promise<void> {
     await delay();
-    ensureAllowed(actorRole, 'bulk');
+    assertPermission(actorRole, 'applications', 'edit');
     applicationStore.forEach((entry) => {
       if (payload.ids.includes(entry.id)) {
         entry.assigned_to = payload.owner;
@@ -186,7 +211,7 @@ export const applicationsService = {
 
   async bulkStatusUpdate(payload: BulkStatusUpdateRequest, actorRole: DashboardUserRole): Promise<void> {
     await delay();
-    ensureAllowed(actorRole, 'bulk');
+    assertPermission(actorRole, 'applications', 'edit');
     const mappedStatus = toDtoStatus(payload.status);
     applicationStore.forEach((entry) => {
       if (payload.ids.includes(entry.id)) {
@@ -197,7 +222,7 @@ export const applicationsService = {
 
   async exportSelected(ids: string[], actorRole: DashboardUserRole): Promise<string> {
     await delay();
-    ensureAllowed(actorRole, 'bulk');
+    assertPermission(actorRole, 'applications', 'view');
     return `export://${ids.join(',')}`;
   }
 };

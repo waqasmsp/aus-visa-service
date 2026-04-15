@@ -13,6 +13,8 @@ import {
 import { DashboardQueryState } from '../../../types/dashboard/query';
 import { pagesService } from '../../../services/dashboard/pages.service';
 import { extractApiErrorMessage, runOptimisticMutation } from '../../../services/dashboard/async';
+import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
+import { DashboardUserRole } from '../../../types/dashboard/applications';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import {
   DashboardEmptyState,
@@ -219,7 +221,7 @@ function ConfirmModal({
   );
 }
 
-export function PagesPanel() {
+export function PagesPanel({ role }: { role: DashboardUserRole }) {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -320,7 +322,7 @@ export function PagesPanel() {
     setEditorSubmitting(true);
     try {
       if (editorMode === 'create') {
-        await pagesService.create(payload);
+        await pagesService.create(payload, role);
         notifySuccess('Page created successfully.');
       } else if (editorPageId) {
         const previous = pages;
@@ -344,7 +346,7 @@ export function PagesPanel() {
           () => setPages(optimistic),
           () => setPages(previous),
           async () => {
-            const updated = await pagesService.update(editorPageId, payload);
+            const updated = await pagesService.update(editorPageId, payload, role);
             setPages((prev) => prev.map((page) => (page.id === editorPageId ? updated : page)));
             notifySuccess('Page updated successfully.');
           }
@@ -367,7 +369,11 @@ export function PagesPanel() {
         () => setPages((prev) => prev.filter((page) => page.id !== deleteTarget.id)),
         () => setPages(previous),
         async () => {
-          await pagesService.remove(deleteTarget.id);
+          const approval = collectDestructiveApproval('pages', 'delete', deleteTarget.title);
+          if (!approval) {
+            throw new Error('Delete canceled.');
+          }
+          await pagesService.remove(deleteTarget.id, role, approval);
           notifySuccess('Page removed.');
         }
       );
@@ -386,7 +392,11 @@ export function PagesPanel() {
   const runBatch = async () => {
     if (!batchAction) return;
     try {
-      const response = await pagesService.batchTransition({ ids: selectedPageIds, action: batchAction });
+      const destructiveApproval = batchAction === 'publish' ? collectDestructiveApproval('pages', 'publish', `${selectedPageIds.length} pages`) : null;
+      if (batchAction === 'publish' && !destructiveApproval) {
+        return;
+      }
+      const response = await pagesService.batchTransition({ ids: selectedPageIds, action: batchAction }, role, destructiveApproval ?? undefined);
       response.warnings.forEach((warning) => notifyError(warning));
       if (response.updated.length > 0) {
         notifySuccess(`Updated ${response.updated.length} page(s).`);
@@ -423,7 +433,7 @@ export function PagesPanel() {
   const rollback = async (version: number) => {
     if (!versionPage) return;
     try {
-      await pagesService.rollbackToVersion(versionPage.id, version);
+      await pagesService.rollbackToVersion(versionPage.id, version, role);
       notifySuccess(`Rolled back to version ${version}.`);
       setVersions(await pagesService.getVersionHistory(versionPage.id));
       await loadPages();
@@ -454,7 +464,7 @@ export function PagesPanel() {
         <article className="dashboard-panel">
           <div className="dashboard-panel__header dashboard-panel__header--spread">
             <h2>CMS Pages</h2>
-            <button type="button" className="dashboard-primary-button" onClick={openCreate}>
+            <button type="button" className="dashboard-primary-button" onClick={openCreate} disabled={!canPerform(role, 'pages', 'create')}>
               Add New Page
             </button>
           </div>
@@ -568,7 +578,7 @@ export function PagesPanel() {
                         <td>{page.views.toLocaleString()}</td>
                         <td>
                           <div className="dashboard-actions-inline">
-                            <button type="button" onClick={() => openEdit(page)}>
+                            <button type="button" onClick={() => openEdit(page)} disabled={!canPerform(role, 'pages', 'edit')}>
                               Edit
                             </button>
                             <button type="button" onClick={() => void checkPublishGuardrails(page)}>
@@ -577,7 +587,7 @@ export function PagesPanel() {
                             <button type="button" onClick={() => void openVersions(page)}>
                               Versions
                             </button>
-                            <button type="button" className="danger" onClick={() => setDeleteTarget(page)}>
+                            <button type="button" className="danger" onClick={() => setDeleteTarget(page)} disabled={!canPerform(role, 'pages', 'delete')}>
                               Remove
                             </button>
                           </div>

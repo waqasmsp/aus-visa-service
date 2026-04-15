@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { archivePost, listPosts, publishPost, schedulePost, updatePost } from '../services/blogService';
 import type { BlogPost, BlogPostStatus } from '../types/blog';
+import { DashboardUserRole } from '../types/dashboard/applications';
+import { assertPermission } from '../services/dashboard/authPolicy';
+import { writeAuditEvent } from '../services/dashboard/audit.service';
 
 type AdminFilters = {
   q: string;
@@ -24,7 +27,7 @@ const getSeoScore = (post: BlogPost): number => {
   return Math.min(100, hasMeta + hasKeyword + hasCanonical + hasImage + wordScore + structureScore);
 };
 
-export function useBlogAdminTable() {
+export function useBlogAdminTable(role: DashboardUserRole) {
   const [filters, setFilters] = useState<AdminFilters>({
     q: '',
     status: 'all',
@@ -86,24 +89,32 @@ export function useBlogAdminTable() {
   }, [loadPosts]);
 
   const onPublish = useCallback(async (postId: string) => {
+    assertPermission(role, 'blogs', 'publish');
     await publishPost(postId);
+    writeAuditEvent({ actor: role, action: 'publish', entityType: 'blogs', entityId: postId, before: null, after: { status: 'published' } });
     await loadPosts();
-  }, [loadPosts]);
+  }, [loadPosts, role]);
 
   const onSchedule = useCallback(async (postId: string, scheduledAt: string) => {
+    assertPermission(role, 'blogs', 'edit');
     await schedulePost(postId, scheduledAt);
+    writeAuditEvent({ actor: role, action: 'schedule', entityType: 'blogs', entityId: postId, before: null, after: { scheduledAt } });
     await loadPosts();
-  }, [loadPosts]);
+  }, [loadPosts, role]);
 
   const onArchive = useCallback(async (postId: string) => {
+    assertPermission(role, 'blogs', 'edit');
     await archivePost(postId);
+    writeAuditEvent({ actor: role, action: 'archive', entityType: 'blogs', entityId: postId, before: null, after: { status: 'archived' } });
     await loadPosts();
-  }, [loadPosts]);
+  }, [loadPosts, role]);
 
   const onBatchUpdate = useCallback(async (entries: Array<{ postId: string; updates: Partial<BlogPost> }>) => {
+    assertPermission(role, 'blogs', 'edit');
     await Promise.all(entries.map((entry) => updatePost(entry.postId, entry.updates)));
+    writeAuditEvent({ actor: role, action: 'batch_edit', entityType: 'blogs', entityId: entries.map((item) => item.postId).join(','), before: null, after: { count: entries.length } });
     await loadPosts();
-  }, [loadPosts]);
+  }, [loadPosts, role]);
 
   const filterOptions = useMemo(() => {
     const authors = Array.from(new Set(posts.map((post) => post.authorName))).sort();
