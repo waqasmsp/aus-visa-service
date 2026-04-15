@@ -126,17 +126,22 @@ body.body--menu-open {
 }
 
 .landing-section--header {
-  background: var(--theme-header-surface, var(--theme-header-bg));
+  background: var(
+    --theme-header-surface,
+    var(
+      --theme-header-bg,
+      linear-gradient(90deg, rgb(235 244 255 / 0.98) 0%, rgb(215 230 252 / 0.96) 45%, rgb(196 219 252 / 0.94) 100%)
+    )
+  );
   border-bottom: 1px solid rgb(59 130 246 / 0.18);
 }
 
 .landing-section--header-hero-blend {
   background: var(
-    --theme-hero-bg,
+    --theme-header-surface,
     var(
-      --theme-page-hero-bg,
-      linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, var(--color-primary-tint-10, rgb(37 99 235 / 0.1)) 42% 100%),
-      linear-gradient(180deg, var(--color-primary-tint-20, rgb(37 99 235 / 0.2)) 0%, var(--color-primary-tint-5, rgb(37 99 235 / 0.05)) 70%, transparent 100%)
+      --theme-header-bg,
+      linear-gradient(90deg, rgb(235 244 255 / 0.98) 0%, rgb(215 230 252 / 0.96) 45%, rgb(196 219 252 / 0.94) 100%)
     )
   );
   border-bottom-color: transparent;
@@ -940,7 +945,7 @@ body.body--menu-open {
   min-height: 4rem;
   padding: 0.8rem 0;
   border-bottom: none;
-  background: var(--theme-hero-bg, var(--theme-page-hero-bg));
+  background: transparent;
 }
 
 .top-header__brand {
