@@ -22,7 +22,7 @@ export const landingContent = {
   navItems: ['Home', 'Visa Services', 'Pricing', 'Blogs', 'About Us', 'Contact Us'],
   loginCta: 'Apply Now',
   hero: {
-    title: '[[Fastest|Simplest|Quickest]] Way to Get Your Australian Visitor Visa',
+    title: '[[Simplest|Fastest|Quickest]] Way to Get Your Australian Visitor Visa',
     subtitle:
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
     originCountryLabel: 'I am from',
