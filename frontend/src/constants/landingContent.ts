@@ -48,7 +48,7 @@ export const landingContent = {
       { code: 'work', name: 'Work Visa' }
     ] satisfies VisaTypeOption[],
     primaryCta: 'Find My Visa',
-    illustrationAlt: 'Illustrated travel planning cards and paper plane.'
+    illustrationAlt: 'Smiling U.S. traveler holding passport and visa documents while reviewing an Australian visa application.'
   },
   comparison: {
     title: 'Why millions of travelers choose us',
