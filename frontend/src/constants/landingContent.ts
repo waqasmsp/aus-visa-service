@@ -22,7 +22,7 @@ export const landingContent = {
   navItems: ['Home', 'Visa Services', 'Pricing', 'Blogs', 'About Us', 'Contact Us'],
   loginCta: 'Apply Now',
   hero: {
-    title: '[[Fastest|Quickest|Swiftest|Speediest]] Way to Get Your Australian Travel Visa in Minutes',
+    title: '[[Fastest|Simplest|Quickest]] Way to Get Your Australian Travel Visa in Minutes',
     subtitle:
       'Compare pathways and get a guided process tailored to your travel, study, or migration goals.',
     originCountryLabel: 'I am from',
@@ -73,7 +73,7 @@ export const landingContent = {
       { code: 'student', name: 'Student Visa' },
       { code: 'work', name: 'Work Visa' }
     ] satisfies VisaTypeOption[],
-    primaryCta: 'Find My Visa',
+    primaryCta: 'Start Application',
     illustrationAlt: 'Smiling U.S. traveler holding passport and visa documents while reviewing an Australian visa application.'
   },
   comparison: {
