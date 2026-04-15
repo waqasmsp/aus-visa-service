@@ -415,7 +415,7 @@ export function HeroVisaSearch({
             </header>
           </div>
           <div className="hero-search-visual">
-            <HeroVisual alt={illustrationAlt} cutout />
+            <HeroVisual alt={illustrationAlt} cutout={false} />
           </div>
         </div>
         <div className="hero-search-panel">
