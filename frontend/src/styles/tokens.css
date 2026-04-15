@@ -34,7 +34,20 @@
   --color-border: var(--color-neutral-200);
 
   /* App theme semantic tokens (2nd tier) */
-  --theme-app-bg: var(--color-bg, #f8fafc);
+  --theme-hero-family-core: var(--theme-page-hero-bg);
+  --theme-hero-family-soft:
+    radial-gradient(circle at 14% 18%, var(--color-cyan-tint-10, rgb(14 165 233 / 0.1)), transparent 38%),
+    radial-gradient(circle at 86% 82%, var(--color-primary-tint-10, rgb(37 99 235 / 0.1)), transparent 40%),
+    var(--theme-hero-family-core);
+  --theme-hero-family-muted:
+    linear-gradient(
+      180deg,
+      var(--color-primary-tint-5, rgb(37 99 235 / 0.05)) 0%,
+      transparent 100%
+    ),
+    var(--theme-hero-family-soft);
+
+  --theme-app-bg: var(--theme-hero-family-muted, var(--color-bg, #f8fafc));
   --theme-header-bg:
     linear-gradient(
       110deg,
@@ -56,6 +69,7 @@
   --theme-button-border: var(--color-primary-tint-20, rgb(37 99 235 / 0.2));
   --theme-section-bg-default: var(--color-surface, #ffffff);
   --theme-section-bg-alt: var(--color-neutral-100, #f1f5f9);
+  --theme-section-bg-major: var(--theme-hero-family-muted, var(--theme-app-bg));
 
   /* Section-specific theme override tokens */
   --theme-page-hero-bg:
@@ -71,7 +85,11 @@
       transparent 100%
     );
   --theme-hero-bg: var(--theme-page-hero-bg);
-  --theme-header-surface: var(--theme-header-bg);
+  --theme-header-surface: var(--theme-hero-family-soft, var(--theme-header-bg));
+  --theme-application-surface: var(--theme-hero-family-muted, var(--theme-section-bg-alt));
+  --theme-page-hero-surface: var(--theme-hero-family-soft, var(--theme-page-hero-bg));
+  --theme-page-hero-border-top: var(--color-primary-tint-20, rgb(37 99 235 / 0.2));
+  --theme-page-hero-border-bottom: var(--color-primary-tint-10, rgb(37 99 235 / 0.1));
   --theme-footer-surface: var(--theme-footer-bg);
 
   /* Light tints (5–20%) */
