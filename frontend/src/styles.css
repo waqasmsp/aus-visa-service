@@ -5125,6 +5125,49 @@ body.body--menu-open {
   font-weight: 600;
 }
 
+
+.dashboard-settings-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dashboard-settings-tab,
+.dashboard-settings-subtab {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 999px;
+  background: #fff;
+  color: #274a71;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+}
+
+.dashboard-settings-tab.is-active,
+.dashboard-settings-subtab.is-active {
+  border-color: rgb(37 99 235 / 0.5);
+  background: rgb(37 99 235 / 0.12);
+  color: #0b3b78;
+}
+
+.dashboard-settings-tab__dirty {
+  margin-left: 0.4rem;
+  color: var(--dashboard-warning);
+}
+
+.dashboard-settings-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+}
+
+.dashboard-settings-help {
+  color: var(--dashboard-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
 .dashboard-settings-actions {
   margin-top: 0.8rem;
   display: flex;
