@@ -6,6 +6,7 @@ import { BlogReviewPanel } from '../../components/dashboard/blogs/BlogReviewPane
 import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
 import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPerformanceWidgets';
 import { DashboardTopNavProfileMenu } from '../../components/dashboard/navigation/DashboardTopNavProfileMenu';
+import { VisaApplicationsPanel } from '../../components/dashboard/applications/VisaApplicationsPanel';
 import {
   DashboardEmptyState,
   DashboardErrorState,
@@ -15,12 +16,10 @@ import {
 } from '../../components/dashboard/common/asyncUi';
 import { useDashboardTableState } from '../../components/dashboard/common/useDashboardTableState';
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
-import { applicationsService } from '../../services/dashboard/applications.service';
 import { extractApiErrorMessage, runOptimisticMutation } from '../../services/dashboard/async';
 import { pagesService } from '../../services/dashboard/pages.service';
 import { usersService } from '../../services/dashboard/users.service';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
-import { ApplicationStatus, VisaApplication } from '../../types/dashboard/applications';
 import { CmsPage, PageStatus } from '../../types/dashboard/pages';
 import { DashboardQueryState } from '../../types/dashboard/query';
 import { PortalUser, UserSegment } from '../../types/dashboard/users';
@@ -431,7 +430,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {!profileRoute && activeSection === 'pages' ? <PagesPanel /> : null}
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'users' ? <UsersPanel /> : null}
-          {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel /> : null}
+          {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel role={session.role} basePath="/dashboard/visa-applications" /> : null}
           {!profileRoute && activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
@@ -913,151 +912,6 @@ function UsersPanel() {
                         <td>{user.country}</td>
                         <td>${user.spentUsd}</td>
                         <td>{user.lastSeen}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </article>
-        </>
-      ) : null}
-    </section>
-  );
-}
-
-function VisaApplicationsPanel() {
-  const [applications, setApplications] = useState<VisaApplication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const table = useDashboardTableState<{ status: 'All' | ApplicationStatus; priority: 'All' | 'Low' | 'Medium' | 'High' }>({
-    basePath: '/dashboard/visa-applications',
-    defaultState: {
-      search: '',
-      pagination: { page: 1, pageSize: 20 },
-      filters: { status: 'All', priority: 'All' }
-    } as DashboardQueryState<{ status: 'All' | ApplicationStatus; priority: 'All' | 'Low' | 'Medium' | 'High' }>
-  });
-
-  const loadApplications = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await applicationsService.list({
-        page: table.state.pagination.page,
-        page_size: table.state.pagination.pageSize,
-        search: table.state.search,
-        status: table.state.filters.status,
-        priority: table.state.filters.priority
-      });
-      setApplications(response.items);
-    } catch (loadError) {
-      setError(extractApiErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, [table.state]);
-
-  useEffect(() => {
-    void loadApplications();
-  }, [loadApplications]);
-
-  const countByStatus = applications.reduce<Record<ApplicationStatus, number>>(
-    (acc, application) => {
-      acc[application.status] += 1;
-      return acc;
-    },
-    {
-      Submitted: 0,
-      'In Review': 0,
-      'Documents Needed': 0,
-      Approved: 0,
-      Completed: 0,
-      Rejected: 0
-    }
-  );
-
-  return (
-    <section className="dashboard-stack">
-      {loading ? <DashboardLoadingSkeleton rows={4} /> : null}
-      {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadApplications()} /> : null}
-      {!loading && !error ? (
-        <>
-          <div className="dashboard-kpi-grid">
-            {(Object.keys(countByStatus) as ApplicationStatus[]).map((status) => (
-              <article key={status} className="dashboard-kpi-card">
-                <p>{status}</p>
-                <strong>{countByStatus[status]}</strong>
-                <span>Applications</span>
-              </article>
-            ))}
-          </div>
-
-          <article className="dashboard-panel">
-            <div className="dashboard-panel__header">
-              <h2>Application Status Board</h2>
-            </div>
-            <div className="dashboard-filter-grid">
-              <label>
-                Search
-                <input value={table.state.search} onChange={(event) => table.setSearch(event.target.value)} placeholder="Case ID, applicant or email" />
-              </label>
-              <label>
-                Status
-                <select value={table.state.filters.status} onChange={(event) => table.setFilter('status', event.target.value as 'All' | ApplicationStatus)}>
-                  <option value="All">All</option>
-                  <option value="Submitted">Submitted</option>
-                  <option value="In Review">In Review</option>
-                  <option value="Documents Needed">Documents Needed</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </label>
-              <label>
-                Priority
-                <select value={table.state.filters.priority} onChange={(event) => table.setFilter('priority', event.target.value as 'All' | 'Low' | 'Medium' | 'High')}>
-                  <option value="All">All</option>
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </label>
-            </div>
-
-            {applications.length === 0 ? (
-              <DashboardEmptyState title="No applications found" description="Try different status/priority filters." />
-            ) : (
-              <div className="dashboard-table-wrap">
-                <table className="dashboard-table">
-                  <thead>
-                    <tr>
-                      <th>Case ID</th>
-                      <th>Applicant</th>
-                      <th>Visa Type</th>
-                      <th>Status</th>
-                      <th>Priority</th>
-                      <th>Assigned</th>
-                      <th>Submitted</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((application) => (
-                      <tr key={application.id}>
-                        <td>{application.id}</td>
-                        <td>
-                          <strong>{application.applicant}</strong>
-                          <small>{application.email}</small>
-                        </td>
-                        <td>{application.visaType}</td>
-                        <td>
-                          <span className={`dashboard-chip dashboard-chip--${toClassToken(application.status)}`}>{application.status}</span>
-                        </td>
-                        <td>
-                          <span className={`dashboard-chip dashboard-chip--${toClassToken(application.priority)}`}>{application.priority}</span>
-                        </td>
-                        <td>{application.assignedTo}</td>
-                        <td>{application.submittedOn}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1905,7 +1759,7 @@ function ManagerTeamPanel() {
 }
 
 function ManagerApplicationsPanel() {
-  return <VisaApplicationsPanel />;
+  return <VisaApplicationsPanel role="manager" basePath="/dashboard/applications" />;
 }
 
 function ManagerDocumentsPanel() {
@@ -2112,47 +1966,7 @@ function UserOverviewPanel() {
 }
 
 function UserApplicationsPanel() {
-  const myApplications = [
-    { id: 'AUS-24020', visaType: 'Business Visa', status: 'Documents Needed', submittedOn: '2026-04-10', eta: '3-5 days' },
-    { id: 'AUS-24022', visaType: 'Student Visa', status: 'Approved', submittedOn: '2026-04-06', eta: 'Completed' },
-    { id: 'AUS-24023', visaType: 'Tourist Visa', status: 'Completed', submittedOn: '2026-04-04', eta: 'Completed' }
-  ];
-
-  return (
-    <section className="dashboard-stack">
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header">
-          <h2>Application Tracker</h2>
-        </div>
-        <div className="dashboard-table-wrap">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>Case ID</th>
-                <th>Visa Type</th>
-                <th>Status</th>
-                <th>Submitted</th>
-                <th>Estimated Timeline</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myApplications.map((application) => (
-                <tr key={application.id}>
-                  <td>{application.id}</td>
-                  <td>{application.visaType}</td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${toClassToken(application.status)}`}>{application.status}</span>
-                  </td>
-                  <td>{application.submittedOn}</td>
-                  <td>{application.eta}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
-    </section>
-  );
+  return <VisaApplicationsPanel role="user" basePath="/dashboard/applications" />;
 }
 
 function UserDocumentsPanel() {

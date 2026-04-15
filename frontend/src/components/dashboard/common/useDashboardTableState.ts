@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { DashboardQueryState } from '../../../types/dashboard/query';
+import { DashboardQueryState, DashboardSort, SortDirection } from '../../../types/dashboard/query';
 
 type Params = {
   basePath: string;
@@ -10,6 +10,13 @@ type Params = {
 const parseNumber = (value: string | null, fallback: number): number => {
   const num = Number(value);
   return Number.isFinite(num) && num > 0 ? num : fallback;
+};
+
+const parseSortDirection = (value: string | null, fallback: SortDirection): SortDirection => {
+  if (value === 'asc' || value === 'desc') {
+    return value;
+  }
+  return fallback;
 };
 
 export function useDashboardTableState<TFilters extends Record<string, string>>({ basePath, defaultState, syncToUrl = true }: Params) {
@@ -23,10 +30,12 @@ export function useDashboardTableState<TFilters extends Record<string, string>>(
 
     Object.keys(filters).forEach((key) => {
       const current = searchParams.get(key);
-      if (current) {
+      if (current !== null) {
         filters[key as keyof TFilters] = current as TFilters[keyof TFilters];
       }
     });
+
+    const defaultSort = defaultState.sort ?? { field: 'id', direction: 'desc' as SortDirection };
 
     return {
       ...defaultState,
@@ -34,6 +43,10 @@ export function useDashboardTableState<TFilters extends Record<string, string>>(
       pagination: {
         page: parseNumber(searchParams.get('page'), defaultState.pagination.page),
         pageSize: parseNumber(searchParams.get('pageSize'), defaultState.pagination.pageSize)
+      },
+      sort: {
+        field: searchParams.get('sortField') ?? defaultSort.field,
+        direction: parseSortDirection(searchParams.get('sortDirection'), defaultSort.direction)
       },
       filters
     } as DashboardQueryState<TFilters>;
@@ -44,20 +57,23 @@ export function useDashboardTableState<TFilters extends Record<string, string>>(
       return;
     }
     const params = new URLSearchParams();
-    if (state.pagination.page > 1) {
-      params.set('page', String(state.pagination.page));
+    if (state.pagination.page > 1) params.set('page', String(state.pagination.page));
+    if (state.pagination.pageSize !== defaultState.pagination.pageSize) params.set('pageSize', String(state.pagination.pageSize));
+    if (state.search) params.set('search', state.search);
+
+    if (state.sort) {
+      if (state.sort.field !== (defaultState.sort?.field ?? 'id')) params.set('sortField', state.sort.field);
+      if (state.sort.direction !== (defaultState.sort?.direction ?? 'desc')) params.set('sortDirection', state.sort.direction);
     }
-    if (state.search) {
-      params.set('search', state.search);
-    }
+
     Object.entries(state.filters).forEach(([key, value]) => {
-      if (value && value !== 'All') {
+      if (value && value !== 'All' && value !== 'false') {
         params.set(key, value);
       }
     });
     const nextUrl = `${basePath}${params.toString() ? `?${params.toString()}` : ''}`;
     window.history.replaceState(null, '', nextUrl);
-  }, [basePath, state, syncToUrl]);
+  }, [basePath, defaultState.pagination.pageSize, defaultState.sort?.direction, defaultState.sort?.field, state, syncToUrl]);
 
   const setSearch = (search: string) => setState((prev) => ({ ...prev, search, pagination: { ...prev.pagination, page: 1 } }));
   const setFilter = <TKey extends keyof TFilters>(key: TKey, value: TFilters[TKey]) =>
@@ -67,7 +83,9 @@ export function useDashboardTableState<TFilters extends Record<string, string>>(
     () => ({
       setSearch,
       setFilter,
-      setPage: (page: number) => setState((prev) => ({ ...prev, pagination: { ...prev.pagination, page } }))
+      setPage: (page: number) => setState((prev) => ({ ...prev, pagination: { ...prev.pagination, page } })),
+      setPageSize: (pageSize: number) => setState((prev) => ({ ...prev, pagination: { page: 1, pageSize } })),
+      setSort: (sort: DashboardSort) => setState((prev) => ({ ...prev, sort, pagination: { ...prev.pagination, page: 1 } }))
     }),
     []
   );
