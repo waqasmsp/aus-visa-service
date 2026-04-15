@@ -834,6 +834,9 @@ type PlatformSettings = {
   supportSlaHours: string;
   defaultApplicationSla: string;
   primaryBrand: string;
+  requiredReviewerCount: string;
+  approvalQuorum: string;
+  complianceChecklistGate: boolean;
 };
 
 const defaultPlatformSettings: PlatformSettings = {
@@ -844,7 +847,10 @@ const defaultPlatformSettings: PlatformSettings = {
   paymentAutoRetry: true,
   supportSlaHours: '8',
   defaultApplicationSla: '48',
-  primaryBrand: 'var(--color-text)'
+  primaryBrand: 'var(--color-text)',
+  requiredReviewerCount: '2',
+  approvalQuorum: '75',
+  complianceChecklistGate: true
 };
 
 const loadPlatformSettings = (): PlatformSettings => {
@@ -869,7 +875,14 @@ const loadPlatformSettings = (): PlatformSettings => {
       supportSlaHours: typeof parsed.supportSlaHours === 'string' ? parsed.supportSlaHours : defaultPlatformSettings.supportSlaHours,
       defaultApplicationSla:
         typeof parsed.defaultApplicationSla === 'string' ? parsed.defaultApplicationSla : defaultPlatformSettings.defaultApplicationSla,
-      primaryBrand: typeof parsed.primaryBrand === 'string' ? parsed.primaryBrand : defaultPlatformSettings.primaryBrand
+      primaryBrand: typeof parsed.primaryBrand === 'string' ? parsed.primaryBrand : defaultPlatformSettings.primaryBrand,
+      requiredReviewerCount:
+        typeof parsed.requiredReviewerCount === 'string' ? parsed.requiredReviewerCount : defaultPlatformSettings.requiredReviewerCount,
+      approvalQuorum: typeof parsed.approvalQuorum === 'string' ? parsed.approvalQuorum : defaultPlatformSettings.approvalQuorum,
+      complianceChecklistGate:
+        typeof parsed.complianceChecklistGate === 'boolean'
+          ? parsed.complianceChecklistGate
+          : defaultPlatformSettings.complianceChecklistGate
     };
   } catch {
     return defaultPlatformSettings;
@@ -1028,6 +1041,14 @@ function SettingsPanel({ role }: { role: DashboardRole }) {
             Primary Brand Color
             <input value={settings.primaryBrand} onChange={(event) => updateSetting('primaryBrand', event.target.value)} />
           </label>
+          <label>
+            Required Reviewer Count
+            <input value={settings.requiredReviewerCount} onChange={(event) => updateSetting('requiredReviewerCount', event.target.value)} />
+          </label>
+          <label>
+            Approval Quorum (%)
+            <input value={settings.approvalQuorum} onChange={(event) => updateSetting('approvalQuorum', event.target.value)} />
+          </label>
         </div>
       </article>
 
@@ -1067,6 +1088,14 @@ function SettingsPanel({ role }: { role: DashboardRole }) {
           <label>
             <input type="checkbox" checked={settings.paymentAutoRetry} onChange={(event) => updateSetting('paymentAutoRetry', event.target.checked)} />
             Payment Auto Retry
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={settings.complianceChecklistGate}
+              onChange={(event) => updateSetting('complianceChecklistGate', event.target.checked)}
+            />
+            Enforce Compliance Checklist Before Publish
           </label>
         </div>
       </article>
@@ -1295,7 +1324,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   const canManageSettings = actions.includes('settings');
   const canSubmitReview = actions.includes('submit-review');
   const canRestoreRevision = role === 'admin';
-  const { filters, setFilters, posts: adminPosts, loading, error, onPublish, onSchedule, onArchive } = useBlogAdminTable();
+  const { filters, setFilters, posts: adminPosts, loading, error, onPublish, onSchedule, onArchive, onBatchUpdate, getSeoScore, filterOptions } = useBlogAdminTable();
   const [revisions, setRevisions] = useState<BlogRevision[]>([
     { id: 'rev-18', version: 'v1.8', editor: 'Noah Farooq', timestamp: '2026-04-13 11:10 UTC', fromStatus: 'In Review' as const, toStatus: 'In Review' as const },
     { id: 'rev-17', version: 'v1.7', editor: 'Olivia Brown', timestamp: '2026-04-12 09:42 UTC', fromStatus: 'Draft' as const, toStatus: 'In Review' as const },
@@ -1313,19 +1342,34 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
 
   const actorName = role === 'admin' ? 'Admin Team' : role === 'manager' ? 'Manager Reviewer' : 'Editor';
 
-  const posts = adminPosts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    owner: post.authorName,
-    updatedAt: formatDashboardDate(post.updatedAt),
-    status: toWorkflowStatus(post.status)
-  }));
-
   const staleThresholdDays = 45;
   const performanceSnapshot = useMemo(
     () => getBlogPerformanceSnapshot(adminPosts, { staleThresholdDays }),
     [adminPosts]
   );
+  const metricsBySlug = useMemo(
+    () => new Map(performanceSnapshot.topPerformingPosts.map((item) => [item.slug, item])),
+    [performanceSnapshot.topPerformingPosts]
+  );
+
+  const posts = adminPosts.map((post) => {
+    const metrics = metricsBySlug.get(post.slug);
+    const publishAt = post.publishedAt ?? post.scheduledAt ?? '';
+    return {
+      id: post.id,
+      title: post.title,
+      owner: post.authorName,
+      updatedAt: formatDashboardDate(post.updatedAt),
+      status: toWorkflowStatus(post.status),
+      category: post.categoryIds[0] ?? 'Uncategorized',
+      tags: post.tagIds,
+      publishAt: publishAt ? formatDashboardDate(publishAt) : '—',
+      seoScore: getSeoScore(post),
+      ctr: metrics?.ctr ?? null,
+      impressions: metrics?.views ?? null,
+      conversionAttribution: metrics?.ctaClicks != null && metrics?.views ? metrics.ctaClicks / metrics.views : null
+    };
+  });
 
   const handleGovernanceEvent = async (event: { action: string; status: 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived' }) => {
     const firstPost = adminPosts[0];
@@ -1350,10 +1394,61 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
     ]);
   };
 
+  const handleBulkAction = async ({
+    action,
+    postIds,
+    value
+  }: {
+    action: 'schedule' | 'publish' | 'archive' | 'apply-category' | 'apply-tag';
+    postIds: string[];
+    value?: string;
+  }): Promise<string> => {
+    if (action === 'publish') {
+      await Promise.all(postIds.map((postId) => onPublish(postId)));
+      return `Published ${postIds.length} post(s).`;
+    }
+    if (action === 'schedule') {
+      const scheduledAt = value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toISOString() : new Date(Date.now() + 3600000).toISOString();
+      await Promise.all(postIds.map((postId) => onSchedule(postId, scheduledAt)));
+      return `Scheduled ${postIds.length} post(s).`;
+    }
+    if (action === 'archive') {
+      await Promise.all(postIds.map((postId) => onArchive(postId)));
+      return `Archived ${postIds.length} post(s).`;
+    }
+    if (action === 'apply-category') {
+      if (!value) return 'Category is required for batch apply.';
+      const sourceMap = new Map(adminPosts.map((post) => [post.id, post]));
+      await onBatchUpdate(
+        postIds
+          .map((postId) => {
+            const post = sourceMap.get(postId);
+            if (!post) return null;
+            return { postId, updates: { categoryIds: [value, ...post.categoryIds.filter((item) => item !== value)] } };
+          })
+          .filter((entry): entry is { postId: string; updates: { categoryIds: string[] } } => Boolean(entry))
+      );
+      return `Applied category \"${value}\" to ${postIds.length} post(s).`;
+    }
+    if (!value) return 'Tag is required for batch apply.';
+    const sourceMap = new Map(adminPosts.map((post) => [post.id, post]));
+    await onBatchUpdate(
+      postIds
+        .map((postId) => {
+          const post = sourceMap.get(postId);
+          if (!post) return null;
+          const nextTags = post.tagIds.includes(value) ? post.tagIds : [...post.tagIds, value];
+          return { postId, updates: { tagIds: nextTags } };
+        })
+        .filter((entry): entry is { postId: string; updates: { tagIds: string[] } } => Boolean(entry))
+    );
+    return `Applied tag \"${value}\" to ${postIds.length} post(s).`;
+  };
+
   return (
     <section className="dashboard-stack">
       <article className="dashboard-panel dashboard-panel--accent">
-        <div className="dashboard-actions-inline" style={{ flexWrap: 'wrap' }}>
+        <div className="dashboard-filter-grid">
           <input
             value={filters.q}
             onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))}
@@ -1372,11 +1467,53 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
             <option value="published">Published</option>
             <option value="archived">Archived</option>
           </select>
+          <select
+            value={filters.author}
+            onChange={(event) => setFilters((current) => ({ ...current, author: event.target.value }))}
+            aria-label="Filter by author"
+          >
+            <option value="">All authors</option>
+            {filterOptions.authors.map((author) => (
+              <option key={author} value={author}>{author}</option>
+            ))}
+          </select>
+          <select
+            value={filters.category}
+            onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))}
+            aria-label="Filter by category"
+          >
+            <option value="">All categories</option>
+            {filterOptions.categories.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+          <select
+            value={filters.tag}
+            onChange={(event) => setFilters((current) => ({ ...current, tag: event.target.value }))}
+            aria-label="Filter by tag"
+          >
+            <option value="">All tags</option>
+            {filterOptions.tags.map((tag) => (
+              <option key={tag} value={tag}>{tag}</option>
+            ))}
+          </select>
+          <input type="date" value={filters.publishDateFrom} onChange={(event) => setFilters((current) => ({ ...current, publishDateFrom: event.target.value }))} aria-label="Publish date from" />
+          <input type="date" value={filters.publishDateTo} onChange={(event) => setFilters((current) => ({ ...current, publishDateTo: event.target.value }))} aria-label="Publish date to" />
+          <input type="number" min={0} max={100} placeholder="SEO score min" value={filters.seoScoreMin} onChange={(event) => setFilters((current) => ({ ...current, seoScoreMin: event.target.value }))} aria-label="SEO score minimum" />
+          <input type="number" min={0} max={100} placeholder="SEO score max" value={filters.seoScoreMax} onChange={(event) => setFilters((current) => ({ ...current, seoScoreMax: event.target.value }))} aria-label="SEO score maximum" />
         </div>
       </article>
 
       <BlogPerformanceWidgets snapshot={performanceSnapshot} staleThresholdDays={staleThresholdDays} />
-      <BlogsPanel role={role} actions={actions} posts={posts} loading={loading} error={error} />
+      <BlogsPanel
+        role={role}
+        actions={actions}
+        posts={posts}
+        loading={loading}
+        error={error}
+        onArchive={(postId) => void onArchive(postId)}
+        onBulkAction={handleBulkAction}
+      />
       <div className="dashboard-grid dashboard-grid--2">
         <BlogEditorPanel
           role={role}
