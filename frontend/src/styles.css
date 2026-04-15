@@ -1579,6 +1579,9 @@ body.body--menu-open {
   font-weight: var(--font-weight-semibold);
   color: var(--color-link);
   text-align: left;
+}
+
+.hero-country-combobox {
   position: relative;
 }
 
