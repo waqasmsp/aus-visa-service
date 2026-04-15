@@ -1372,7 +1372,9 @@ body.body--menu-open {
   width: 100%;
   padding: clamp(1.75rem, 4vw, 3rem) 0 clamp(1.1rem, 3vw, 2rem);
   background:
-    linear-gradient(130deg, rgb(216 238 255 / 0.92), rgb(219 248 255 / 0.92), rgb(224 255 244 / 0.92));
+    radial-gradient(circle at 8% 22%, rgb(37 99 235 / 0.26), transparent 36%),
+    radial-gradient(circle at 92% 15%, rgb(239 68 68 / 0.2), transparent 34%),
+    linear-gradient(128deg, rgb(229 241 255 / 0.96) 0%, rgb(220 236 255 / 0.95) 42%, rgb(255 232 236 / 0.9) 100%);
 }
 
 .hero-search-background {
@@ -1398,7 +1400,7 @@ body.body--menu-open {
 }
 
 .hero-search-wave path {
-  fill: rgb(14 165 233 / 0.5);
+  fill: rgb(37 99 235 / 0.42);
 }
 
 .hero-search-wave--one {
@@ -1415,7 +1417,7 @@ body.body--menu-open {
 }
 
 .hero-search-wave--two path {
-  fill: rgb(6 182 212 / 0.5);
+  fill: rgb(59 130 246 / 0.34);
 }
 
 .hero-search-wave--three {
@@ -1424,7 +1426,7 @@ body.body--menu-open {
 }
 
 .hero-search-wave--three path {
-  fill: rgb(16 185 129 / 0.4);
+  fill: rgb(239 68 68 / 0.28);
 }
 
 .hero-search-glow {
@@ -1438,7 +1440,7 @@ body.body--menu-open {
   height: clamp(14rem, 26vw, 20rem);
   top: clamp(8rem, 14vw, 12rem);
   left: clamp(10%, 18vw, 24%);
-  background: radial-gradient(circle, rgb(34 211 238 / 0.35), transparent 70%);
+  background: radial-gradient(circle, rgb(59 130 246 / 0.32), transparent 70%);
 }
 
 .hero-search-glow--visual {
@@ -1446,17 +1448,17 @@ body.body--menu-open {
   height: clamp(16rem, 28vw, 24rem);
   right: clamp(5%, 12vw, 16%);
   top: clamp(5rem, 10vw, 9rem);
-  background: radial-gradient(circle, rgb(14 165 233 / 0.33), transparent 72%);
+  background: radial-gradient(circle, rgb(239 68 68 / 0.23), transparent 72%);
 }
 
 .hero-search {
   border: none;
-  background: rgb(255 255 255 / 0.62);
-  backdrop-filter: blur(4px);
-  border-radius: 1.8rem;
+  background: transparent;
+  backdrop-filter: none;
+  border-radius: 0;
   width: min(1200px, calc(100% - 2rem));
   margin-inline: auto;
-  padding: clamp(1rem, 2.2vw, 1.7rem);
+  padding: clamp(1rem, 2.2vw, 1.4rem);
 }
 
 .hero-search-layout {
@@ -1520,11 +1522,11 @@ body.body--menu-open {
   width: 100%;
   max-width: none;
   margin-top: 1.3rem;
-  background: rgb(255 255 255 / 0.86);
-  border: 1px solid rgb(59 130 246 / 0.26);
-  border-radius: 1.25rem;
-  box-shadow: 0 18px 36px rgb(15 23 42 / 0.12);
-  padding: clamp(0.9rem, 2vw, 1.1rem);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
 }
 
 .hero-search-controls {
