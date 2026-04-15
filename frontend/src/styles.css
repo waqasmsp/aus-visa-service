@@ -1736,6 +1736,7 @@ body.body--menu-open {
   display: grid;
   align-items: center;
   justify-items: center;
+  margin-bottom: clamp(-1.1rem, -1.8vw, -0.55rem);
 }
 
 .hero-visual-slot {
@@ -3668,6 +3669,7 @@ body.body--menu-open {
   .hero-search-visual {
     width: min(34rem, 100%);
     justify-self: center;
+    margin-bottom: 0;
   }
 
   .stats-strip {
