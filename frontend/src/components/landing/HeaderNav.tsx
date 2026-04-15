@@ -141,7 +141,6 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
 
         <a href="/" className="brand top-header__brand">
           <img src={logo} alt={`${brandName} logo`} />
-          <span>{brandName}</span>
         </a>
 
         <nav className="landing-nav top-header__nav" aria-label="Primary">
@@ -228,7 +227,6 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
           <div className="mobile-sidepanel__header">
             <a href="/" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu}>
               <img src={logo} alt={`${brandName} logo`} />
-              <span>{brandName}</span>
             </a>
             <button type="button" className="mobile-sidepanel__close" aria-label="Close menu" onClick={closeMobileMenu}>
               &#10005;

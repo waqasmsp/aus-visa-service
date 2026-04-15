@@ -28,7 +28,6 @@ export function FooterMega({
       <div className="footer-mega__brand">
         <a href="#" className="brand footer-mega__brand-link">
           <img src={logo} alt={`${brandName} logo`} />
-          <span>{brandName}</span>
         </a>
         <p>{tagline}</p>
       </div>
