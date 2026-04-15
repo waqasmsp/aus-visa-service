@@ -1,5 +1,5 @@
 import type { ImgHTMLAttributes } from 'react';
-import heroSectionModel from '../../hero-section-model.png';
+import modelPassport from '../../model-passport.png';
 
 type ResponsiveSource = {
   src: string;
@@ -24,8 +24,8 @@ const DEFAULT_WEBP_SOURCES: ResponsiveSource[] = [];
 
 const DEFAULT_FALLBACK_SOURCES: ResponsiveSource[] = [
   {
-    src: heroSectionModel,
-    width: 960
+    src: modelPassport,
+    width: 400
   }
 ];
 
