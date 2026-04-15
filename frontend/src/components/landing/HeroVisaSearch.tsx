@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import heroIllustration from '../../assets/hero-travel-illustration.svg';
 import type { CountryOption, VisaTypeOption } from '../../constants/landingContent';
 import { PrimaryButton } from '../primitives/PrimaryButton';
 import { SectionContainer } from '../primitives/SectionContainer';
+import { HeroVisual } from './HeroVisual';
 
 type HeroVisaSearchProps = {
   title: string;
@@ -14,7 +14,7 @@ type HeroVisaSearchProps = {
   destinationCountryOptions: CountryOption[];
   visaTypeOptions: VisaTypeOption[];
   primaryCta: string;
-  illustrationAlt: string;
+  illustrationAlt?: string;
   onStartApplication?: () => void;
 };
 
@@ -448,8 +448,8 @@ export function HeroVisaSearch({
               ))}
             </ul>
           </div>
-          <div className="hero-search-visual" role="presentation">
-            <img className="hero-illustration hero-illustration--subtle" src={heroIllustration} alt={illustrationAlt} loading="lazy" />
+          <div className="hero-search-visual">
+            <HeroVisual alt={illustrationAlt} cutout />
           </div>
         </div>
       </SectionContainer>

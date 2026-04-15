@@ -72,3 +72,36 @@ Use semantic tokens from `src/styles/tokens.css` as the single source of truth f
   border: 1px solid #1e40af;
 }
 ```
+
+## Hero Photo Slot Guidelines (Landing `HeroVisual`)
+
+The landing hero now supports a photo slot intended for a **smiling person holding a passport or visa-related document with a USA-origin context**.
+
+### Approved stock source
+
+- Primary approved stock library: **Unsplash** (editorial + commercial friendly under the Unsplash License).
+- Keep direct source attribution (photographer + image URL) in PR notes when replacing hero imagery.
+
+### License checks (required before merge)
+
+1. Verify the image page is on the approved provider (`unsplash.com`).
+2. Confirm license terms permit product/commercial web usage.
+3. Ensure there are no trademarked marks, government seals, or private personal data visible.
+4. Record the license verification date in the PR description.
+
+### Alt text requirements
+
+- Every hero image must include descriptive alt text that identifies:
+  - subject (person/traveler),
+  - action (holding passport/visa document),
+  - context (visa application/travel planning).
+- Generic alt text such as `"hero image"`, `"person"`, or `"travel"` is not allowed.
+- `HeroVisual` includes a default descriptive alt value and validates that supplied `alt` text is descriptive.
+
+### Replacement procedure
+
+1. Choose a compliant image from the approved source and download/crop for target breakpoints.
+2. Export responsive variants in both **WebP** and fallback format (**JPEG/PNG**).
+3. Update the `HeroVisual` source arrays (or pass custom `webpSources` / `fallbackSources` props).
+4. Provide a descriptive `alt` override if the default alt no longer matches image content.
+5. Run frontend build/tests and include visual verification in the PR.
