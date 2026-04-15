@@ -1712,8 +1712,8 @@ body.body--menu-open {
   max-width: 25rem;
   aspect-ratio: 2 / 3;
   max-height: 450px;
-  object-fit: cover;
-  object-position: center;
+  object-fit: contain;
+  object-position: top center;
   border-radius: 0;
   border: none;
   background: transparent;
