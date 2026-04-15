@@ -1174,10 +1174,20 @@ body.body--menu-open {
 }
 
 .top-header__actions .primary-button {
-  padding: 0.52rem 1.1rem;
-  font-size: var(--text-sm);
-  background: var(--theme-button-outline-bg, rgb(255 255 255 / 0.75));
-  border-color: var(--theme-button-outline-border, rgb(59 130 246 / 0.4));
+  min-height: 3rem;
+  padding: 0.52rem 1.45rem;
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  background: linear-gradient(135deg, #1fa4f3 0%, #1d4ed8 100%);
+  border-color: rgb(37 99 235 / 0.4);
+  box-shadow: 0 14px 26px rgb(59 130 246 / 0.35);
+}
+
+.top-header__actions .primary-button:hover,
+.top-header__actions .primary-button:focus-visible {
+  background: linear-gradient(135deg, #2bb0fa 0%, #1d4ed8 100%);
+  border-color: #1d4ed8;
 }
 
 .top-header__menu-button {
