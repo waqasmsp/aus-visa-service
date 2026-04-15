@@ -40,7 +40,7 @@ const pricingPlans: PricingPlan[] = [
       'Business Visitor Stream',
       'Approved Destination Status (ADS) Stream'
     ],
-    price: '$699.00',
+    price: '$199.00',
     mediaClassName: 'pricing-plan__media pricing-plan__media--visitor'
   }
 ];
@@ -94,7 +94,6 @@ export function PricingPage({ pathname }: PricingPageProps) {
 
                   <div className="pricing-plan__cta">
                     <p>{plan.price}</p>
-                    <span>Per attempt</span>
                     <button type="button" onClick={navigateToApplication}>
                       Get Started
                     </button>
