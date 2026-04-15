@@ -8,6 +8,7 @@ import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPer
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../utils/themeSettings';
+import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../utils/themeColors';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -1250,6 +1251,78 @@ function SettingsPanel({ role }: { role: DashboardRole }) {
     setThemeSettings((prev) => ({ ...prev, sections: { ...prev.sections, [key]: value } }));
   };
 
+  const sanitizedThemeSettings = useMemo<ThemeSettings>(
+    () => ({
+      global: {
+        appBackground: sanitizeThemeColorValue(themeSettings.global.appBackground, defaultThemeSettings.global.appBackground).sanitized,
+        headerBackground: sanitizeThemeColorValue(themeSettings.global.headerBackground, defaultThemeSettings.global.headerBackground).sanitized,
+        buttonBackground: sanitizeThemeColorValue(themeSettings.global.buttonBackground, defaultThemeSettings.global.buttonBackground).sanitized,
+        buttonText: sanitizeThemeColorValue(themeSettings.global.buttonText, defaultThemeSettings.global.buttonText).sanitized,
+        footerBackground: sanitizeThemeColorValue(themeSettings.global.footerBackground, defaultThemeSettings.global.footerBackground).sanitized
+      },
+      sections: {
+        enableHeroBackground: false,
+        pageHeroBackground: sanitizeThemeColorValue(
+          themeSettings.sections.pageHeroBackground,
+          defaultThemeSettings.sections.pageHeroBackground
+        ).sanitized,
+        enableApplicationSectionBackground: themeSettings.sections.enableApplicationSectionBackground,
+        applicationSectionBackground: sanitizeThemeColorValue(
+          themeSettings.sections.applicationSectionBackground,
+          defaultThemeSettings.sections.applicationSectionBackground
+        ).sanitized
+      }
+    }),
+    [themeSettings]
+  );
+
+  const sanitizationWarnings = useMemo(() => {
+    const checks: Array<{ label: string; result: ReturnType<typeof sanitizeThemeColorValue> }> = [
+      {
+        label: 'App Background',
+        result: sanitizeThemeColorValue(themeSettings.global.appBackground, defaultThemeSettings.global.appBackground)
+      },
+      {
+        label: 'Header Background',
+        result: sanitizeThemeColorValue(themeSettings.global.headerBackground, defaultThemeSettings.global.headerBackground)
+      },
+      {
+        label: 'Button Background',
+        result: sanitizeThemeColorValue(themeSettings.global.buttonBackground, defaultThemeSettings.global.buttonBackground)
+      },
+      {
+        label: 'Button Text Color',
+        result: sanitizeThemeColorValue(themeSettings.global.buttonText, defaultThemeSettings.global.buttonText)
+      },
+      {
+        label: 'Footer Background',
+        result: sanitizeThemeColorValue(themeSettings.global.footerBackground, defaultThemeSettings.global.footerBackground)
+      }
+    ];
+
+    return checks
+      .filter(({ result }) => result.usedFallback)
+      .map(({ label, result }) => `${label}: ${result.reason ?? 'Invalid value replaced with default.'}`);
+  }, [themeSettings]);
+
+  const contrastWarnings = useMemo(
+    () =>
+      getThemeContrastWarnings({
+        buttonBackground: sanitizedThemeSettings.global.buttonBackground,
+        buttonText: sanitizedThemeSettings.global.buttonText,
+        headerBackground: sanitizedThemeSettings.global.headerBackground,
+        headerText: '#1e3a5f',
+        footerBackground: sanitizedThemeSettings.global.footerBackground,
+        footerText: '#334155'
+      }),
+    [sanitizedThemeSettings]
+  );
+
+  const blockingContrastWarnings = useMemo(
+    () => contrastWarnings.filter((warning) => warning.severity === 'error'),
+    [contrastWarnings]
+  );
+
   const resetThemeDefaults = () => {
     setThemeSettings(defaultThemeSettings);
     setSaveMessage('');
@@ -1260,11 +1333,21 @@ function SettingsPanel({ role }: { role: DashboardRole }) {
     try {
       window.localStorage.setItem(DASHBOARD_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
       if (isAdmin) {
-        saveThemeSettings(themeSettings);
-        applyThemeSettings(themeSettings);
+        if (blockingContrastWarnings.length > 0) {
+          setSaveMessage('');
+          setSaveError('Cannot save: fix theme contrast warnings (minimum 4.5:1) before applying changes.');
+          return;
+        }
+
+        saveThemeSettings(sanitizedThemeSettings);
+        applyThemeSettings(sanitizedThemeSettings);
       }
       setSaveError('');
-      setSaveMessage('Settings saved successfully.');
+      if (isAdmin && sanitizationWarnings.length > 0) {
+        setSaveMessage(`Settings saved. ${sanitizationWarnings.length} invalid theme value(s) were replaced with defaults.`);
+      } else {
+        setSaveMessage('Settings saved successfully.');
+      }
     } catch {
       setSaveMessage('');
       setSaveError('Unable to save settings. Please try again.');
@@ -1424,6 +1507,27 @@ function SettingsPanel({ role }: { role: DashboardRole }) {
           <p className="dashboard-panel__note">
             Hero token remains unchanged by global palette updates unless a future explicit toggle is enabled.
           </p>
+          {contrastWarnings.length ? (
+            <div className="dashboard-settings-warnings" role="status" aria-live="polite">
+              {contrastWarnings.map((warning) => (
+                <p
+                  key={warning.id}
+                  className={`dashboard-auth__message ${warning.severity === 'error' ? 'is-error' : 'is-warning'}`}
+                >
+                  {warning.message}
+                </p>
+              ))}
+            </div>
+          ) : null}
+          {sanitizationWarnings.length ? (
+            <div className="dashboard-settings-warnings" role="status" aria-live="polite">
+              {sanitizationWarnings.map((warning) => (
+                <p key={warning} className="dashboard-auth__message is-warning">
+                  {warning}
+                </p>
+              ))}
+            </div>
+          ) : null}
           <div className="dashboard-settings-actions">
             <button type="button" className="dashboard-ghost-button" onClick={resetThemeDefaults}>
               Reset Theme Defaults
