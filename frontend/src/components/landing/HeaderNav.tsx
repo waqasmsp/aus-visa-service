@@ -139,8 +139,9 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
           </svg>
         </button>
 
-        <a href="/" className="brand top-header__brand" aria-label={brandName}>
+        <a href="/" className="brand top-header__brand">
           <img src={logo} alt={`${brandName} logo`} />
+          <span>{brandName}</span>
         </a>
 
         <nav className="landing-nav top-header__nav" aria-label="Primary">
@@ -225,8 +226,9 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
         <button type="button" className="mobile-sidepanel__backdrop" aria-label="Close menu" onClick={closeMobileMenu} />
         <aside className="mobile-sidepanel__panel" role="dialog" aria-modal="true" aria-label="Mobile menu">
           <div className="mobile-sidepanel__header">
-            <a href="/" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu} aria-label={brandName}>
+            <a href="/" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu}>
               <img src={logo} alt={`${brandName} logo`} />
+              <span>{brandName}</span>
             </a>
             <button type="button" className="mobile-sidepanel__close" aria-label="Close menu" onClick={closeMobileMenu}>
               &#10005;

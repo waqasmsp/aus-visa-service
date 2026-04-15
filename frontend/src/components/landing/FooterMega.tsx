@@ -26,8 +26,9 @@ export function FooterMega({
   return (
     <SectionContainer as="footer" className="footer-mega footer-mega--enhanced">
       <div className="footer-mega__brand">
-        <a href="#" className="brand footer-mega__brand-link" aria-label={brandName}>
+        <a href="#" className="brand footer-mega__brand-link">
           <img src={logo} alt={`${brandName} logo`} />
+          <span>{brandName}</span>
         </a>
         <p>{tagline}</p>
       </div>
