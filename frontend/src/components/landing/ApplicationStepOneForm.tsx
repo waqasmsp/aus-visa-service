@@ -33,9 +33,9 @@ const FORM_STORAGE_KEY = 'aus-visa-application-draft-v1';
 function VisaBadgeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <circle cx="12" cy="12" r="10" fill="#1D4ED8" />
-      <path d="M12 5.2 9.3 9.5l3.2-.8-1.3 3.8 3.9-5.3-3.2.6L12 5.2Z" fill="#fff" />
-      <path d="m7.4 12.2 2.9 2.6m6.3-4.3 1.6 1.3" stroke="#67E8F9" strokeWidth="1.3" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="10" fill="var(--color-primary)" />
+      <path d="M12 5.2 9.3 9.5l3.2-.8-1.3 3.8 3.9-5.3-3.2.6L12 5.2Z" fill="var(--color-surface)" />
+      <path d="m7.4 12.2 2.9 2.6m6.3-4.3 1.6 1.3" stroke="var(--color-brand-cyan-500)" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   );
 }

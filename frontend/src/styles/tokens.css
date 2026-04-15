@@ -1,0 +1,58 @@
+:root {
+  /* Brand palette extracted from logo and supporting identity */
+  --color-brand-blue-500: #2563eb;
+  --color-brand-blue-600: #1d4ed8;
+  --color-brand-blue-700: #1e40af;
+
+  --color-brand-red-500: #ef4444;
+  --color-brand-red-600: #dc2626;
+
+  --color-brand-cyan-500: #0ea5e9;
+  --color-brand-cyan-600: #0284c7;
+  --color-brand-mint-500: #0ea5a4;
+  --color-brand-mint-600: #0f766e;
+
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-900: #0f172a;
+
+  /* Semantic design tokens */
+  --color-primary: var(--color-brand-blue-600);
+  --color-primary-hover: var(--color-brand-blue-700);
+  --color-accent: var(--color-brand-red-500);
+  --color-bg: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-0);
+  --color-text: var(--color-neutral-900);
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-border: var(--color-neutral-200);
+
+  /* Light tints (5–20%) */
+  --color-primary-tint-5: rgb(37 99 235 / 0.05);
+  --color-primary-tint-10: rgb(37 99 235 / 0.1);
+  --color-primary-tint-20: rgb(37 99 235 / 0.2);
+  --color-accent-tint-10: rgb(239 68 68 / 0.1);
+  --color-accent-tint-20: rgb(239 68 68 / 0.2);
+  --color-cyan-tint-10: rgb(14 165 233 / 0.1);
+  --color-cyan-tint-20: rgb(14 165 233 / 0.2);
+  --color-mint-tint-10: rgb(14 165 164 / 0.1);
+  --color-mint-tint-20: rgb(14 165 164 / 0.2);
+
+  /* Deeper shades (10–30%) */
+  --color-primary-shade-10: #1f56cf;
+  --color-primary-shade-20: #1848be;
+  --color-primary-shade-30: #153ca0;
+  --color-accent-shade-10: #d73d3d;
+  --color-accent-shade-20: #c22f2f;
+  --color-accent-shade-30: #a82626;
+
+  --gradient-primary: linear-gradient(135deg, var(--color-brand-cyan-500), var(--color-primary));
+  --gradient-primary-soft: linear-gradient(135deg, var(--color-cyan-tint-10), var(--color-primary-tint-20));
+  --gradient-accent: linear-gradient(135deg, var(--color-accent-shade-10), var(--color-accent));
+}

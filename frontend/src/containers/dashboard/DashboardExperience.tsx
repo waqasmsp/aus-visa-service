@@ -1187,7 +1187,7 @@ function SettingsPanel() {
     paymentAutoRetry: true,
     supportSlaHours: '8',
     defaultApplicationSla: '48',
-    primaryBrand: '#0f172a'
+    primaryBrand: 'var(--color-text)'
   });
 
   const updateSetting = (key: keyof typeof settings, value: string | boolean) => {

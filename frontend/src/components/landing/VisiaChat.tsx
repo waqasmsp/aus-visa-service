@@ -25,9 +25,9 @@ function VisiaIcon() {
   return (
     <svg viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
       <rect x="5.25" y="7.25" width="13.5" height="10.5" rx="3" fill="currentColor" />
-      <circle cx="9.25" cy="12.5" r="1.15" fill="#3b82f6" />
-      <circle cx="14.75" cy="12.5" r="1.15" fill="#3b82f6" />
-      <rect x="10.1" y="15.1" width="3.8" height="1.3" rx="0.65" fill="#3b82f6" />
+      <circle cx="9.25" cy="12.5" r="1.15" fill="var(--color-brand-blue-500)" />
+      <circle cx="14.75" cy="12.5" r="1.15" fill="var(--color-brand-blue-500)" />
+      <rect x="10.1" y="15.1" width="3.8" height="1.3" rx="0.65" fill="var(--color-brand-blue-500)" />
       <rect x="11.35" y="3.5" width="1.3" height="3" rx="0.65" fill="currentColor" />
       <circle cx="12" cy="2.8" r="1.15" fill="currentColor" />
       <rect x="3.25" y="10.9" width="1.5" height="3.3" rx="0.75" fill="currentColor" />
