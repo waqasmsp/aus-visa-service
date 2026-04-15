@@ -1,4 +1,5 @@
 import type { ImgHTMLAttributes } from 'react';
+import heroSectionModel from '../../hero-section-model.png';
 
 type ResponsiveSource = {
   src: string;
@@ -19,24 +20,11 @@ type HeroVisualProps = {
 const DEFAULT_ALT_TEXT =
   'Smiling U.S. traveler holding passport and visa paperwork while preparing an Australian visa application.';
 
-const DEFAULT_WEBP_SOURCES: ResponsiveSource[] = [
-  {
-    src: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&crop=faces&w=640&h=780&q=80&fm=webp',
-    width: 640
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&crop=faces&w=960&h=1170&q=80&fm=webp',
-    width: 960
-  }
-];
+const DEFAULT_WEBP_SOURCES: ResponsiveSource[] = [];
 
 const DEFAULT_FALLBACK_SOURCES: ResponsiveSource[] = [
   {
-    src: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&crop=faces&w=640&h=780&q=80&fm=jpg',
-    width: 640
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&crop=faces&w=960&h=1170&q=80&fm=jpg',
+    src: heroSectionModel,
     width: 960
   }
 ];
@@ -66,7 +54,7 @@ export function HeroVisual({
   className,
   webpSources = DEFAULT_WEBP_SOURCES,
   fallbackSources = DEFAULT_FALLBACK_SOURCES,
-  fallbackMimeType = 'image/jpeg',
+  fallbackMimeType = 'image/png',
   sizes = '(min-width: 1200px) 520px, (min-width: 768px) 42vw, 90vw',
   loading = 'lazy',
   cutout = true
@@ -79,7 +67,7 @@ export function HeroVisual({
   return (
     <div className={`hero-visual-slot${cutout ? ' hero-visual-slot--cutout' : ''}${className ? ` ${className}` : ''}`}>
       <picture>
-        <source type="image/webp" srcSet={buildSrcSet(safeWebpSources)} sizes={sizes} />
+        {safeWebpSources.length > 0 ? <source type="image/webp" srcSet={buildSrcSet(safeWebpSources)} sizes={sizes} /> : null}
         <source type={fallbackMimeType} srcSet={buildSrcSet(safeFallbackSources)} sizes={sizes} />
         <img className="hero-illustration hero-illustration--photo" src={fallbackSrc} srcSet={buildSrcSet(safeFallbackSources)} sizes={sizes} alt={altText} loading={loading} />
       </picture>
