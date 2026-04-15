@@ -24,7 +24,7 @@ export function FooterMega({
   copyright
 }: FooterMegaProps) {
   return (
-    <SectionContainer as="footer" className="footer-mega footer-mega--enhanced">
+    <SectionContainer as="footer" className="footer-mega footer-mega--enhanced footer-mega--light">
       <div className="footer-mega__brand">
         <a href="#" className="brand footer-mega__brand-link">
           <img src={logo} alt={`${brandName} logo`} />
