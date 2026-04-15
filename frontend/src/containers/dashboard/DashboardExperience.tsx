@@ -454,13 +454,7 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   const isDashboardRoute = normalizedPath.startsWith('/dashboard');
   const isLegacyManagerRoute = normalizedPath.startsWith('/manager-dashboard');
   const isLegacyUserRoute = normalizedPath.startsWith('/user-dashboard');
-  const [session, setSession] = useState<AuthSession | null>(() => readAuthSession());
-  const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
-    setSession(readAuthSession());
-    setAuthReady(true);
-  }, []);
+  const session = readAuthSession();
 
   if (isLoginRoute) {
     return <DashboardLoginPage />;
@@ -478,10 +472,6 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   }
 
   if (!isDashboardRoute) {
-    return null;
-  }
-
-  if (!authReady) {
     return null;
   }
 
