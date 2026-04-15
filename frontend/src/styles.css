@@ -91,7 +91,7 @@ body.body--menu-open {
   padding-top: var(--space-section-min);
 }
 
-.landing-page > .landing-section + .landing-main > .landing-section.landing-section--hero:first-child {
+.landing-page > .landing-section + .landing-main > .landing-section.landing-section--hero:first-child:not(.page-hero) {
   padding-top: 0;
 }
 
