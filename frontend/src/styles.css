@@ -1711,12 +1711,12 @@ body.body--menu-open {
 .hero-illustration--photo {
   max-width: 25rem;
   aspect-ratio: 2 / 3;
-  max-height: min(37.5rem, 74vh);
+  max-height: 450px;
   object-fit: cover;
   object-position: center;
-  border-radius: 1.35rem;
-  border: 1px solid rgb(148 163 184 / 0.36);
-  background: rgb(255 255 255 / 0.66);
+  border-radius: 0;
+  border: none;
+  background: transparent;
   box-shadow: none;
 }
 
