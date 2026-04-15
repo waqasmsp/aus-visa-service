@@ -1,12 +1,28 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ContactEntry } from '../../types/contact';
 import { getContactEntries } from '../../utils/contactEntries';
 import { BlogEditorPanel } from '../../components/dashboard/blogs/BlogEditorPanel';
 import { BlogReviewPanel } from '../../components/dashboard/blogs/BlogReviewPanel';
 import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
 import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPerformanceWidgets';
+import {
+  DashboardEmptyState,
+  DashboardErrorState,
+  DashboardLoadingSkeleton,
+  MutationToastRegion,
+  useMutationToasts
+} from '../../components/dashboard/common/asyncUi';
+import { useDashboardTableState } from '../../components/dashboard/common/useDashboardTableState';
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
+import { applicationsService } from '../../services/dashboard/applications.service';
+import { extractApiErrorMessage, runOptimisticMutation } from '../../services/dashboard/async';
+import { pagesService } from '../../services/dashboard/pages.service';
+import { usersService } from '../../services/dashboard/users.service';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
+import { ApplicationStatus, VisaApplication } from '../../types/dashboard/applications';
+import { CmsPage, PageStatus } from '../../types/dashboard/pages';
+import { DashboardQueryState } from '../../types/dashboard/query';
+import { PortalUser, UserSegment } from '../../types/dashboard/users';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../utils/themeSettings';
 import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../utils/themeColors';
 
@@ -45,43 +61,6 @@ type BlogAuditEvent = {
   actor: string;
   action: string;
   timestamp: string;
-};
-type PageStatus = 'Published' | 'Draft' | 'Archived';
-type UserSegment = 'Registered' | 'Lead';
-type ApplicationStatus = 'Submitted' | 'In Review' | 'Documents Needed' | 'Approved' | 'Completed' | 'Rejected';
-
-type CmsPage = {
-  id: string;
-  title: string;
-  slug: string;
-  status: PageStatus;
-  updatedBy: string;
-  updatedAt: string;
-  locale: string;
-  views: number;
-};
-
-type PortalUser = {
-  id: string;
-  fullName: string;
-  email: string;
-  segment: UserSegment;
-  purchased: boolean;
-  source: string;
-  country: string;
-  spentUsd: number;
-  lastSeen: string;
-};
-
-type VisaApplication = {
-  id: string;
-  applicant: string;
-  email: string;
-  visaType: string;
-  priority: 'Low' | 'Medium' | 'High';
-  assignedTo: string;
-  submittedOn: string;
-  status: ApplicationStatus;
 };
 
 const AUTH_SESSION_KEY = 'aus-visa-auth-session';
@@ -132,159 +111,6 @@ const userSidebarItems: Array<{ section: UserSection; label: string; href: strin
   { section: 'profile', label: 'Profile', href: '/dashboard/profile' }
 ];
 
-const initialPages: CmsPage[] = [
-  {
-    id: 'page-1',
-    title: 'Home Landing',
-    slug: '/home',
-    status: 'Published',
-    updatedBy: 'Sarah Weston',
-    updatedAt: '2026-04-10',
-    locale: 'EN',
-    views: 58214
-  },
-  {
-    id: 'page-2',
-    title: 'Visa Pricing',
-    slug: '/visa-pricing',
-    status: 'Published',
-    updatedBy: 'Mike T.',
-    updatedAt: '2026-04-11',
-    locale: 'EN',
-    views: 22120
-  },
-  {
-    id: 'page-3',
-    title: 'Corporate Intake Form',
-    slug: '/corporate-intake',
-    status: 'Draft',
-    updatedBy: 'Admin Team',
-    updatedAt: '2026-04-07',
-    locale: 'EN',
-    views: 294
-  },
-  {
-    id: 'page-4',
-    title: 'Refund Policy Legacy',
-    slug: '/refund-policy-legacy',
-    status: 'Archived',
-    updatedBy: 'Nina K.',
-    updatedAt: '2026-03-28',
-    locale: 'EN',
-    views: 780
-  }
-];
-
-const initialUsers: PortalUser[] = [
-  {
-    id: 'usr-1',
-    fullName: 'Arman Siddiqui',
-    email: 'arman.s@example.com',
-    segment: 'Registered',
-    purchased: true,
-    source: 'Google Search',
-    country: 'Pakistan',
-    spentUsd: 149,
-    lastSeen: '2h ago'
-  },
-  {
-    id: 'usr-2',
-    fullName: 'Olivia Brown',
-    email: 'olivia.brown@example.com',
-    segment: 'Lead',
-    purchased: false,
-    source: 'Meta Ads',
-    country: 'United Kingdom',
-    spentUsd: 0,
-    lastSeen: '1d ago'
-  },
-  {
-    id: 'usr-3',
-    fullName: 'Hassan Ali',
-    email: 'hassan.ali@example.com',
-    segment: 'Registered',
-    purchased: false,
-    source: 'Direct',
-    country: 'UAE',
-    spentUsd: 0,
-    lastSeen: '45m ago'
-  },
-  {
-    id: 'usr-4',
-    fullName: 'Emma Wilson',
-    email: 'emma.w@example.com',
-    segment: 'Registered',
-    purchased: true,
-    source: 'Referral',
-    country: 'United States',
-    spentUsd: 299,
-    lastSeen: '4h ago'
-  },
-  {
-    id: 'usr-5',
-    fullName: 'Noah Farooq',
-    email: 'noah.farooq@example.com',
-    segment: 'Lead',
-    purchased: false,
-    source: 'Email Campaign',
-    country: 'Saudi Arabia',
-    spentUsd: 0,
-    lastSeen: '6h ago'
-  }
-];
-
-const initialApplications: VisaApplication[] = [
-  {
-    id: 'AUS-24019',
-    applicant: 'Sophia Collins',
-    email: 'sophia.c@example.com',
-    visaType: 'Tourist Visa',
-    priority: 'High',
-    assignedTo: 'Nadia R.',
-    submittedOn: '2026-04-11',
-    status: 'In Review'
-  },
-  {
-    id: 'AUS-24020',
-    applicant: 'Bilal Ahmed',
-    email: 'bilal.ahmed@example.com',
-    visaType: 'Business Visa',
-    priority: 'Medium',
-    assignedTo: 'Mikael D.',
-    submittedOn: '2026-04-10',
-    status: 'Documents Needed'
-  },
-  {
-    id: 'AUS-24021',
-    applicant: 'Grace Thomas',
-    email: 'grace.t@example.com',
-    visaType: 'Family Visa',
-    priority: 'Low',
-    assignedTo: 'Nadia R.',
-    submittedOn: '2026-04-09',
-    status: 'Submitted'
-  },
-  {
-    id: 'AUS-24022',
-    applicant: 'Ibrahim Khan',
-    email: 'ibrahim.k@example.com',
-    visaType: 'Student Visa',
-    priority: 'High',
-    assignedTo: 'Jordan M.',
-    submittedOn: '2026-04-06',
-    status: 'Approved'
-  },
-  {
-    id: 'AUS-24023',
-    applicant: 'Liam Cooper',
-    email: 'liam.cooper@example.com',
-    visaType: 'Tourist Visa',
-    priority: 'Medium',
-    assignedTo: 'Nina K.',
-    submittedOn: '2026-04-04',
-    status: 'Completed'
-  }
-];
 
 const dummyCredentials: Record<DashboardRole, { email: string; password: string; route: string }> = {
   admin: {
@@ -751,286 +577,393 @@ function OverviewPanel({ role }: { role: DashboardRole }) {
 }
 
 function PagesPanel() {
-  const [pages, setPages] = useState<CmsPage[]>(initialPages);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | PageStatus>('All');
-  const [localeFilter, setLocaleFilter] = useState<'All' | string>('All');
+  const [pages, setPages] = useState<CmsPage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { toasts, dismissToast, notifyError, notifySuccess } = useMutationToasts();
+  const table = useDashboardTableState<{ status: 'All' | PageStatus; locale: 'All' | string }>({
+    basePath: '/dashboard/pages',
+    defaultState: {
+      search: '',
+      pagination: { page: 1, pageSize: 20 },
+      filters: { status: 'All', locale: 'All' }
+    } as DashboardQueryState<{ status: 'All' | PageStatus; locale: 'All' | string }>
+  });
 
-  const filteredPages = useMemo(
-    () =>
-      pages.filter((page) => {
-        const searchLower = searchQuery.trim().toLowerCase();
-        const matchesSearch =
-          searchLower.length === 0 ||
-          page.title.toLowerCase().includes(searchLower) ||
-          page.slug.toLowerCase().includes(searchLower) ||
-          page.updatedBy.toLowerCase().includes(searchLower);
-        const matchesStatus = statusFilter === 'All' || page.status === statusFilter;
-        const matchesLocale = localeFilter === 'All' || page.locale === localeFilter;
-        return matchesSearch && matchesStatus && matchesLocale;
-      }),
-    [localeFilter, pages, searchQuery, statusFilter]
-  );
+  const loadPages = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await pagesService.list({
+        page: table.state.pagination.page,
+        page_size: table.state.pagination.pageSize,
+        search: table.state.search,
+        status: table.state.filters.status,
+        locale: table.state.filters.locale
+      });
+      setPages(response.items);
+    } catch (loadError) {
+      setError(extractApiErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, [table.state]);
 
-  const addPage = () => {
+  useEffect(() => {
+    void loadPages();
+  }, [loadPages]);
+
+  const addPage = async () => {
     const title = window.prompt('Page title');
     if (!title) {
       return;
     }
-    const slug = `/${title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-    const nextPage: CmsPage = {
-      id: `page-${Date.now()}`,
+
+    const optimisticPage: CmsPage = {
+      id: `tmp-${Date.now()}`,
       title: title.trim(),
-      slug,
+      slug: `/${title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
       status: 'Draft',
       updatedBy: 'Admin Team',
-      updatedAt: '2026-04-12',
+      updatedAt: 'Saving…',
       locale: 'EN',
       views: 0
     };
-    setPages((previous) => [nextPage, ...previous]);
+
+    const previous = pages;
+    try {
+      await runOptimisticMutation(
+        () => setPages((prev) => [optimisticPage, ...prev]),
+        () => setPages(previous),
+        async () => {
+          const created = await pagesService.create({ title: title.trim(), locale: 'EN' });
+          setPages((prev) => [created, ...prev.filter((page) => page.id !== optimisticPage.id)]);
+          notifySuccess('Page created successfully.');
+        }
+      );
+    } catch (mutationError) {
+      notifyError(extractApiErrorMessage(mutationError));
+    }
   };
 
-  const editPage = (id: string) => {
-    setPages((previous) =>
-      previous.map((page) => {
-        if (page.id !== id) {
-          return page;
-        }
-        const nextTitle = window.prompt('Update page title', page.title)?.trim();
-        if (!nextTitle) {
-          return page;
-        }
-        return {
-          ...page,
-          title: nextTitle,
-          slug: `/${nextTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-          updatedAt: '2026-04-12',
-          status: page.status === 'Draft' ? 'Published' : page.status
-        };
-      })
-    );
-  };
-
-  const removePage = (id: string) => {
-    const shouldDelete = window.confirm('Delete this page? This is a demo action.');
-    if (!shouldDelete) {
+  const editPage = async (id: string) => {
+    const current = pages.find((page) => page.id === id);
+    if (!current) {
       return;
     }
-    setPages((previous) => previous.filter((page) => page.id !== id));
+
+    const nextTitle = window.prompt('Update page title', current.title)?.trim();
+    if (!nextTitle) {
+      return;
+    }
+
+    const previous = pages;
+    const optimistic = pages.map((page) =>
+      page.id === id
+        ? { ...page, title: nextTitle, slug: `/${nextTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, updatedAt: 'Saving…' }
+        : page
+    );
+
+    try {
+      await runOptimisticMutation(
+        () => setPages(optimistic),
+        () => setPages(previous),
+        async () => {
+          const updated = await pagesService.update(id, { title: nextTitle });
+          setPages((prev) => prev.map((page) => (page.id === id ? updated : page)));
+          notifySuccess('Page updated successfully.');
+        }
+      );
+    } catch (mutationError) {
+      notifyError(extractApiErrorMessage(mutationError));
+    }
+  };
+
+  const removePage = async (id: string) => {
+    if (!window.confirm('Delete this page? This action will attempt rollback if it fails.')) {
+      return;
+    }
+
+    const previous = pages;
+    try {
+      await runOptimisticMutation(
+        () => setPages((prev) => prev.filter((page) => page.id !== id)),
+        () => setPages(previous),
+        async () => {
+          await pagesService.remove(id);
+          notifySuccess('Page removed.');
+        }
+      );
+    } catch (mutationError) {
+      notifyError(extractApiErrorMessage(mutationError));
+    }
   };
 
   return (
     <section className="dashboard-stack">
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header dashboard-panel__header--spread">
-          <h2>CMS Pages</h2>
-          <button type="button" className="dashboard-primary-button" onClick={addPage}>
-            Add New Page
-          </button>
-        </div>
-        <div className="dashboard-filter-grid">
-          <label>
-            Search
-            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Find by title, slug, editor" />
-          </label>
-          <label>
-            Status
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as 'All' | PageStatus)}>
-              <option value="All">All</option>
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
-              <option value="Archived">Archived</option>
-            </select>
-          </label>
-          <label>
-            Locale
-            <select value={localeFilter} onChange={(event) => setLocaleFilter(event.target.value)}>
-              <option value="All">All</option>
-              <option value="EN">EN</option>
-              <option value="AR">AR</option>
-              <option value="UR">UR</option>
-            </select>
-          </label>
-        </div>
+      <MutationToastRegion toasts={toasts} onDismiss={dismissToast} />
+      {loading ? <DashboardLoadingSkeleton rows={5} /> : null}
+      {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadPages()} /> : null}
+      {!loading && !error ? (
+        <article className="dashboard-panel">
+          <div className="dashboard-panel__header dashboard-panel__header--spread">
+            <h2>CMS Pages</h2>
+            <button type="button" className="dashboard-primary-button" onClick={() => void addPage()}>
+              Add New Page
+            </button>
+          </div>
+          <div className="dashboard-filter-grid">
+            <label>
+              Search
+              <input value={table.state.search} onChange={(event) => table.setSearch(event.target.value)} placeholder="Find by title, slug, editor" />
+            </label>
+            <label>
+              Status
+              <select value={table.state.filters.status} onChange={(event) => table.setFilter('status', event.target.value as 'All' | PageStatus)}>
+                <option value="All">All</option>
+                <option value="Published">Published</option>
+                <option value="Draft">Draft</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </label>
+            <label>
+              Locale
+              <select value={table.state.filters.locale} onChange={(event) => table.setFilter('locale', event.target.value)}>
+                <option value="All">All</option>
+                <option value="EN">EN</option>
+                <option value="AR">AR</option>
+                <option value="UR">UR</option>
+              </select>
+            </label>
+          </div>
 
-        <div className="dashboard-table-wrap">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Slug</th>
-                <th>Status</th>
-                <th>Updated By</th>
-                <th>Updated At</th>
-                <th>Views</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPages.map((page) => (
-                <tr key={page.id}>
-                  <td>{page.title}</td>
-                  <td>{page.slug}</td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${toClassToken(page.status)}`}>{page.status}</span>
-                  </td>
-                  <td>{page.updatedBy}</td>
-                  <td>{page.updatedAt}</td>
-                  <td>{page.views.toLocaleString()}</td>
-                  <td>
-                    <div className="dashboard-actions-inline">
-                      <button type="button" onClick={() => editPage(page.id)}>
-                        Edit
-                      </button>
-                      <button type="button" className="danger" onClick={() => removePage(page.id)}>
-                        Remove
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
+          {pages.length === 0 ? (
+            <DashboardEmptyState title="No pages found" description="Try changing filters or add a new page." />
+          ) : (
+            <div className="dashboard-table-wrap">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Slug</th>
+                    <th>Status</th>
+                    <th>Updated By</th>
+                    <th>Updated At</th>
+                    <th>Views</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pages.map((page) => (
+                    <tr key={page.id}>
+                      <td>{page.title}</td>
+                      <td>{page.slug}</td>
+                      <td>
+                        <span className={`dashboard-chip dashboard-chip--${toClassToken(page.status)}`}>{page.status}</span>
+                      </td>
+                      <td>{page.updatedBy}</td>
+                      <td>{page.updatedAt}</td>
+                      <td>{page.views.toLocaleString()}</td>
+                      <td>
+                        <div className="dashboard-actions-inline">
+                          <button type="button" onClick={() => void editPage(page.id)}>
+                            Edit
+                          </button>
+                          <button type="button" className="danger" onClick={() => void removePage(page.id)}>
+                            Remove
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </article>
+      ) : null}
     </section>
   );
 }
 
 function UsersPanel() {
-  const [query, setQuery] = useState('');
-  const [segmentFilter, setSegmentFilter] = useState<'All' | UserSegment>('All');
-  const [purchaseFilter, setPurchaseFilter] = useState<'All' | 'Purchased' | 'Abandoned'>('All');
+  const [users, setUsers] = useState<PortalUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const table = useDashboardTableState<{ segment: 'All' | UserSegment; purchase: 'All' | 'Purchased' | 'Abandoned' }>({
+    basePath: '/dashboard/users',
+    defaultState: {
+      search: '',
+      pagination: { page: 1, pageSize: 20 },
+      filters: { segment: 'All', purchase: 'All' }
+    } as DashboardQueryState<{ segment: 'All' | UserSegment; purchase: 'All' | 'Purchased' | 'Abandoned' }>
+  });
 
-  const users = useMemo(
-    () =>
-      initialUsers.filter((user) => {
-        const queryLower = query.trim().toLowerCase();
-        const matchesQuery =
-          queryLower.length === 0 ||
-          user.fullName.toLowerCase().includes(queryLower) ||
-          user.email.toLowerCase().includes(queryLower) ||
-          user.country.toLowerCase().includes(queryLower);
-        const matchesSegment = segmentFilter === 'All' || user.segment === segmentFilter;
-        const matchesPurchase =
-          purchaseFilter === 'All' ||
-          (purchaseFilter === 'Purchased' && user.purchased) ||
-          (purchaseFilter === 'Abandoned' && !user.purchased);
-        return matchesQuery && matchesSegment && matchesPurchase;
-      }),
-    [purchaseFilter, query, segmentFilter]
-  );
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await usersService.list({
+        page: table.state.pagination.page,
+        page_size: table.state.pagination.pageSize,
+        search: table.state.search,
+        segment: table.state.filters.segment,
+        purchase:
+          table.state.filters.purchase === 'All' ? undefined : (table.state.filters.purchase.toLowerCase() as 'purchased' | 'abandoned')
+      });
+      setUsers(response.items);
+    } catch (loadError) {
+      setError(extractApiErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, [table.state]);
 
-  const registeredCount = initialUsers.filter((user) => user.segment === 'Registered').length;
-  const abandonedCount = initialUsers.filter((user) => !user.purchased).length;
+  useEffect(() => {
+    void loadUsers();
+  }, [loadUsers]);
+
+  const registeredCount = users.filter((user) => user.segment === 'Registered').length;
+  const abandonedCount = users.filter((user) => !user.purchased).length;
 
   return (
     <section className="dashboard-stack">
-      <div className="dashboard-kpi-grid dashboard-kpi-grid--short">
-        <article className="dashboard-kpi-card">
-          <p>Registered Users</p>
-          <strong>{registeredCount}</strong>
-          <span>Active accounts</span>
-        </article>
-        <article className="dashboard-kpi-card">
-          <p>No Purchase Leads</p>
-          <strong>{abandonedCount}</strong>
-          <span>Retargeting opportunity</span>
-        </article>
-      </div>
+      {loading ? <DashboardLoadingSkeleton rows={4} /> : null}
+      {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadUsers()} /> : null}
+      {!loading && !error ? (
+        <>
+          <div className="dashboard-kpi-grid dashboard-kpi-grid--short">
+            <article className="dashboard-kpi-card">
+              <p>Registered Users</p>
+              <strong>{registeredCount}</strong>
+              <span>Active accounts</span>
+            </article>
+            <article className="dashboard-kpi-card">
+              <p>No Purchase Leads</p>
+              <strong>{abandonedCount}</strong>
+              <span>Retargeting opportunity</span>
+            </article>
+          </div>
 
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header">
-          <h2>User and Lead Explorer</h2>
-        </div>
-        <div className="dashboard-filter-grid">
-          <label>
-            Search
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name, email or country" />
-          </label>
-          <label>
-            Segment
-            <select value={segmentFilter} onChange={(event) => setSegmentFilter(event.target.value as 'All' | UserSegment)}>
-              <option value="All">All</option>
-              <option value="Registered">Registered</option>
-              <option value="Lead">Lead</option>
-            </select>
-          </label>
-          <label>
-            Purchase
-            <select value={purchaseFilter} onChange={(event) => setPurchaseFilter(event.target.value as 'All' | 'Purchased' | 'Abandoned')}>
-              <option value="All">All</option>
-              <option value="Purchased">Purchased</option>
-              <option value="Abandoned">Abandoned</option>
-            </select>
-          </label>
-        </div>
+          <article className="dashboard-panel">
+            <div className="dashboard-panel__header">
+              <h2>User and Lead Explorer</h2>
+            </div>
+            <div className="dashboard-filter-grid">
+              <label>
+                Search
+                <input
+                  value={table.state.search}
+                  onChange={(event) => table.setSearch(event.target.value)}
+                  placeholder="Search by name, email or country"
+                />
+              </label>
+              <label>
+                Segment
+                <select value={table.state.filters.segment} onChange={(event) => table.setFilter('segment', event.target.value as 'All' | UserSegment)}>
+                  <option value="All">All</option>
+                  <option value="Registered">Registered</option>
+                  <option value="Lead">Lead</option>
+                </select>
+              </label>
+              <label>
+                Purchase
+                <select
+                  value={table.state.filters.purchase}
+                  onChange={(event) => table.setFilter('purchase', event.target.value as 'All' | 'Purchased' | 'Abandoned')}
+                >
+                  <option value="All">All</option>
+                  <option value="Purchased">Purchased</option>
+                  <option value="Abandoned">Abandoned</option>
+                </select>
+              </label>
+            </div>
 
-        <div className="dashboard-table-wrap">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Segment</th>
-                <th>Purchase</th>
-                <th>Source</th>
-                <th>Country</th>
-                <th>Spent</th>
-                <th>Last Seen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>
-                    <strong>{user.fullName}</strong>
-                    <small>{user.email}</small>
-                  </td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${toClassToken(user.segment)}`}>{user.segment}</span>
-                  </td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${user.purchased ? 'purchased' : 'abandoned'}`}>
-                      {user.purchased ? 'Purchased' : 'Abandoned'}
-                    </span>
-                  </td>
-                  <td>{user.source}</td>
-                  <td>{user.country}</td>
-                  <td>${user.spentUsd}</td>
-                  <td>{user.lastSeen}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
+            {users.length === 0 ? (
+              <DashboardEmptyState title="No users found" description="Try broadening your search." />
+            ) : (
+              <div className="dashboard-table-wrap">
+                <table className="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Segment</th>
+                      <th>Purchase</th>
+                      <th>Source</th>
+                      <th>Country</th>
+                      <th>Spent</th>
+                      <th>Last Seen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td>
+                          <strong>{user.fullName}</strong>
+                          <small>{user.email}</small>
+                        </td>
+                        <td>
+                          <span className={`dashboard-chip dashboard-chip--${toClassToken(user.segment)}`}>{user.segment}</span>
+                        </td>
+                        <td>
+                          <span className={`dashboard-chip dashboard-chip--${user.purchased ? 'purchased' : 'abandoned'}`}>
+                            {user.purchased ? 'Purchased' : 'Abandoned'}
+                          </span>
+                        </td>
+                        <td>{user.source}</td>
+                        <td>{user.country}</td>
+                        <td>${user.spentUsd}</td>
+                        <td>{user.lastSeen}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+        </>
+      ) : null}
     </section>
   );
 }
 
 function VisaApplicationsPanel() {
-  const [statusFilter, setStatusFilter] = useState<'All' | ApplicationStatus>('All');
-  const [priorityFilter, setPriorityFilter] = useState<'All' | 'Low' | 'Medium' | 'High'>('All');
-  const [search, setSearch] = useState('');
+  const [applications, setApplications] = useState<VisaApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const table = useDashboardTableState<{ status: 'All' | ApplicationStatus; priority: 'All' | 'Low' | 'Medium' | 'High' }>({
+    basePath: '/dashboard/visa-applications',
+    defaultState: {
+      search: '',
+      pagination: { page: 1, pageSize: 20 },
+      filters: { status: 'All', priority: 'All' }
+    } as DashboardQueryState<{ status: 'All' | ApplicationStatus; priority: 'All' | 'Low' | 'Medium' | 'High' }>
+  });
 
-  const filtered = useMemo(
-    () =>
-      initialApplications.filter((application) => {
-        const searchValue = search.trim().toLowerCase();
-        const matchesSearch =
-          searchValue.length === 0 ||
-          application.id.toLowerCase().includes(searchValue) ||
-          application.applicant.toLowerCase().includes(searchValue) ||
-          application.email.toLowerCase().includes(searchValue);
-        const matchesStatus = statusFilter === 'All' || application.status === statusFilter;
-        const matchesPriority = priorityFilter === 'All' || application.priority === priorityFilter;
-        return matchesSearch && matchesStatus && matchesPriority;
-      }),
-    [priorityFilter, search, statusFilter]
-  );
+  const loadApplications = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await applicationsService.list({
+        page: table.state.pagination.page,
+        page_size: table.state.pagination.pageSize,
+        search: table.state.search,
+        status: table.state.filters.status,
+        priority: table.state.filters.priority
+      });
+      setApplications(response.items);
+    } catch (loadError) {
+      setError(extractApiErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, [table.state]);
 
-  const countByStatus = initialApplications.reduce<Record<ApplicationStatus, number>>(
+  useEffect(() => {
+    void loadApplications();
+  }, [loadApplications]);
+
+  const countByStatus = applications.reduce<Record<ApplicationStatus, number>>(
     (acc, application) => {
       acc[application.status] += 1;
       return acc;
@@ -1047,84 +980,94 @@ function VisaApplicationsPanel() {
 
   return (
     <section className="dashboard-stack">
-      <div className="dashboard-kpi-grid">
-        {(Object.keys(countByStatus) as ApplicationStatus[]).map((status) => (
-          <article key={status} className="dashboard-kpi-card">
-            <p>{status}</p>
-            <strong>{countByStatus[status]}</strong>
-            <span>Applications</span>
+      {loading ? <DashboardLoadingSkeleton rows={4} /> : null}
+      {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadApplications()} /> : null}
+      {!loading && !error ? (
+        <>
+          <div className="dashboard-kpi-grid">
+            {(Object.keys(countByStatus) as ApplicationStatus[]).map((status) => (
+              <article key={status} className="dashboard-kpi-card">
+                <p>{status}</p>
+                <strong>{countByStatus[status]}</strong>
+                <span>Applications</span>
+              </article>
+            ))}
+          </div>
+
+          <article className="dashboard-panel">
+            <div className="dashboard-panel__header">
+              <h2>Application Status Board</h2>
+            </div>
+            <div className="dashboard-filter-grid">
+              <label>
+                Search
+                <input value={table.state.search} onChange={(event) => table.setSearch(event.target.value)} placeholder="Case ID, applicant or email" />
+              </label>
+              <label>
+                Status
+                <select value={table.state.filters.status} onChange={(event) => table.setFilter('status', event.target.value as 'All' | ApplicationStatus)}>
+                  <option value="All">All</option>
+                  <option value="Submitted">Submitted</option>
+                  <option value="In Review">In Review</option>
+                  <option value="Documents Needed">Documents Needed</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </label>
+              <label>
+                Priority
+                <select value={table.state.filters.priority} onChange={(event) => table.setFilter('priority', event.target.value as 'All' | 'Low' | 'Medium' | 'High')}>
+                  <option value="All">All</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </label>
+            </div>
+
+            {applications.length === 0 ? (
+              <DashboardEmptyState title="No applications found" description="Try different status/priority filters." />
+            ) : (
+              <div className="dashboard-table-wrap">
+                <table className="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Case ID</th>
+                      <th>Applicant</th>
+                      <th>Visa Type</th>
+                      <th>Status</th>
+                      <th>Priority</th>
+                      <th>Assigned</th>
+                      <th>Submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {applications.map((application) => (
+                      <tr key={application.id}>
+                        <td>{application.id}</td>
+                        <td>
+                          <strong>{application.applicant}</strong>
+                          <small>{application.email}</small>
+                        </td>
+                        <td>{application.visaType}</td>
+                        <td>
+                          <span className={`dashboard-chip dashboard-chip--${toClassToken(application.status)}`}>{application.status}</span>
+                        </td>
+                        <td>
+                          <span className={`dashboard-chip dashboard-chip--${toClassToken(application.priority)}`}>{application.priority}</span>
+                        </td>
+                        <td>{application.assignedTo}</td>
+                        <td>{application.submittedOn}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </article>
-        ))}
-      </div>
-
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header">
-          <h2>Application Status Board</h2>
-        </div>
-        <div className="dashboard-filter-grid">
-          <label>
-            Search
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Case ID, applicant or email" />
-          </label>
-          <label>
-            Status
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as 'All' | ApplicationStatus)}>
-              <option value="All">All</option>
-              <option value="Submitted">Submitted</option>
-              <option value="In Review">In Review</option>
-              <option value="Documents Needed">Documents Needed</option>
-              <option value="Approved">Approved</option>
-              <option value="Completed">Completed</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </label>
-          <label>
-            Priority
-            <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as 'All' | 'Low' | 'Medium' | 'High')}>
-              <option value="All">All</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="dashboard-table-wrap">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>Case ID</th>
-                <th>Applicant</th>
-                <th>Visa Type</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Assigned</th>
-                <th>Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((application) => (
-                <tr key={application.id}>
-                  <td>{application.id}</td>
-                  <td>
-                    <strong>{application.applicant}</strong>
-                    <small>{application.email}</small>
-                  </td>
-                  <td>{application.visaType}</td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${toClassToken(application.status)}`}>{application.status}</span>
-                  </td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${toClassToken(application.priority)}`}>{application.priority}</span>
-                  </td>
-                  <td>{application.assignedTo}</td>
-                  <td>{application.submittedOn}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
+        </>
+      ) : null}
     </section>
   );
 }
