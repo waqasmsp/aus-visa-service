@@ -4,7 +4,6 @@ import { FeaturesBand } from '../components/landing/FeaturesBand';
 import { FooterMega } from '../components/landing/FooterMega';
 import { HeaderNav } from '../components/landing/HeaderNav';
 import { HeroVisaSearch } from '../components/landing/HeroVisaSearch';
-import { Inc5000Highlight } from '../components/landing/Inc5000Highlight';
 import { NewsletterSignup } from '../components/landing/NewsletterSignup';
 import { StatsStrip } from '../components/landing/StatsStrip';
 import { Testimonials } from '../components/landing/Testimonials';
@@ -74,12 +73,6 @@ export function LandingPage({ pathname }: { pathname: string }) {
           </div>
         </section>
       </main>
-
-      <section className="landing-section landing-section--inc-highlight">
-        <div className="content-container">
-          <Inc5000Highlight />
-        </div>
-      </section>
 
       <section className="landing-section landing-section--newsletter">
         <div className="content-container">
