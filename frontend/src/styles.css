@@ -928,7 +928,7 @@ body.body--menu-open {
   min-height: 4rem;
   padding: 0.8rem 0;
   border-bottom: none;
-  background: transparent;
+  background: var(--theme-hero-bg, var(--theme-page-hero-bg));
 }
 
 .top-header__brand {
@@ -1705,7 +1705,7 @@ body.body--menu-open {
   border-radius: 1.35rem;
   border: 1px solid rgb(148 163 184 / 0.36);
   background: rgb(255 255 255 / 0.66);
-  box-shadow: 0 18px 42px rgb(14 116 144 / 0.2);
+  box-shadow: none;
 }
 
 .hero-visual-slot--cutout::before {
@@ -1719,7 +1719,7 @@ body.body--menu-open {
 }
 
 .hero-visual-slot--cutout img {
-  filter: drop-shadow(0 22px 30px rgb(15 23 42 / 0.2));
+  filter: none;
 }
 
 .application-form-screen {
