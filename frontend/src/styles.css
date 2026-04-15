@@ -2005,6 +2005,48 @@ body.body--menu-open {
   transform: translateY(-1px);
 }
 
+.application-member-cta {
+  margin-top: 1rem;
+  border: 1px solid #b9d2f0;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.82), rgb(222 238 255 / 0.55));
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.application-member-cta p {
+  margin: 0;
+  color: #244766;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.application-member-cta p a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.application-member-cta__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.7rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--color-brand-blue-500);
+  color: var(--color-primary);
+  background: linear-gradient(135deg, rgb(37 99 235 / 0.08), rgb(14 165 233 / 0.12));
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.application-member-cta__button:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 18px rgb(37 99 235 / 0.14);
+  transform: translateY(-1px);
+}
+
 .application-form-card {
   padding: clamp(1rem, 2.5vw, 1.7rem);
 }

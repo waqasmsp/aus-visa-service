@@ -29,6 +29,7 @@ const YEAR_OPTIONS = Array.from({ length: 100 }, (_, index) => `${CURRENT_YEAR -
 const REASON_FOR_TRIP_OPTIONS = ['Tourism', 'Business', 'Family visit', 'Medical treatment', 'Conference or event'];
 const STEP_ITEMS = ['Application', 'Add Travelers', 'Contact Details', 'Confirm & Submit'];
 const FORM_STORAGE_KEY = 'aus-visa-application-draft-v1';
+const AUTH_SESSION_KEY = 'aus-visa-auth-session';
 
 function VisaBadgeIcon() {
   return (
@@ -85,6 +86,32 @@ export function ApplicationStepOneForm() {
   const [travelerPromptCountdown, setTravelerPromptCountdown] = useState(5);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
+  const [hasAuthSession, setHasAuthSession] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const syncAuthState = () => {
+      const rawSession = window.localStorage.getItem(AUTH_SESSION_KEY);
+      if (!rawSession) {
+        setHasAuthSession(false);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(rawSession) as { role?: string };
+        setHasAuthSession(parsed.role === 'admin' || parsed.role === 'manager' || parsed.role === 'user');
+      } catch {
+        setHasAuthSession(false);
+      }
+    };
+
+    syncAuthState();
+    window.addEventListener('storage', syncAuthState);
+    return () => window.removeEventListener('storage', syncAuthState);
+  }, []);
 
   useEffect(() => {
     if (!showTravelerPrompt) {
@@ -547,6 +574,27 @@ export function ApplicationStepOneForm() {
           >
             View all travelers
           </button>
+
+          <div className="application-member-cta" aria-live="polite">
+            {hasAuthSession ? (
+              <>
+                <p>Welcome back! You can continue from your dashboard.</p>
+                <a className="application-member-cta__button" href="/dashboard/applications">
+                  View Applications
+                </a>
+              </>
+            ) : (
+              <>
+                <p>
+                  Already a member?{' '}
+                  <a href="/dashboard/login?next=%2Fdashboard%2Fapplications">Login here</a>
+                </p>
+                <a className="application-member-cta__button" href="/dashboard/login?next=%2Fdashboard%2Fapplications">
+                  Login
+                </a>
+              </>
+            )}
+          </div>
 
           {applicationSubStep === 7 ? (
             <div className="application-pricing-card">
