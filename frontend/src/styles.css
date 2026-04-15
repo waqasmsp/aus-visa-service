@@ -4373,6 +4373,12 @@ body.body--menu-open {
   color: #4e6483;
 }
 
+.dashboard-settings-warnings {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
 .dashboard-cell-message {
   min-width: 16rem;
 }
@@ -5275,6 +5281,12 @@ body.body--menu-open {
   color: #991b1b;
   background: rgb(239 68 68 / 0.12);
   border-color: rgb(239 68 68 / 0.3);
+}
+
+.dashboard-auth__message.is-warning {
+  color: #92400e;
+  background: rgb(245 158 11 / 0.12);
+  border-color: rgb(245 158 11 / 0.3);
 }
 
 .dashboard-auth__dummy-list {

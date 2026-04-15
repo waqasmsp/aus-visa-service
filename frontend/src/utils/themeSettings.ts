@@ -1,3 +1,5 @@
+import { sanitizeThemeColorValue } from './themeColors';
+
 export const THEME_SETTINGS_STORAGE_KEY = 'aus-visa-theme-settings';
 
 export type ThemeSettings = {
@@ -35,8 +37,6 @@ export const defaultThemeSettings: ThemeSettings = {
   }
 };
 
-const sanitizeTextInput = (value: unknown, fallback: string) => (typeof value === 'string' && value.trim().length ? value.trim() : fallback);
-
 const parseThemeSettings = (input: unknown): ThemeSettings => {
   const source = (typeof input === 'object' && input ? input : {}) as Partial<ThemeSettings>;
   const global = (source.global ?? {}) as Partial<ThemeSettings['global']>;
@@ -44,20 +44,20 @@ const parseThemeSettings = (input: unknown): ThemeSettings => {
 
   return {
     global: {
-      appBackground: sanitizeTextInput(global.appBackground, defaultThemeSettings.global.appBackground),
-      headerBackground: sanitizeTextInput(global.headerBackground, defaultThemeSettings.global.headerBackground),
-      buttonBackground: sanitizeTextInput(global.buttonBackground, defaultThemeSettings.global.buttonBackground),
-      buttonText: sanitizeTextInput(global.buttonText, defaultThemeSettings.global.buttonText),
-      footerBackground: sanitizeTextInput(global.footerBackground, defaultThemeSettings.global.footerBackground)
+      appBackground: sanitizeThemeColorValue(global.appBackground, defaultThemeSettings.global.appBackground).sanitized,
+      headerBackground: sanitizeThemeColorValue(global.headerBackground, defaultThemeSettings.global.headerBackground).sanitized,
+      buttonBackground: sanitizeThemeColorValue(global.buttonBackground, defaultThemeSettings.global.buttonBackground).sanitized,
+      buttonText: sanitizeThemeColorValue(global.buttonText, defaultThemeSettings.global.buttonText).sanitized,
+      footerBackground: sanitizeThemeColorValue(global.footerBackground, defaultThemeSettings.global.footerBackground).sanitized
     },
     sections: {
       enableHeroBackground: false,
-      pageHeroBackground: sanitizeTextInput(sections.pageHeroBackground, defaultThemeSettings.sections.pageHeroBackground),
+      pageHeroBackground: sanitizeThemeColorValue(sections.pageHeroBackground, defaultThemeSettings.sections.pageHeroBackground).sanitized,
       enableApplicationSectionBackground: Boolean(sections.enableApplicationSectionBackground),
-      applicationSectionBackground: sanitizeTextInput(
+      applicationSectionBackground: sanitizeThemeColorValue(
         sections.applicationSectionBackground,
         defaultThemeSettings.sections.applicationSectionBackground
-      )
+      ).sanitized
     }
   };
 };
@@ -83,7 +83,7 @@ export const saveThemeSettings = (settings: ThemeSettings) => {
     return;
   }
 
-  window.localStorage.setItem(THEME_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  window.localStorage.setItem(THEME_SETTINGS_STORAGE_KEY, JSON.stringify(parseThemeSettings(settings)));
 };
 
 export const applyThemeSettings = (settings: ThemeSettings) => {
@@ -91,21 +91,22 @@ export const applyThemeSettings = (settings: ThemeSettings) => {
     return;
   }
 
+  const sanitizedSettings = parseThemeSettings(settings);
   const root = document.documentElement;
-  root.style.setProperty('--theme-app-bg', settings.global.appBackground);
-  root.style.setProperty('--theme-header-bg', settings.global.headerBackground);
-  root.style.setProperty('--theme-button-bg', settings.global.buttonBackground);
-  root.style.setProperty('--theme-button-text', settings.global.buttonText);
-  root.style.setProperty('--theme-footer-bg', settings.global.footerBackground);
+  root.style.setProperty('--theme-app-bg', sanitizedSettings.global.appBackground);
+  root.style.setProperty('--theme-header-bg', sanitizedSettings.global.headerBackground);
+  root.style.setProperty('--theme-button-bg', sanitizedSettings.global.buttonBackground);
+  root.style.setProperty('--theme-button-text', sanitizedSettings.global.buttonText);
+  root.style.setProperty('--theme-footer-bg', sanitizedSettings.global.footerBackground);
 
-  if (settings.sections.enableApplicationSectionBackground) {
-    root.style.setProperty('--theme-application-surface', settings.sections.applicationSectionBackground);
+  if (sanitizedSettings.sections.enableApplicationSectionBackground) {
+    root.style.setProperty('--theme-application-surface', sanitizedSettings.sections.applicationSectionBackground);
   } else {
     root.style.removeProperty('--theme-application-surface');
   }
 
-  if (settings.sections.enableHeroBackground) {
-    root.style.setProperty('--theme-page-hero-bg', settings.sections.pageHeroBackground);
+  if (sanitizedSettings.sections.enableHeroBackground) {
+    root.style.setProperty('--theme-page-hero-bg', sanitizedSettings.sections.pageHeroBackground);
   } else {
     root.style.removeProperty('--theme-page-hero-bg');
   }
