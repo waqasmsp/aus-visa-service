@@ -107,13 +107,19 @@ function SelectCombobox<T extends SelectOption>({
   const [internalSelected, setInternalSelected] = useState<T | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const [brokenFlags, setBrokenFlags] = useState<Set<string>>(new Set());
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const labelId = useId();
   const listboxId = useId();
   const isControlled = value !== undefined;
   const selected = isControlled ? (value ?? null) : internalSelected;
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredOptions = normalizedQuery.length === 0
+    ? options
+    : options.filter((option) => option.name.toLowerCase().includes(normalizedQuery));
 
   const applySelected = (option: T) => {
     if (!isControlled) {
@@ -140,10 +146,12 @@ function SelectCombobox<T extends SelectOption>({
       return;
     }
 
-    listboxRef.current?.focus();
+    const focusTarget = searchInputRef.current ?? listboxRef.current;
+    focusTarget?.focus();
 
     const onOutsideClick = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setSearchQuery('');
         setIsOpen(false);
       }
     };
@@ -152,9 +160,16 @@ function SelectCombobox<T extends SelectOption>({
     return () => document.removeEventListener('mousedown', onOutsideClick);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (activeIndex >= filteredOptions.length) {
+      setActiveIndex(Math.max(filteredOptions.length - 1, 0));
+    }
+  }, [activeIndex, filteredOptions.length]);
+
   const openWithIndex = (index: number) => {
     setIsOpen(true);
-    setActiveIndex(index);
+    setSearchQuery('');
+    setActiveIndex(Math.max(index, 0));
   };
 
   const onTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -175,19 +190,19 @@ function SelectCombobox<T extends SelectOption>({
   };
 
   const onListKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
-    if (options.length === 0) {
+    if (filteredOptions.length === 0) {
       return;
     }
 
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      setActiveIndex((current) => (current + 1) % options.length);
+      setActiveIndex((current) => (current + 1) % filteredOptions.length);
       return;
     }
 
     if (event.key === 'ArrowUp') {
       event.preventDefault();
-      setActiveIndex((current) => (current - 1 + options.length) % options.length);
+      setActiveIndex((current) => (current - 1 + filteredOptions.length) % filteredOptions.length);
       return;
     }
 
@@ -199,21 +214,25 @@ function SelectCombobox<T extends SelectOption>({
 
     if (event.key === 'End') {
       event.preventDefault();
-      setActiveIndex(options.length - 1);
+      setActiveIndex(filteredOptions.length - 1);
       return;
     }
 
     if (event.key === 'Escape') {
       event.preventDefault();
+      setSearchQuery('');
       setIsOpen(false);
       return;
     }
 
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      const activeOption = options[activeIndex];
-      applySelected(activeOption);
-      setIsOpen(false);
+      const activeOption = filteredOptions[activeIndex];
+      if (activeOption) {
+        applySelected(activeOption);
+        setSearchQuery('');
+        setIsOpen(false);
+      }
     }
   };
 
@@ -244,7 +263,13 @@ function SelectCombobox<T extends SelectOption>({
           className="hero-country-trigger"
           onClick={() => {
             if (!disabled && options.length > 0) {
-              setIsOpen((current) => !current);
+              if (!isOpen) {
+                const selectedIndex = selected ? options.findIndex((option) => option.code === selected.code) : 0;
+                openWithIndex(selectedIndex);
+              } else {
+                setSearchQuery('');
+                setIsOpen(false);
+              }
             }
           }}
           onKeyDown={onTriggerKeyDown}
@@ -266,7 +291,27 @@ function SelectCombobox<T extends SelectOption>({
             aria-labelledby={labelId}
             onKeyDown={onListKeyDown}
           >
-            {options.map((option, index) => {
+            <li className="hero-country-search-item" role="none">
+              <input
+                ref={searchInputRef}
+                type="text"
+                className="hero-country-search-input"
+                placeholder="Search country..."
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setActiveIndex(0);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'ArrowDown' && filteredOptions.length > 0) {
+                    event.preventDefault();
+                    listboxRef.current?.focus();
+                  }
+                }}
+                aria-label={`Search ${label.toLowerCase()}`}
+              />
+            </li>
+            {filteredOptions.map((option, index) => {
               const isSelected = selected?.code === option.code;
               const isActive = index === activeIndex;
 
@@ -279,6 +324,7 @@ function SelectCombobox<T extends SelectOption>({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => {
                     applySelected(option);
+                    setSearchQuery('');
                     setIsOpen(false);
                   }}
                 >
@@ -293,6 +339,11 @@ function SelectCombobox<T extends SelectOption>({
                 </li>
               );
             })}
+            {filteredOptions.length === 0 && (
+              <li className="hero-country-empty" role="status" aria-live="polite">
+                No countries found.
+              </li>
+            )}
           </ul>
         )}
       </div>

@@ -1402,7 +1402,7 @@ body.body--menu-open {
 .hero-search-band {
   position: relative;
   isolation: isolate;
-  overflow: clip;
+  overflow: visible;
   width: 100%;
   padding: clamp(1.45rem, 3vw, 2.25rem) 0 clamp(1rem, 2.2vw, 1.4rem);
   background:
@@ -1636,7 +1636,7 @@ body.body--menu-open {
 
 .hero-country-listbox {
   position: absolute;
-  z-index: 20;
+  z-index: 999;
   top: calc(100% + 0.35rem);
   left: 0;
   right: 0;
@@ -1649,6 +1649,29 @@ body.body--menu-open {
   box-shadow: 0 10px 22px rgb(15 23 42 / 0.12);
   max-height: 15rem;
   overflow-y: auto;
+}
+
+.hero-country-search-item {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-white);
+  padding: 0.15rem 0.1rem 0.45rem;
+}
+
+.hero-country-search-input {
+  width: 100%;
+  height: 2.4rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.6rem;
+  padding: 0 0.7rem;
+  font: inherit;
+  color: var(--color-text-primary);
+}
+
+.hero-country-search-input:focus-visible {
+  outline: 2px solid rgb(59 130 246 / 0.48);
+  outline-offset: 2px;
 }
 
 .hero-country-list-option {
@@ -1667,6 +1690,12 @@ body.body--menu-open {
 
 .hero-country-list-option.is-selected {
   font-weight: var(--font-weight-semibold);
+}
+
+.hero-country-empty {
+  padding: 0.65rem 0.7rem;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
 }
 
 .hero-search-controls .primary-button {
