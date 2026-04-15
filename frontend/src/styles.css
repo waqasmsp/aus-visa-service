@@ -1697,7 +1697,7 @@ body.body--menu-open {
 
 .hero-visual-slot {
   position: relative;
-  width: min(96%, 30rem);
+  width: min(96%, 25rem);
   margin: 0 auto;
   z-index: 1;
 }
@@ -1709,7 +1709,9 @@ body.body--menu-open {
 }
 
 .hero-illustration--photo {
-  max-height: min(26rem, 74vh);
+  max-width: 25rem;
+  aspect-ratio: 2 / 3;
+  max-height: min(37.5rem, 74vh);
   object-fit: cover;
   object-position: center;
   border-radius: 1.35rem;
