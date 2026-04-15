@@ -34,6 +34,7 @@ type SelectComboboxProps<T extends SelectOption> = {
 };
 
 const HERO_TITLE_ROTATION_MS = 2200;
+const HERO_TRUST_BADGES = ['99% approval-guided applications', '24/7 visa expert support', '50,000+ happy travelers'];
 
 type ParsedHeroTitle = {
   before: string;
@@ -386,44 +387,72 @@ export function HeroVisaSearch({
 
   return (
     <section className="hero-search-band">
+      <div className="hero-search-background" aria-hidden="true">
+        <div className="hero-search-glow hero-search-glow--cta" />
+        <div className="hero-search-glow hero-search-glow--visual" />
+        <div className="hero-search-wave hero-search-wave--one">
+          <svg viewBox="0 0 1200 280" preserveAspectRatio="none">
+            <path d="M0,102 C180,18 360,220 540,146 C696,82 836,34 1040,108 C1114,136 1162,176 1200,192 L1200,280 L0,280 Z" />
+          </svg>
+        </div>
+        <div className="hero-search-wave hero-search-wave--two">
+          <svg viewBox="0 0 1200 280" preserveAspectRatio="none">
+            <path d="M0,126 C138,168 254,56 392,84 C560,122 712,214 872,172 C996,140 1088,56 1200,88 L1200,280 L0,280 Z" />
+          </svg>
+        </div>
+        <div className="hero-search-wave hero-search-wave--three">
+          <svg viewBox="0 0 1200 280" preserveAspectRatio="none">
+            <path d="M0,184 C184,98 306,132 478,214 C658,300 796,162 976,156 C1072,152 1146,180 1200,196 L1200,280 L0,280 Z" />
+          </svg>
+        </div>
+      </div>
       <SectionContainer className="hero-search">
         <div className="hero-search-layout">
-          <header className="hero-search-copy">
-            <AnimatedHeroTitle title={title} />
-            <p>{subtitle}</p>
-          </header>
-          <div className="hero-search-panel">
-            <div className="hero-search-controls">
-              <SelectCombobox
-                label={originCountryLabel}
-                options={originCountryOptions}
-                placeholder="Select country"
-                value={originCountry}
-                onChange={setOriginCountry}
-              />
-              <SelectCombobox
-                label={destinationCountryLabel}
-                options={destinationCountry ? [destinationCountry] : destinationCountryOptions}
-                placeholder="Select country"
-                value={destinationCountry}
-                disabled
-              />
-              <SelectCombobox
-                label={visaTypeLabel}
-                options={visaTypeOptions}
-                placeholder="Select visa type"
-                renderLeadingVisual={() => (
-                  <span className="hero-country-flag" aria-hidden="true">
-                    <VisaIcon />
-                  </span>
-                )}
-              />
-              <PrimaryButton onClick={onStartApplication}>{primaryCta}</PrimaryButton>
+          <div className="hero-search-content">
+            <header className="hero-search-copy">
+              <AnimatedHeroTitle title={title} />
+              <p>{subtitle}</p>
+            </header>
+            <div className="hero-search-panel">
+              <div className="hero-search-controls">
+                <SelectCombobox
+                  label={originCountryLabel}
+                  options={originCountryOptions}
+                  placeholder="Select country"
+                  value={originCountry}
+                  onChange={setOriginCountry}
+                />
+                <SelectCombobox
+                  label={destinationCountryLabel}
+                  options={destinationCountry ? [destinationCountry] : destinationCountryOptions}
+                  placeholder="Select country"
+                  value={destinationCountry}
+                  disabled
+                />
+                <SelectCombobox
+                  label={visaTypeLabel}
+                  options={visaTypeOptions}
+                  placeholder="Select visa type"
+                  renderLeadingVisual={() => (
+                    <span className="hero-country-flag" aria-hidden="true">
+                      <VisaIcon />
+                    </span>
+                  )}
+                />
+                <PrimaryButton onClick={onStartApplication}>{primaryCta}</PrimaryButton>
+              </div>
             </div>
+            <ul className="hero-search-trust-badges" aria-label="Trust highlights">
+              {HERO_TRUST_BADGES.map((badge) => (
+                <li key={badge}>{badge}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="hero-search-visual" role="presentation">
+            <img className="hero-illustration hero-illustration--subtle" src={heroIllustration} alt={illustrationAlt} loading="lazy" />
           </div>
         </div>
       </SectionContainer>
-      <img className="hero-illustration hero-illustration--subtle" src={heroIllustration} alt={illustrationAlt} loading="lazy" />
     </section>
   );
 }
