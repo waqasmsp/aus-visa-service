@@ -34,10 +34,6 @@ export function LandingPage({ pathname }: { pathname: string }) {
           <HeroVisaSearch {...hero} onStartApplication={openApplicationPage} />
         </section>
 
-        <section className="landing-section landing-section--features">
-          <FeaturesBand eyebrow={features.eyebrow} title={features.title} items={features.items} />
-        </section>
-
         <section className="landing-section landing-section--comparison">
           <div className="content-container">
             <ComparisonPanel {...comparison} onGetStarted={openApplicationPage} />
@@ -60,6 +56,10 @@ export function LandingPage({ pathname }: { pathname: string }) {
           <div className="content-container">
             <Testimonials title={testimonials.title} items={testimonials.items} />
           </div>
+        </section>
+
+        <section className="landing-section landing-section--features">
+          <FeaturesBand eyebrow={features.eyebrow} title={features.title} items={features.items} />
         </section>
 
         <section className="landing-section landing-section--service-catalog">
