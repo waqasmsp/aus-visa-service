@@ -17,7 +17,7 @@ export function PageHero({ title, description, breadcrumbs, metaItems, children 
   const lastIndex = breadcrumbs.length - 1;
 
   return (
-    <section className="landing-section page-hero">
+    <section className="landing-section landing-section--hero page-hero">
       <div className="content-container page-hero__inner">
         <nav className="page-hero__breadcrumbs" aria-label="Breadcrumb">
           {breadcrumbs.map((item, index) => {
