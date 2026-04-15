@@ -22,6 +22,7 @@ import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService'
 import { SettingsPanel } from '../../components/dashboard/settings/SettingsPanel';
 import { canPerform, collectDestructiveApproval } from '../../services/dashboard/authPolicy';
 import { writeAuditEvent } from '../../services/dashboard/audit.service';
+import { isModuleEnabled, listModuleFlags } from '../../services/dashboard/featureFlags.service';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -205,6 +206,26 @@ const isProfileRoute = (pathname: string): boolean => normalizePathname(pathname
 const isProfileSettingsRoute = (pathname: string): boolean => normalizePathname(pathname).startsWith('/dashboard/profile/settings');
 
 const toClassToken = (value: string): string => value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const sectionFlagMap: Partial<Record<DashboardSection, 'applications' | 'users' | 'pages' | 'blogs' | 'settings' | 'webhooks' | 'rbac-audit'>> = {
+  pages: 'pages',
+  blogs: 'blogs',
+  users: 'users',
+  'visa-applications': 'applications',
+  settings: 'settings'
+};
+
+const isSectionEnabled = (section: DashboardSection): boolean => {
+  const moduleKey = sectionFlagMap[section];
+  return moduleKey ? isModuleEnabled(moduleKey) : true;
+};
+const managerSectionFlagMap: Partial<Record<ManagerSection, 'applications' | 'blogs' | 'settings'>> = {
+  applications: 'applications',
+  blogs: 'blogs',
+  settings: 'settings'
+};
+const userSectionFlagMap: Partial<Record<UserSection, 'applications'>> = {
+  applications: 'applications'
+};
 
 const readAuthSession = (): AuthSession | null => {
   if (typeof window === 'undefined') {
@@ -328,8 +349,10 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
   const [accessNotice, setAccessNotice] = useState('');
   const sectionFromPath = getDashboardSectionFromPath(pathname);
   const canAccessSection = roleScope[role].includes(sectionFromPath);
-  const activeSection = canAccessSection ? sectionFromPath : 'overview';
+  const activeSection = canAccessSection && isSectionEnabled(sectionFromPath) ? sectionFromPath : 'overview';
   const profileRoute = isProfileRoute(pathname);
+  const moduleFlags = useMemo(() => listModuleFlags(), []);
+  const enabledModuleCount = moduleFlags.filter((flag) => flag.enabled && flag.rollout > 0).length;
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -377,19 +400,20 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
         <nav className="dashboard-menu" aria-label="Dashboard navigation">
           {sidebarItems.map((item) => {
             const allowed = roleScope[role].includes(item.section);
+            const enabled = isSectionEnabled(item.section);
             const active = activeSection === item.section;
-            const linkClass = ['dashboard-menu__item', active ? 'is-active' : '', allowed ? '' : 'is-locked'].join(' ').trim();
+            const linkClass = ['dashboard-menu__item', active ? 'is-active' : '', allowed && enabled ? '' : 'is-locked'].join(' ').trim();
             return (
-              <a key={item.section} href={allowed ? item.href : '#'} className={linkClass} aria-current={active ? 'page' : undefined}>
+              <a key={item.section} href={allowed && enabled ? item.href : '#'} className={linkClass} aria-current={active ? 'page' : undefined}>
                 <span>{item.label}</span>
-                {item.badge ? <small>{item.badge}</small> : null}
+                {enabled ? (item.badge ? <small>{item.badge}</small> : null) : <small>Paused</small>}
               </a>
             );
           })}
         </nav>
 
         <div className="dashboard-sidebar__foot">
-          <p>Security posture: 99.98% uptime this quarter</p>
+          <p>Security posture: 99.98% uptime this quarter · {enabledModuleCount}/{moduleFlags.length} modules enabled</p>
           <a href="/dashboard/settings">Manage permissions and API keys</a>
         </div>
       </aside>
@@ -421,6 +445,9 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
 
         <main className="dashboard-content">
           {accessNotice ? <p className="dashboard-auth__message is-error">{accessNotice}</p> : null}
+          {!profileRoute && !isSectionEnabled(sectionFromPath) ? (
+            <p className="dashboard-auth__message is-error">This module is temporarily disabled by release toggle. Use Overview while rollout is paused.</p>
+          ) : null}
           {profileRoute ? <ProfileSettingsPanel role={role} userEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'overview' ? <OverviewPanel role={role} /> : null}
           {!profileRoute && activeSection === 'pages' ? <PagesPanel role={session.role} /> : null}
@@ -952,7 +979,8 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
 
 function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const activeSection = getManagerSectionFromPath(pathname);
+  const routedSection = getManagerSectionFromPath(pathname);
+  const activeSection = managerSectionFlagMap[routedSection] && !isModuleEnabled(managerSectionFlagMap[routedSection]!) ? 'overview' : routedSection;
   const profileRoute = isProfileRoute(pathname);
 
   useEffect(() => {
@@ -992,10 +1020,12 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
         <nav className="dashboard-menu" aria-label="Manager dashboard navigation">
           {managerSidebarItems.map((item) => {
             const active = activeSection === item.section;
+            const moduleKey = managerSectionFlagMap[item.section];
+            const enabled = moduleKey ? isModuleEnabled(moduleKey) : true;
             return (
-              <a key={item.section} href={item.href} className={`dashboard-menu__item ${active ? 'is-active' : ''}`} aria-current={active ? 'page' : undefined}>
+              <a key={item.section} href={enabled ? item.href : '#'} className={`dashboard-menu__item ${active ? 'is-active' : ''} ${enabled ? '' : 'is-locked'}`} aria-current={active ? 'page' : undefined}>
                 <span>{item.label}</span>
-                {item.badge ? <small>{item.badge}</small> : null}
+                {enabled ? (item.badge ? <small>{item.badge}</small> : null) : <small>Paused</small>}
               </a>
             );
           })}
@@ -1033,6 +1063,9 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
         </header>
 
         <main className="dashboard-content">
+          {managerSectionFlagMap[routedSection] && !isModuleEnabled(managerSectionFlagMap[routedSection]!) ? (
+            <p className="dashboard-auth__message is-error">This manager module is paused by feature flag during progressive rollout.</p>
+          ) : null}
           {profileRoute ? <ProfileSettingsPanel role="manager" userEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'overview' ? <ManagerOverviewPanel /> : null}
           {!profileRoute && activeSection === 'team' ? <ManagerTeamPanel /> : null}
@@ -1221,6 +1254,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
   const [accessNotice, setAccessNotice] = useState('');
   const activeSection = getUserSectionFromPath(pathname);
   const profileSettingsRoute = isProfileSettingsRoute(pathname);
+  const flagAwareSection = userSectionFlagMap[activeSection] && !isModuleEnabled(userSectionFlagMap[activeSection]!) ? 'overview' : activeSection;
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -1263,11 +1297,13 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
 
         <nav className="dashboard-menu" aria-label="User dashboard navigation">
           {userSidebarItems.map((item) => {
-            const active = activeSection === item.section;
+            const active = flagAwareSection === item.section;
+            const moduleKey = userSectionFlagMap[item.section];
+            const enabled = moduleKey ? isModuleEnabled(moduleKey) : true;
             return (
-              <a key={item.section} href={item.href} className={`dashboard-menu__item ${active ? 'is-active' : ''}`} aria-current={active ? 'page' : undefined}>
+              <a key={item.section} href={enabled ? item.href : '#'} className={`dashboard-menu__item ${active ? 'is-active' : ''} ${enabled ? '' : 'is-locked'}`} aria-current={active ? 'page' : undefined}>
                 <span>{item.label}</span>
-                {item.badge ? <small>{item.badge}</small> : null}
+                {enabled ? (item.badge ? <small>{item.badge}</small> : null) : <small>Paused</small>}
               </a>
             );
           })}
@@ -1287,7 +1323,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
             </button>
             <div>
               <p className="dashboard-topbar__eyebrow">Applicant Portal</p>
-              <h1>{pageTitleMap[activeSection]}</h1>
+              <h1>{pageTitleMap[flagAwareSection]}</h1>
             </div>
           </div>
           <div className="dashboard-topbar__right">
@@ -1306,12 +1342,15 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
 
         <main className="dashboard-content">
           {accessNotice ? <p className="dashboard-auth__message is-error">{accessNotice}</p> : null}
-          {activeSection === 'overview' ? <UserOverviewPanel /> : null}
-          {activeSection === 'applications' ? <UserApplicationsPanel /> : null}
-          {activeSection === 'documents' ? <UserDocumentsPanel /> : null}
-          {activeSection === 'payments' ? <UserPaymentsPanel /> : null}
-          {activeSection === 'messages' ? <UserMessagesPanel /> : null}
-          {activeSection === 'profile' ? <UserProfilePanel userEmail={session.email} isSettingsView={profileSettingsRoute} /> : null}
+          {userSectionFlagMap[activeSection] && !isModuleEnabled(userSectionFlagMap[activeSection]!) ? (
+            <p className="dashboard-auth__message is-error">This module is temporarily paused while release flags are updated.</p>
+          ) : null}
+          {flagAwareSection === 'overview' ? <UserOverviewPanel /> : null}
+          {flagAwareSection === 'applications' ? <UserApplicationsPanel /> : null}
+          {flagAwareSection === 'documents' ? <UserDocumentsPanel /> : null}
+          {flagAwareSection === 'payments' ? <UserPaymentsPanel /> : null}
+          {flagAwareSection === 'messages' ? <UserMessagesPanel /> : null}
+          {flagAwareSection === 'profile' ? <UserProfilePanel userEmail={session.email} isSettingsView={profileSettingsRoute} /> : null}
         </main>
       </div>
     </div>

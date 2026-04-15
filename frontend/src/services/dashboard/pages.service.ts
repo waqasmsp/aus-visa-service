@@ -18,6 +18,7 @@ import { assertPermission, DestructiveApprovalContext, enforceDestructiveApprova
 import { writeAuditEvent } from './audit.service';
 import { mapPageDtoToUi, mapPageUiToDto } from './mappers/pages.mapper';
 import { DashboardUserRole } from '../../types/dashboard/applications';
+import { trackAdminEvent } from './dashboardAnalytics.service';
 
 const TODAY = '2026-04-15';
 const FALLBACK_EDITOR = 'Admin Team';
@@ -298,6 +299,7 @@ export const pagesService = {
     pageStore = [next, ...pageStore];
     createVersionSnapshot(next, FALLBACK_EDITOR, 'Page created');
     writeAuditEvent({ actor: role, action: 'create', entityType: 'pages', entityId: next.id, before: null, after: next });
+    trackAdminEvent({ name: 'pages_created', module: 'pages', actorRole: role, entityId: next.id, status: 'success' });
     return mapPageDtoToUi(next);
   },
 
@@ -360,6 +362,7 @@ export const pagesService = {
     pageStore = pageStore.map((page) => (page.id === id ? updatedDto : page));
     createVersionSnapshot(updatedDto, FALLBACK_EDITOR, 'Page updated');
     writeAuditEvent({ actor: role, action: 'edit', entityType: 'pages', entityId: id, before, after: updatedDto });
+    trackAdminEvent({ name: 'pages_updated', module: 'pages', actorRole: role, entityId: id, status: 'success' });
     return mapPageDtoToUi(updatedDto);
   },
 
@@ -373,6 +376,7 @@ export const pagesService = {
     }
     pageStore = pageStore.filter((page) => page.id !== id);
     writeAuditEvent({ actor: role, action: 'delete', entityType: 'pages', entityId: id, before, after: { removed: true, ...approval } });
+    trackAdminEvent({ name: 'pages_deleted', module: 'pages', actorRole: role, entityId: id, status: 'success' });
   },
 
   async getVersionHistory(pageId: string): Promise<PageVersionSnapshot[]> {
@@ -464,6 +468,15 @@ export const pagesService = {
         before: { ids: payload.ids },
         after: { updated: updated.map((entry) => entry.id), approval }
       });
+      if (payload.action === 'publish') {
+        trackAdminEvent({
+          name: 'pages_published',
+          module: 'pages',
+          actorRole: role,
+          status: 'success',
+          metadata: { count: updated.length }
+        });
+      }
     }
 
     return { updated, warnings };
