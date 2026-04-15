@@ -1,6 +1,4 @@
-import { type SyntheticEvent } from 'react';
-import logo from '../../assets/logo-custom-variant.svg';
-import logoFallback from '../../global-visa-logo.png';
+import logo from '../../global-visa-logo.png';
 import { SectionContainer } from '../primitives/SectionContainer';
 
 type FooterMegaProps = {
@@ -25,19 +23,11 @@ export function FooterMega({
   companyLinks,
   copyright
 }: FooterMegaProps) {
-  const handleLogoError = (event: SyntheticEvent<HTMLImageElement>) => {
-    const imageElement = event.currentTarget;
-    if (imageElement.src !== logoFallback) {
-      imageElement.src = logoFallback;
-    }
-  };
-
   return (
     <SectionContainer as="footer" className="footer-mega footer-mega--enhanced">
       <div className="footer-mega__brand">
-        <a href="#" className="brand footer-mega__brand-link">
-          <img src={logo} alt={`${brandName} logo`} onError={handleLogoError} />
-          <span>{brandName}</span>
+        <a href="#" className="brand footer-mega__brand-link" aria-label={brandName}>
+          <img src={logo} alt={`${brandName} logo`} />
         </a>
         <p>{tagline}</p>
       </div>

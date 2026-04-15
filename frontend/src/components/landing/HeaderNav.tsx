@@ -1,6 +1,5 @@
-import { type SyntheticEvent, useEffect, useRef, useState } from 'react';
-import logo from '../../assets/logo-custom-variant.svg';
-import logoFallback from '../../global-visa-logo.png';
+import { useEffect, useRef, useState } from 'react';
+import logo from '../../global-visa-logo.png';
 import { visaNavItems } from '../../constants/visaContent';
 import { PrimaryButton } from '../primitives/PrimaryButton';
 
@@ -93,13 +92,6 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
   }, []);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
-  const handleLogoError = (event: SyntheticEvent<HTMLImageElement>) => {
-    const imageElement = event.currentTarget;
-    if (imageElement.src !== logoFallback) {
-      imageElement.src = logoFallback;
-    }
-  };
-
   const clearCloseTimer = () => {
     if (closeTimerRef.current !== null && typeof window !== 'undefined') {
       window.clearTimeout(closeTimerRef.current);
@@ -147,9 +139,8 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
           </svg>
         </button>
 
-        <a href="/" className="brand top-header__brand">
-          <img src={logo} alt={`${brandName} logo`} onError={handleLogoError} />
-          <span>{brandName}</span>
+        <a href="/" className="brand top-header__brand" aria-label={brandName}>
+          <img src={logo} alt={`${brandName} logo`} />
         </a>
 
         <nav className="landing-nav top-header__nav" aria-label="Primary">
@@ -234,9 +225,8 @@ export function HeaderNav({ brandName, navItems, loginCta, pathname }: HeaderNav
         <button type="button" className="mobile-sidepanel__backdrop" aria-label="Close menu" onClick={closeMobileMenu} />
         <aside className="mobile-sidepanel__panel" role="dialog" aria-modal="true" aria-label="Mobile menu">
           <div className="mobile-sidepanel__header">
-            <a href="/" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu}>
-              <img src={logo} alt={`${brandName} logo`} onError={handleLogoError} />
-              <span>{brandName}</span>
+            <a href="/" className="brand mobile-sidepanel__brand" onClick={closeMobileMenu} aria-label={brandName}>
+              <img src={logo} alt={`${brandName} logo`} />
             </a>
             <button type="button" className="mobile-sidepanel__close" aria-label="Close menu" onClick={closeMobileMenu}>
               &#10005;
