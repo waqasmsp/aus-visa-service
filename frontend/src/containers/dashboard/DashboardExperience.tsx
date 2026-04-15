@@ -7,6 +7,7 @@ import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
 import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPerformanceWidgets';
 import { DashboardTopNavProfileMenu } from '../../components/dashboard/navigation/DashboardTopNavProfileMenu';
 import { VisaApplicationsPanel } from '../../components/dashboard/applications/VisaApplicationsPanel';
+import { UsersPanel } from '../../components/dashboard/users/UsersPanel';
 import {
   DashboardEmptyState,
   DashboardErrorState,
@@ -18,11 +19,9 @@ import { useDashboardTableState } from '../../components/dashboard/common/useDas
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { extractApiErrorMessage, runOptimisticMutation } from '../../services/dashboard/async';
 import { pagesService } from '../../services/dashboard/pages.service';
-import { usersService } from '../../services/dashboard/users.service';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 import { CmsPage, PageStatus } from '../../types/dashboard/pages';
 import { DashboardQueryState } from '../../types/dashboard/query';
-import { PortalUser, UserSegment } from '../../types/dashboard/users';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../utils/themeSettings';
 import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../utils/themeColors';
 
@@ -429,7 +428,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {!profileRoute && activeSection === 'overview' ? <OverviewPanel role={role} /> : null}
           {!profileRoute && activeSection === 'pages' ? <PagesPanel /> : null}
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
-          {!profileRoute && activeSection === 'users' ? <UsersPanel /> : null}
+          {!profileRoute && activeSection === 'users' ? <UsersPanel role={session.role} basePath="/dashboard/users" /> : null}
           {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel role={session.role} basePath="/dashboard/visa-applications" /> : null}
           {!profileRoute && activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
@@ -779,147 +778,6 @@ function PagesPanel() {
             </div>
           )}
         </article>
-      ) : null}
-    </section>
-  );
-}
-
-function UsersPanel() {
-  const [users, setUsers] = useState<PortalUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const table = useDashboardTableState<{ segment: 'All' | UserSegment; purchase: 'All' | 'Purchased' | 'Abandoned' }>({
-    basePath: '/dashboard/users',
-    defaultState: {
-      search: '',
-      pagination: { page: 1, pageSize: 20 },
-      filters: { segment: 'All', purchase: 'All' }
-    } as DashboardQueryState<{ segment: 'All' | UserSegment; purchase: 'All' | 'Purchased' | 'Abandoned' }>
-  });
-
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await usersService.list({
-        page: table.state.pagination.page,
-        page_size: table.state.pagination.pageSize,
-        search: table.state.search,
-        segment: table.state.filters.segment,
-        purchase:
-          table.state.filters.purchase === 'All' ? undefined : (table.state.filters.purchase.toLowerCase() as 'purchased' | 'abandoned')
-      });
-      setUsers(response.items);
-    } catch (loadError) {
-      setError(extractApiErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, [table.state]);
-
-  useEffect(() => {
-    void loadUsers();
-  }, [loadUsers]);
-
-  const registeredCount = users.filter((user) => user.segment === 'Registered').length;
-  const abandonedCount = users.filter((user) => !user.purchased).length;
-
-  return (
-    <section className="dashboard-stack">
-      {loading ? <DashboardLoadingSkeleton rows={4} /> : null}
-      {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadUsers()} /> : null}
-      {!loading && !error ? (
-        <>
-          <div className="dashboard-kpi-grid dashboard-kpi-grid--short">
-            <article className="dashboard-kpi-card">
-              <p>Registered Users</p>
-              <strong>{registeredCount}</strong>
-              <span>Active accounts</span>
-            </article>
-            <article className="dashboard-kpi-card">
-              <p>No Purchase Leads</p>
-              <strong>{abandonedCount}</strong>
-              <span>Retargeting opportunity</span>
-            </article>
-          </div>
-
-          <article className="dashboard-panel">
-            <div className="dashboard-panel__header">
-              <h2>User and Lead Explorer</h2>
-            </div>
-            <div className="dashboard-filter-grid">
-              <label>
-                Search
-                <input
-                  value={table.state.search}
-                  onChange={(event) => table.setSearch(event.target.value)}
-                  placeholder="Search by name, email or country"
-                />
-              </label>
-              <label>
-                Segment
-                <select value={table.state.filters.segment} onChange={(event) => table.setFilter('segment', event.target.value as 'All' | UserSegment)}>
-                  <option value="All">All</option>
-                  <option value="Registered">Registered</option>
-                  <option value="Lead">Lead</option>
-                </select>
-              </label>
-              <label>
-                Purchase
-                <select
-                  value={table.state.filters.purchase}
-                  onChange={(event) => table.setFilter('purchase', event.target.value as 'All' | 'Purchased' | 'Abandoned')}
-                >
-                  <option value="All">All</option>
-                  <option value="Purchased">Purchased</option>
-                  <option value="Abandoned">Abandoned</option>
-                </select>
-              </label>
-            </div>
-
-            {users.length === 0 ? (
-              <DashboardEmptyState title="No users found" description="Try broadening your search." />
-            ) : (
-              <div className="dashboard-table-wrap">
-                <table className="dashboard-table">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Segment</th>
-                      <th>Purchase</th>
-                      <th>Source</th>
-                      <th>Country</th>
-                      <th>Spent</th>
-                      <th>Last Seen</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td>
-                          <strong>{user.fullName}</strong>
-                          <small>{user.email}</small>
-                        </td>
-                        <td>
-                          <span className={`dashboard-chip dashboard-chip--${toClassToken(user.segment)}`}>{user.segment}</span>
-                        </td>
-                        <td>
-                          <span className={`dashboard-chip dashboard-chip--${user.purchased ? 'purchased' : 'abandoned'}`}>
-                            {user.purchased ? 'Purchased' : 'Abandoned'}
-                          </span>
-                        </td>
-                        <td>{user.source}</td>
-                        <td>{user.country}</td>
-                        <td>${user.spentUsd}</td>
-                        <td>{user.lastSeen}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </article>
-        </>
       ) : null}
     </section>
   );
