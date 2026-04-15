@@ -6751,3 +6751,109 @@ body.body--menu-open {
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard-webhooks-layout {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.dashboard-webhooks-card {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.85rem;
+  background: rgb(255 255 255 / 0.75);
+}
+
+.dashboard-webhook-endpoint-form {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-webhooks-table {
+  width: 100%;
+}
+
+.dashboard-webhook-status {
+  text-transform: capitalize;
+}
+
+.dashboard-webhook-status--active {
+  background: rgb(22 163 74 / 0.14);
+  color: #166534;
+}
+
+.dashboard-webhook-status--disabled {
+  background: rgb(148 163 184 / 0.16);
+  color: #334155;
+}
+
+.dashboard-webhook-status--failed {
+  background: rgb(220 38 38 / 0.14);
+  color: #991b1b;
+}
+
+.dashboard-webhook-matrix-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-webhook-matrix {
+  min-width: 760px;
+  width: 100%;
+}
+
+.dashboard-webhook-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #1f3f67;
+}
+
+.dashboard-webhook-security-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+
+.dashboard-webhook-security-item {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.8rem;
+  padding: 0.65rem;
+  background: rgb(241 245 249 / 0.6);
+}
+
+.dashboard-webhook-security-item header {
+  margin-bottom: 0.4rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.dashboard-webhook-security-item code {
+  font-size: 0.75rem;
+  word-break: break-all;
+}
+
+.dashboard-webhook-preview {
+  margin: 0;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.75rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.65rem;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 0.75rem;
+}
+
+.dashboard-webhook-policy-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.dashboard-webhook-response {
+  max-width: 240px;
+  white-space: normal;
+  word-break: break-word;
+}

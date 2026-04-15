@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../../utils/themeColors';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../../utils/themeSettings';
+import { WebhooksIntegrationTab } from './integrations/WebhooksIntegrationTab';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 
@@ -626,15 +627,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               </>
             ) : null}
 
-            {activeIntegrationTab === 'webhooks' ? (
-              <label>
-                Webhook Signing Secret
-                <input
-                  value={draftState.platform.webhookSigningSecret}
-                  onChange={(event) => updatePlatform('webhookSigningSecret', event.target.value)}
-                />
-              </label>
-            ) : null}
+            {activeIntegrationTab === 'webhooks' ? <WebhooksIntegrationTab /> : null}
 
             {activeIntegrationTab === 'analytics' ? (
               <label>
