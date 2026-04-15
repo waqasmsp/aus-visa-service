@@ -58,8 +58,8 @@ export const landingContent = {
     rightPoints: ['Quick, guided applications', 'Clear questions reviewed by experts', '24/7 support on chat, email, and WhatsApp', 'Progress auto-saved so you can return anytime', 'Multiple secure ways to pay']
   },
   features: {
-    eyebrow: 'OUR FEATURES',
-    title: 'Committed to delivering reliable visa solutions',
+    eyebrow: '',
+    title: 'Our Features',
     items: [
       {
         title: 'Quality Visa Services',
