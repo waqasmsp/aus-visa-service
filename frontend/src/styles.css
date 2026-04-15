@@ -115,14 +115,7 @@ body.body--menu-open {
 }
 
 .landing-section--hero {
-  background: var(
-    --theme-hero-bg,
-    var(
-      --theme-page-hero-bg,
-      linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, var(--color-primary-tint-10, rgb(37 99 235 / 0.1)) 42% 100%),
-      linear-gradient(180deg, var(--color-primary-tint-20, rgb(37 99 235 / 0.2)) 0%, var(--color-primary-tint-5, rgb(37 99 235 / 0.05)) 70%, transparent 100%)
-    )
-  );
+  background: var(--theme-hero-bg, var(--theme-page-hero-bg));
 }
 
 .landing-section--header {
@@ -460,7 +453,7 @@ body.body--menu-open {
 }
 
 .about-hero-band {
-  padding: clamp(1rem, 2.5vw, 1.6rem) 0 clamp(1rem, 2.2vw, 1.5rem);
+  padding: 50px 0;
 }
 
 .about-hero-shell {
@@ -5773,8 +5766,8 @@ body.body--menu-open {
 }
 
 .page-hero {
-  padding: clamp(2.6rem, 6vw, 4rem) 0;
-  background: transparent;
+  padding: 50px 0;
+  background: var(--theme-page-hero-bg);
   border-top: 1px solid var(--theme-page-hero-border-top, rgb(148 163 184 / 0.24));
   border-bottom: 1px solid var(--theme-page-hero-border-bottom, rgb(148 163 184 / 0.2));
 }
@@ -6135,6 +6128,7 @@ body.body--menu-open {
 
 .blog-hero-band {
   background: var(--theme-page-hero-bg);
+  padding: 50px 0;
   margin-bottom: 50px;
 }
 
