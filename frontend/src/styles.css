@@ -6635,3 +6635,76 @@ body.body--menu-open {
   display: flex;
   justify-content: flex-end;
 }
+
+.dashboard-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 24, 48, 0.55);
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.dashboard-sidepanel {
+  width: min(560px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  padding: 1.2rem;
+}
+
+.dashboard-modal-card {
+  width: min(640px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  padding: 1.2rem;
+}
+
+.dashboard-modal-card--wide {
+  width: min(920px, 100%);
+}
+
+.dashboard-field-error {
+  display: block;
+  color: #b42318;
+  margin-top: 0.3rem;
+}
+
+.dashboard-filter-grid--dense {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.dashboard-batch-bar {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 1rem 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  background: #eef4ff;
+}
+
+.dashboard-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dashboard-version-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 860px) {
+  .dashboard-version-grid {
+    grid-template-columns: 1fr;
+  }
+}
