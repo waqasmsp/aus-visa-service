@@ -130,6 +130,18 @@ body.body--menu-open {
   border-bottom: 1px solid rgb(59 130 246 / 0.18);
 }
 
+.landing-section--header-hero-blend {
+  background: var(
+    --theme-hero-bg,
+    var(
+      --theme-page-hero-bg,
+      linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, var(--color-primary-tint-10, rgb(37 99 235 / 0.1)) 42% 100%),
+      linear-gradient(180deg, var(--color-primary-tint-20, rgb(37 99 235 / 0.2)) 0%, var(--color-primary-tint-5, rgb(37 99 235 / 0.05)) 70%, transparent 100%)
+    )
+  );
+  border-bottom-color: transparent;
+}
+
 .landing-section--comparison {
   background: transparent;
 }

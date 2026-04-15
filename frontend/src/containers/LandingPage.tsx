@@ -23,7 +23,7 @@ export function LandingPage({ pathname }: { pathname: string }) {
 
   return (
     <div className="landing-page">
-      <section className="landing-section landing-section--header">
+      <section className="landing-section landing-section--header landing-section--header-hero-blend">
         <div className="content-container">
           <HeaderNav brandName={brandName} navItems={navItems} loginCta={loginCta} pathname={pathname} />
         </div>
