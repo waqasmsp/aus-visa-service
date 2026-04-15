@@ -413,45 +413,45 @@ export function HeroVisaSearch({
               <AnimatedHeroTitle title={title} />
               <p>{subtitle}</p>
             </header>
-            <div className="hero-search-panel">
-              <div className="hero-search-controls">
-                <SelectCombobox
-                  label={originCountryLabel}
-                  options={originCountryOptions}
-                  placeholder="Select country"
-                  value={originCountry}
-                  onChange={setOriginCountry}
-                />
-                <SelectCombobox
-                  label={destinationCountryLabel}
-                  options={destinationCountry ? [destinationCountry] : destinationCountryOptions}
-                  placeholder="Select country"
-                  value={destinationCountry}
-                  disabled
-                />
-                <SelectCombobox
-                  label={visaTypeLabel}
-                  options={visaTypeOptions}
-                  placeholder="Select visa type"
-                  renderLeadingVisual={() => (
-                    <span className="hero-country-flag" aria-hidden="true">
-                      <VisaIcon />
-                    </span>
-                  )}
-                />
-                <PrimaryButton onClick={onStartApplication}>{primaryCta}</PrimaryButton>
-              </div>
-            </div>
-            <ul className="hero-search-trust-badges" aria-label="Trust highlights">
-              {HERO_TRUST_BADGES.map((badge) => (
-                <li key={badge}>{badge}</li>
-              ))}
-            </ul>
           </div>
           <div className="hero-search-visual">
             <HeroVisual alt={illustrationAlt} cutout />
           </div>
         </div>
+        <div className="hero-search-panel">
+          <div className="hero-search-controls">
+            <SelectCombobox
+              label={originCountryLabel}
+              options={originCountryOptions}
+              placeholder="Select country"
+              value={originCountry}
+              onChange={setOriginCountry}
+            />
+            <SelectCombobox
+              label={destinationCountryLabel}
+              options={destinationCountry ? [destinationCountry] : destinationCountryOptions}
+              placeholder="Select country"
+              value={destinationCountry}
+              disabled
+            />
+            <SelectCombobox
+              label={visaTypeLabel}
+              options={visaTypeOptions}
+              placeholder="Select visa type"
+              renderLeadingVisual={() => (
+                <span className="hero-country-flag" aria-hidden="true">
+                  <VisaIcon />
+                </span>
+              )}
+            />
+            <PrimaryButton onClick={onStartApplication}>{primaryCta}</PrimaryButton>
+          </div>
+        </div>
+        <ul className="hero-search-trust-badges" aria-label="Trust highlights">
+          {HERO_TRUST_BADGES.map((badge) => (
+            <li key={badge}>{badge}</li>
+          ))}
+        </ul>
       </SectionContainer>
     </section>
   );

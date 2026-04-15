@@ -90,6 +90,10 @@ body.body--menu-open {
   padding-top: var(--space-section-min);
 }
 
+.landing-page > .landing-section + .landing-main > .landing-section.landing-section--hero:first-child {
+  padding-top: 0;
+}
+
 .content-container {
   width: min(1200px, calc(100% - 2rem));
   margin-inline: auto;
@@ -1370,7 +1374,7 @@ body.body--menu-open {
   isolation: isolate;
   overflow: clip;
   width: 100%;
-  padding: clamp(1.75rem, 4vw, 3rem) 0 clamp(1.1rem, 3vw, 2rem);
+  padding: clamp(1.45rem, 3vw, 2.25rem) 0 clamp(1rem, 2.2vw, 1.4rem);
   background:
     radial-gradient(circle at 8% 22%, rgb(37 99 235 / 0.26), transparent 36%),
     radial-gradient(circle at 92% 15%, rgb(239 68 68 / 0.2), transparent 34%),
@@ -1458,7 +1462,7 @@ body.body--menu-open {
   border-radius: 0;
   width: min(1200px, calc(100% - 2rem));
   margin-inline: auto;
-  padding: clamp(1rem, 2.2vw, 1.4rem);
+  padding: clamp(1rem, 2.2vw, 1.25rem);
 }
 
 .hero-search-layout {
@@ -1466,10 +1470,12 @@ body.body--menu-open {
   gap: clamp(1.1rem, 2.2vw, 2rem);
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   align-items: center;
+  margin-bottom: clamp(0.85rem, 2vw, 1.2rem);
 }
 
 .hero-search-content {
   width: 100%;
+  min-width: 0;
 }
 
 .hero-search-copy {
@@ -1520,13 +1526,13 @@ body.body--menu-open {
 
 .hero-search-panel {
   width: 100%;
-  max-width: none;
-  margin-top: 1.3rem;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
+  max-width: min(100%, 84rem);
+  margin: 0 auto;
+  background: rgb(240 246 255 / 0.84);
+  border: 1px solid rgb(148 163 184 / 0.36);
+  border-radius: 1.35rem;
+  box-shadow: 0 18px 36px rgb(37 99 235 / 0.1);
+  padding: clamp(0.75rem, 1.8vw, 1rem);
 }
 
 .hero-search-controls {
@@ -1643,12 +1649,13 @@ body.body--menu-open {
 }
 
 .hero-search-trust-badges {
-  margin: 1rem 0 0;
+  margin: 0.85rem 0 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+  justify-content: center;
 }
 
 .hero-search-trust-badges li {
@@ -3769,7 +3776,8 @@ body.body--menu-open {
   }
 
   .hero-search-panel {
-    margin-top: 0.2rem;
+    max-width: 100%;
+    padding: 0.85rem;
   }
 
   .hero-search-trust-badges {
