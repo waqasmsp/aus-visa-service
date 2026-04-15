@@ -5,6 +5,7 @@ import { BlogEditorPanel } from '../../components/dashboard/blogs/BlogEditorPane
 import { BlogReviewPanel } from '../../components/dashboard/blogs/BlogReviewPanel';
 import { BlogsPanel } from '../../components/dashboard/blogs/BlogsPanel';
 import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPerformanceWidgets';
+import { DashboardTopNavProfileMenu } from '../../components/dashboard/navigation/DashboardTopNavProfileMenu';
 import {
   DashboardEmptyState,
   DashboardErrorState,
@@ -205,6 +206,9 @@ const getUserSectionFromPath = (pathname: string): UserSection => {
   }
 };
 
+const isProfileRoute = (pathname: string): boolean => normalizePathname(pathname).startsWith('/dashboard/profile');
+const isProfileSettingsRoute = (pathname: string): boolean => normalizePathname(pathname).startsWith('/dashboard/profile/settings');
+
 const toClassToken = (value: string): string => value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
 const readAuthSession = (): AuthSession | null => {
@@ -330,6 +334,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
   const sectionFromPath = getDashboardSectionFromPath(pathname);
   const canAccessSection = roleScope[role].includes(sectionFromPath);
   const activeSection = canAccessSection ? sectionFromPath : 'overview';
+  const profileRoute = isProfileRoute(pathname);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -354,6 +359,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
     'contact-entries': 'Contact Form Inbox',
     settings: 'Application Settings'
   };
+  const currentTitle = profileRoute ? 'Profile Settings' : pageTitleMap[activeSection];
 
   return (
     <div className="dashboard-shell">
@@ -401,42 +407,35 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
             </button>
             <div>
               <p className="dashboard-topbar__eyebrow">Admin Platform</p>
-              <h1>{pageTitleMap[activeSection]}</h1>
+              <h1>{currentTitle}</h1>
             </div>
           </div>
           <div className="dashboard-topbar__right">
-            <div className="dashboard-role-picker">
-              Logged in as
-              <strong>{role.toUpperCase()}</strong>
-              <small>{session.email}</small>
-            </div>
-            <a href="/dashboard/login" className="dashboard-ghost-button">
-              Switch account
-            </a>
-            <button
-              type="button"
-              className="dashboard-ghost-button"
-              onClick={() => {
+            <DashboardTopNavProfileMenu
+              roleLabel={role.toUpperCase()}
+              email={session.email}
+              onViewProfile={() => navigateClient('/dashboard/profile', false)}
+              onEditProfileSettings={() => navigateClient('/dashboard/profile/settings', false)}
+              onLogout={() => {
                 clearAuthSession();
                 navigateClient('/dashboard/login', true);
               }}
-            >
-              Logout
-            </button>
+            />
           </div>
         </header>
 
         <main className="dashboard-content">
           {accessNotice ? <p className="dashboard-auth__message is-error">{accessNotice}</p> : null}
-          {activeSection === 'overview' ? <OverviewPanel role={role} /> : null}
-          {activeSection === 'pages' ? <PagesPanel /> : null}
-          {activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
-          {activeSection === 'users' ? <UsersPanel /> : null}
-          {activeSection === 'visa-applications' ? <VisaApplicationsPanel /> : null}
-          {activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
-          {activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
-          {activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
-          {activeSection === 'settings' ? <SettingsPanel role={role} /> : null}
+          {profileRoute ? <ProfileSettingsPanel role={role} userEmail={session.email} /> : null}
+          {!profileRoute && activeSection === 'overview' ? <OverviewPanel role={role} /> : null}
+          {!profileRoute && activeSection === 'pages' ? <PagesPanel /> : null}
+          {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
+          {!profileRoute && activeSection === 'users' ? <UsersPanel /> : null}
+          {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel /> : null}
+          {!profileRoute && activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
+          {!profileRoute && activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
+          {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
+          {!profileRoute && activeSection === 'settings' ? <SettingsPanel role={role} /> : null}
         </main>
       </div>
     </div>
@@ -1717,6 +1716,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
 function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; session: AuthSession }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const activeSection = getManagerSectionFromPath(pathname);
+  const profileRoute = isProfileRoute(pathname);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -1732,6 +1732,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
     'contact-entries': 'Contact Form Inbox',
     settings: 'Manager Settings'
   };
+  const currentTitle = profileRoute ? 'Profile Settings' : titleMap[activeSection];
 
   return (
     <div className="dashboard-shell">
@@ -1777,37 +1778,33 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
             </button>
             <div>
               <p className="dashboard-topbar__eyebrow">Manager Portal</p>
-              <h1>{titleMap[activeSection]}</h1>
+              <h1>{currentTitle}</h1>
             </div>
           </div>
           <div className="dashboard-topbar__right">
-            <div className="dashboard-role-picker">
-              Logged in as
-              <strong>MANAGER</strong>
-              <small>{session.email}</small>
-            </div>
-            <button
-              type="button"
-              className="dashboard-ghost-button"
-              onClick={() => {
+            <DashboardTopNavProfileMenu
+              roleLabel="MANAGER"
+              email={session.email}
+              onViewProfile={() => navigateClient('/dashboard/profile', false)}
+              onEditProfileSettings={() => navigateClient('/dashboard/profile/settings', false)}
+              onLogout={() => {
                 clearAuthSession();
                 navigateClient('/dashboard/login', true);
               }}
-            >
-              Logout
-            </button>
+            />
           </div>
         </header>
 
         <main className="dashboard-content">
-          {activeSection === 'overview' ? <ManagerOverviewPanel /> : null}
-          {activeSection === 'team' ? <ManagerTeamPanel /> : null}
-          {activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
-          {activeSection === 'blogs' ? <RoleBasedBlogsPanel role="manager" /> : null}
-          {activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
-          {activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
-          {activeSection === 'contact-entries' ? <ContactEntriesPanel audience="manager" /> : null}
-          {activeSection === 'settings' ? <ManagerSettingsPanel /> : null}
+          {profileRoute ? <ProfileSettingsPanel role="manager" userEmail={session.email} /> : null}
+          {!profileRoute && activeSection === 'overview' ? <ManagerOverviewPanel /> : null}
+          {!profileRoute && activeSection === 'team' ? <ManagerTeamPanel /> : null}
+          {!profileRoute && activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
+          {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role="manager" /> : null}
+          {!profileRoute && activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
+          {!profileRoute && activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
+          {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="manager" /> : null}
+          {!profileRoute && activeSection === 'settings' ? <ManagerSettingsPanel /> : null}
         </main>
       </div>
     </div>
@@ -1986,6 +1983,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accessNotice, setAccessNotice] = useState('');
   const activeSection = getUserSectionFromPath(pathname);
+  const profileSettingsRoute = isProfileSettingsRoute(pathname);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -2056,21 +2054,16 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
             </div>
           </div>
           <div className="dashboard-topbar__right">
-            <div className="dashboard-role-picker">
-              Logged in as
-              <strong>USER</strong>
-              <small>{session.email}</small>
-            </div>
-            <button
-              type="button"
-              className="dashboard-ghost-button"
-              onClick={() => {
+            <DashboardTopNavProfileMenu
+              roleLabel="USER"
+              email={session.email}
+              onViewProfile={() => navigateClient('/dashboard/profile', false)}
+              onEditProfileSettings={() => navigateClient('/dashboard/profile/settings', false)}
+              onLogout={() => {
                 clearAuthSession();
                 navigateClient('/dashboard/login', true);
               }}
-            >
-              Logout
-            </button>
+            />
           </div>
         </header>
 
@@ -2081,7 +2074,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
           {activeSection === 'documents' ? <UserDocumentsPanel /> : null}
           {activeSection === 'payments' ? <UserPaymentsPanel /> : null}
           {activeSection === 'messages' ? <UserMessagesPanel /> : null}
-          {activeSection === 'profile' ? <UserProfilePanel userEmail={session.email} /> : null}
+          {activeSection === 'profile' ? <UserProfilePanel userEmail={session.email} isSettingsView={profileSettingsRoute} /> : null}
         </main>
       </div>
     </div>
@@ -2272,7 +2265,7 @@ function UserMessagesPanel() {
   );
 }
 
-function UserProfilePanel({ userEmail }: { userEmail: string }) {
+function UserProfilePanel({ userEmail, isSettingsView = false }: { userEmail: string; isSettingsView?: boolean }) {
   const [fullName, setFullName] = useState('John Doe');
   const [phone, setPhone] = useState('+92 300 0000000');
   const [country, setCountry] = useState('Pakistan');
@@ -2281,7 +2274,7 @@ function UserProfilePanel({ userEmail }: { userEmail: string }) {
     <section className="dashboard-stack">
       <article className="dashboard-panel">
         <div className="dashboard-panel__header">
-          <h2>Profile and Preferences</h2>
+          <h2>{isSettingsView ? 'Edit Profile Settings' : 'Profile and Preferences'}</h2>
         </div>
         <div className="dashboard-settings-grid">
           <label>
@@ -2304,6 +2297,48 @@ function UserProfilePanel({ userEmail }: { userEmail: string }) {
         <div className="dashboard-settings-actions">
           <button type="button" className="dashboard-primary-button">
             Save Profile
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function ProfileSettingsPanel({ role, userEmail }: { role: DashboardRole; userEmail: string }) {
+  const roleDescriptions: Record<DashboardRole, string> = {
+    admin: 'Manage your admin identity and account preferences used across dashboards.',
+    manager: 'Manage your manager identity and account preferences used across team workflows.',
+    user: 'Manage your personal profile settings.'
+  };
+
+  return (
+    <section className="dashboard-stack">
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Profile Settings</h2>
+          <small>{roleDescriptions[role]}</small>
+        </div>
+        <div className="dashboard-settings-grid">
+          <label>
+            Account Role
+            <input value={role.toUpperCase()} disabled />
+          </label>
+          <label>
+            Email
+            <input value={userEmail} disabled />
+          </label>
+          <label>
+            Notification Preference
+            <input defaultValue="Email + In-app alerts" />
+          </label>
+          <label>
+            Time Zone
+            <input defaultValue="UTC+00:00" />
+          </label>
+        </div>
+        <div className="dashboard-settings-actions">
+          <button type="button" className="dashboard-primary-button">
+            Save Profile Settings
           </button>
         </div>
       </article>

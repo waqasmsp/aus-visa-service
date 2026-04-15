@@ -4680,8 +4680,10 @@ body.body--menu-open {
 
 .dashboard-topbar__right {
   display: flex;
-  align-items: end;
+  align-items: center;
   gap: 0.65rem;
+  margin-left: auto;
+  position: relative;
 }
 
 .dashboard-role-picker {
@@ -4728,6 +4730,85 @@ body.body--menu-open {
   background: var(--color-surface);
   color: #1b3b61;
   font-weight: 700;
+}
+
+.dashboard-profile-menu {
+  position: relative;
+}
+
+.dashboard-profile-menu__trigger {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  min-height: 2.65rem;
+  padding: 0.22rem 0.75rem 0.22rem 0.3rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #17385f;
+  font: inherit;
+}
+
+.dashboard-profile-menu__avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #dce8f9;
+  color: #133155;
+}
+
+.dashboard-profile-menu__identity {
+  display: grid;
+  text-align: left;
+}
+
+.dashboard-profile-menu__identity strong {
+  font-size: 0.86rem;
+  line-height: 1.2;
+}
+
+.dashboard-profile-menu__identity small {
+  color: #4d698c;
+  font-size: 0.72rem;
+  line-height: 1.15;
+}
+
+.dashboard-profile-menu__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+  width: min(270px, 86vw);
+  z-index: 45;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.8rem;
+  padding: 0.3rem;
+  background: var(--color-surface);
+  box-shadow: 0 14px 32px rgb(15 23 42 / 0.14);
+  display: grid;
+  gap: 0.15rem;
+}
+
+.dashboard-profile-menu__item {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  padding: 0.62rem 0.7rem;
+  font: inherit;
+  color: #17385f;
+}
+
+.dashboard-profile-menu__item:hover,
+.dashboard-profile-menu__item.is-active,
+.dashboard-profile-menu__item:focus-visible {
+  background: #e9f1ff;
+  outline: none;
 }
 
 .dashboard-content {
@@ -5653,22 +5734,22 @@ body.body--menu-open {
 
 @media (max-width: 640px) {
   .dashboard-topbar {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
   .dashboard-topbar__right {
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
+    width: auto;
+    margin-left: auto;
   }
 
-  .dashboard-role-picker {
-    width: 100%;
+  .dashboard-profile-menu__trigger {
+    max-width: calc(100vw - 6.5rem);
   }
 
-  .dashboard-role-picker select {
-    width: 100%;
+  .dashboard-profile-menu__identity small {
+    display: none;
   }
 
   .dashboard-kpi-grid,
