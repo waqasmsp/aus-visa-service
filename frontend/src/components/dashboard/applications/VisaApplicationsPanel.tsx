@@ -10,6 +10,7 @@ import {
 import { DashboardQueryState } from '../../../types/dashboard/query';
 import { applicationsService } from '../../../services/dashboard/applications.service';
 import { extractApiErrorMessage } from '../../../services/dashboard/async';
+import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
 import { ApplicationsFilterBar } from './ApplicationsFilterBar';
 import { ApplicationsBulkActionBar } from './ApplicationsBulkActionBar';
 import { ApplicationsTable } from './ApplicationsTable';
@@ -56,10 +57,10 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
   });
 
   const roleActions = useMemo(() => ({
-    canCreate: role !== 'user',
-    canEdit: role !== 'user',
-    canDelete: role === 'admin' || role === 'manager',
-    canBulk: role === 'admin' || role === 'manager'
+    canCreate: canPerform(role, 'applications', 'create'),
+    canEdit: canPerform(role, 'applications', 'edit'),
+    canDelete: canPerform(role, 'applications', 'delete'),
+    canBulk: canPerform(role, 'applications', 'edit')
   }), [role]);
 
   const loadApplications = useCallback(async () => {
@@ -150,11 +151,11 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
   };
 
   const softDeleteApplication = async (application: VisaApplication) => {
-    const confirmed = window.confirm(`Permanently hide ${application.id}? You can restore for 15 minutes.`);
-    if (!confirmed) return;
+    const approval = collectDestructiveApproval('applications', 'delete', application.id);
+    if (!approval) return;
 
     try {
-      await applicationsService.softDelete(application.id, role);
+      await applicationsService.softDelete(application.id, role, approval);
       await loadApplications();
     } catch (mutationError) {
       setError(extractApiErrorMessage(mutationError));

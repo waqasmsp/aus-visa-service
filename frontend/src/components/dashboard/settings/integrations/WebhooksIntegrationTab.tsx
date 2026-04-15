@@ -1,4 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react';
+import { DashboardUserRole } from '../../../../types/dashboard/applications';
+import { canPerform, collectDestructiveApproval } from '../../../../services/dashboard/authPolicy';
+import { writeAuditEvent } from '../../../../services/dashboard/audit.service';
 
 type WebhookEventKey =
   | 'contact.form.submitted'
@@ -266,7 +269,7 @@ const initialDeliveryLogs: DeliveryLogEntry[] = [
   }
 ];
 
-export function WebhooksIntegrationTab() {
+export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRole; actor: string }) {
   const [endpoints, setEndpoints] = useState<WebhookEndpoint[]>(() => [createInitialEndpoint()]);
   const [formState, setFormState] = useState<EndpointFormState>({ id: null, name: '', url: '' });
   const [urlError, setUrlError] = useState('');
@@ -290,6 +293,10 @@ export function WebhooksIntegrationTab() {
 
   const handleSubmitEndpoint = (event: FormEvent) => {
     event.preventDefault();
+    if (!canPerform(role, 'webhooks', formState.id ? 'edit' : 'create')) {
+      setUrlError('Your role cannot mutate webhook endpoints.');
+      return;
+    }
     if (!isValidWebhookUrl(formState.url.trim())) {
       setUrlError('Enter a valid HTTPS endpoint URL.');
       return;
@@ -312,6 +319,7 @@ export function WebhooksIntegrationTab() {
         )
       );
       setSecretStatusMessage('Endpoint updated.');
+      writeAuditEvent({ actor, action: 'edit', entityType: 'webhooks', entityId: formState.id, before: null, after: { ...formState } });
     } else {
       const newEndpoint: WebhookEndpoint = {
         id: generateId(),
@@ -326,6 +334,7 @@ export function WebhooksIntegrationTab() {
       setEndpoints((current) => [...current, newEndpoint]);
       setSelectedEndpointId(newEndpoint.id);
       setSecretStatusMessage('Endpoint created with a unique signing secret.');
+      writeAuditEvent({ actor, action: 'create', entityType: 'webhooks', entityId: newEndpoint.id, before: null, after: newEndpoint });
     }
 
     resetForm();
@@ -337,6 +346,10 @@ export function WebhooksIntegrationTab() {
   };
 
   const toggleEndpointStatus = (endpointId: string) => {
+    if (!canPerform(role, 'webhooks', 'edit')) {
+      setSecretStatusMessage('Your role cannot modify webhook status.');
+      return;
+    }
     setEndpoints((current) =>
       current.map((endpoint) =>
         endpoint.id === endpointId
@@ -351,7 +364,14 @@ export function WebhooksIntegrationTab() {
   };
 
   const deleteEndpoint = (endpointId: string) => {
+    if (!canPerform(role, 'webhooks', 'delete')) {
+      setSecretStatusMessage('Your role cannot delete endpoints.');
+      return;
+    }
+    const approval = collectDestructiveApproval('webhooks', 'delete', endpointId);
+    if (!approval) return;
     setEndpoints((current) => current.filter((endpoint) => endpoint.id !== endpointId));
+    writeAuditEvent({ actor, action: 'delete', entityType: 'webhooks', entityId: endpointId, before: null, after: approval });
     if (selectedEndpointId === endpointId) {
       const fallbackEndpoint = endpoints.find((endpoint) => endpoint.id !== endpointId);
       setSelectedEndpointId(fallbackEndpoint?.id ?? '');
@@ -491,7 +511,7 @@ export function WebhooksIntegrationTab() {
           </label>
           {urlError ? <p className="dashboard-blog-form-error">{urlError}</p> : null}
           <div className="dashboard-settings-actions">
-            <button type="submit" className="dashboard-primary-button">
+            <button type="submit" className="dashboard-primary-button" disabled={!canPerform(role, 'webhooks', formState.id ? 'edit' : 'create')}>
               {formState.id ? 'Save Endpoint' : 'Add Endpoint'}
             </button>
             {formState.id ? (
@@ -526,13 +546,13 @@ export function WebhooksIntegrationTab() {
                   <td>{formatLocalTimestamp(endpoint.updatedAt)}</td>
                   <td>
                     <div className="dashboard-actions-inline">
-                      <button type="button" onClick={() => editEndpoint(endpoint)}>
+                      <button type="button" onClick={() => editEndpoint(endpoint)} disabled={!canPerform(role, 'webhooks', 'edit')}>
                         Edit
                       </button>
-                      <button type="button" onClick={() => toggleEndpointStatus(endpoint.id)}>
+                      <button type="button" onClick={() => toggleEndpointStatus(endpoint.id)} disabled={!canPerform(role, 'webhooks', 'edit')}>
                         {endpoint.status === 'disabled' ? 'Enable' : 'Disable'}
                       </button>
-                      <button type="button" className="danger" onClick={() => deleteEndpoint(endpoint.id)}>
+                      <button type="button" className="danger" onClick={() => deleteEndpoint(endpoint.id)} disabled={!canPerform(role, 'webhooks', 'delete')}>
                         Delete
                       </button>
                     </div>

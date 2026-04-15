@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../../utils/themeColors';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../../utils/themeSettings';
 import { WebhooksIntegrationTab } from './integrations/WebhooksIntegrationTab';
+import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
+import { exportAuditEventsCsv, listAuditEvents, writeAuditEvent } from '../../../services/dashboard/audit.service';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 
@@ -174,6 +176,10 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
   const [savedState, setSavedState] = useState<SettingsState>(() => loadSettingsState());
   const [draftState, setDraftState] = useState<SettingsState>(() => loadSettingsState());
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadSettingsHistory());
+  const [auditSearch, setAuditSearch] = useState('');
+  const [auditActor, setAuditActor] = useState('');
+  const [auditAction, setAuditAction] = useState('');
+  const [auditEntityType, setAuditEntityType] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [saveError, setSaveError] = useState('');
 
@@ -248,6 +254,17 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
 
   const hasUnsavedChanges = useMemo(() => Object.values(tabDirtyMap).some(Boolean), [tabDirtyMap]);
   const currentTabDirty = tabDirtyMap[activeTab];
+  const canManageSettings = canPerform(role, 'settings', 'manage_settings');
+  const filteredAuditEvents = useMemo(
+    () =>
+      listAuditEvents({
+        search: auditSearch,
+        actor: auditActor,
+        action: auditAction,
+        entityType: auditEntityType || undefined
+      }),
+    [auditAction, auditActor, auditEntityType, auditSearch, history]
+  );
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -325,6 +342,10 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
     if (tab === 'audit-logs') {
       return;
     }
+    if (!canManageSettings) {
+      setSaveError('Your role cannot manage platform settings.');
+      return;
+    }
 
     if (Object.keys(validationErrors).length > 0) {
       setSaveMessage('');
@@ -339,6 +360,11 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
     }
 
     const actor = actorEmail ?? `${role}@ausvisaservice.local`;
+    const approval = collectDestructiveApproval('settings', 'manage_settings', `${tab} settings`);
+    if (!approval) {
+      setSaveError('Settings update canceled by policy safeguards.');
+      return;
+    }
     const now = new Date().toISOString();
     const newHistory: HistoryEntry[] = [];
 
@@ -364,6 +390,14 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
           after: draftState.platform[key]
         });
         (newSavedState.platform as Record<string, string | boolean>)[String(key)] = draftState.platform[key];
+        writeAuditEvent({
+          actor,
+          action: `settings_update_${tab}`,
+          entityType: 'settings',
+          entityId: String(key),
+          before: { value: savedState.platform[key] },
+          after: { value: draftState.platform[key], ...approval }
+        });
       });
     }
 
@@ -377,6 +411,14 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
           timestamp: now,
           before: JSON.stringify(savedState.theme),
           after: JSON.stringify(draftState.theme)
+        });
+        writeAuditEvent({
+          actor,
+          action: 'settings_update_branding_theme',
+          entityType: 'settings',
+          entityId: 'themePalette',
+          before: savedState.theme,
+          after: { ...draftState.theme, ...approval }
         });
       }
       newSavedState.theme = sanitizedThemeSettings;
@@ -627,7 +669,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               </>
             ) : null}
 
-            {activeIntegrationTab === 'webhooks' ? <WebhooksIntegrationTab /> : null}
+            {activeIntegrationTab === 'webhooks' ? <WebhooksIntegrationTab role={role} actor={actorEmail ?? `${role}@ausvisaservice.local`} /> : null}
 
             {activeIntegrationTab === 'analytics' ? (
               <label>
@@ -727,30 +769,61 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
       {activeTab === 'audit-logs' ? (
         <article className="dashboard-panel">
           <div className="dashboard-panel__header">
-            <h2>Settings Change History</h2>
-            <small>{history.length} entries</small>
+            <h2>Audit Explorer</h2>
+            <small>{filteredAuditEvents.length} entries</small>
           </div>
-          {history.length ? (
+          <div className="dashboard-filter-grid dashboard-filter-grid--dense">
+            <input value={auditSearch} onChange={(event) => setAuditSearch(event.target.value)} placeholder="Search actor/action/entity/diff" />
+            <input value={auditActor} onChange={(event) => setAuditActor(event.target.value)} placeholder="Actor email/name" />
+            <input value={auditAction} onChange={(event) => setAuditAction(event.target.value)} placeholder="Action" />
+            <select value={auditEntityType} onChange={(event) => setAuditEntityType(event.target.value)}>
+              <option value="">All entity types</option>
+              <option value="applications">Applications</option>
+              <option value="users">Users</option>
+              <option value="blogs">Blogs</option>
+              <option value="pages">Pages</option>
+              <option value="settings">Settings</option>
+              <option value="webhooks">Webhooks</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => {
+                const csv = exportAuditEventsCsv(filteredAuditEvents);
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `audit-export-${new Date().toISOString().slice(0, 10)}.csv`;
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Export CSV
+            </button>
+          </div>
+          {filteredAuditEvents.length ? (
             <div className="dashboard-table-wrap">
               <table className="dashboard-table">
                 <thead>
                   <tr>
                     <th>Actor</th>
-                    <th>Tab</th>
-                    <th>Field</th>
+                    <th>Action</th>
+                    <th>Entity</th>
                     <th>Before</th>
                     <th>After</th>
+                    <th>Session</th>
                     <th>Timestamp</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {history.map((entry) => (
+                  {filteredAuditEvents.map((entry) => (
                     <tr key={entry.id}>
                       <td>{entry.actor}</td>
-                      <td>{entry.tab}</td>
-                      <td>{entry.key}</td>
-                      <td>{String(entry.before).slice(0, 80)}</td>
-                      <td>{String(entry.after).slice(0, 80)}</td>
+                      <td>{entry.action}</td>
+                      <td>{entry.entityType}:{entry.entityId}</td>
+                      <td>{JSON.stringify(entry.before).slice(0, 80)}</td>
+                      <td>{JSON.stringify(entry.after).slice(0, 80)}</td>
+                      <td>{entry.requestMetadata.sessionId ?? 'n/a'}</td>
                       <td>{formatDateTime(entry.timestamp)}</td>
                     </tr>
                   ))}
@@ -758,7 +831,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               </table>
             </div>
           ) : (
-            <p className="dashboard-panel__note">No settings changes have been recorded yet.</p>
+            <p className="dashboard-panel__note">No audit events found for current filters.</p>
           )}
         </article>
       ) : null}
@@ -766,7 +839,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
       {activeTab !== 'audit-logs' ? (
         <article className="dashboard-panel">
           <div className="dashboard-settings-actions">
-            <button type="button" className="dashboard-primary-button" onClick={() => saveTab(activeTab)}>
+            <button type="button" className="dashboard-primary-button" onClick={() => saveTab(activeTab)} disabled={!canManageSettings}>
               Save {topTabs.find((tab) => tab.id === activeTab)?.label}
             </button>
             <button type="button" className="dashboard-ghost-button" onClick={() => resetTab(activeTab)}>

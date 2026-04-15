@@ -6,6 +6,7 @@ import { DashboardUserRole } from '../../../types/dashboard/applications';
 import { PortalUser, UserImportReport, UserImportRow, UsersFilters } from '../../../types/dashboard/users';
 import { usersService } from '../../../services/dashboard/users.service';
 import { extractApiErrorMessage } from '../../../services/dashboard/async';
+import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
 import { UsersFilterBar } from './UsersFilterBar';
 import { UsersTable } from './UsersTable';
 import { UserDetailDrawer } from './UserDetailDrawer';
@@ -68,8 +69,8 @@ export function UsersPanel({ role, basePath }: Props) {
 
   const permissions = useMemo(
     () => ({
-      canMutate: role === 'admin' || role === 'manager',
-      canDelete: role === 'admin',
+      canMutate: canPerform(role, 'users', 'edit') || canPerform(role, 'users', 'create'),
+      canDelete: canPerform(role, 'users', 'delete'),
       canAssignAdmin: role === 'admin'
     }),
     [role]
@@ -153,10 +154,10 @@ export function UsersPanel({ role, basePath }: Props) {
   };
 
   const softDelete = async (user: PortalUser) => {
-    const confirmed = window.confirm(`Soft-delete ${user.fullName}? They will only appear when includeDeleted=true.`);
-    if (!confirmed) return;
+    const approval = collectDestructiveApproval('users', 'delete', user.fullName);
+    if (!approval) return;
     try {
-      await usersService.softDelete(user.id, role);
+      await usersService.softDelete(user.id, role, approval);
       await loadUsers();
     } catch (mutationError) {
       setError(extractApiErrorMessage(mutationError));

@@ -20,6 +20,8 @@ import { useDashboardTableState } from '../../components/dashboard/common/useDas
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 import { SettingsPanel } from '../../components/dashboard/settings/SettingsPanel';
+import { canPerform, collectDestructiveApproval } from '../../services/dashboard/authPolicy';
+import { writeAuditEvent } from '../../services/dashboard/audit.service';
 
 type DashboardExperienceProps = {
   pathname: string;
@@ -421,7 +423,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {accessNotice ? <p className="dashboard-auth__message is-error">{accessNotice}</p> : null}
           {profileRoute ? <ProfileSettingsPanel role={role} userEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'overview' ? <OverviewPanel role={role} /> : null}
-          {!profileRoute && activeSection === 'pages' ? <PagesPanel /> : null}
+          {!profileRoute && activeSection === 'pages' ? <PagesPanel role={session.role} /> : null}
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'users' ? <UsersPanel role={session.role} basePath="/dashboard/users" /> : null}
           {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel role={session.role} basePath="/dashboard/visa-applications" /> : null}
@@ -701,7 +703,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   const canManageSettings = actions.includes('settings');
   const canSubmitReview = actions.includes('submit-review');
   const canRestoreRevision = role === 'admin';
-  const { filters, setFilters, posts: adminPosts, loading, error, onPublish, onSchedule, onArchive, onBatchUpdate, getSeoScore, filterOptions } = useBlogAdminTable();
+  const { filters, setFilters, posts: adminPosts, loading, error, onPublish, onSchedule, onArchive, onBatchUpdate, getSeoScore, filterOptions } = useBlogAdminTable(role);
   const [revisions, setRevisions] = useState<BlogRevision[]>([
     { id: 'rev-18', version: 'v1.8', editor: 'Noah Farooq', timestamp: '2026-04-13 11:10 UTC', fromStatus: 'In Review' as const, toStatus: 'In Review' as const },
     { id: 'rev-17', version: 'v1.7', editor: 'Olivia Brown', timestamp: '2026-04-12 09:42 UTC', fromStatus: 'Draft' as const, toStatus: 'In Review' as const },
@@ -781,7 +783,13 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
     value?: string;
   }): Promise<string> => {
     if (action === 'publish') {
+      if (!canPerform(role, 'blogs', 'publish')) {
+        return 'Permission denied for publish.';
+      }
+      const approval = collectDestructiveApproval('blogs', 'publish', `${postIds.length} blog posts`);
+      if (!approval) return 'Publish canceled by policy safeguard.';
       await Promise.all(postIds.map((postId) => onPublish(postId)));
+      writeAuditEvent({ actor: actorName, action: 'batch_publish', entityType: 'blogs', entityId: postIds.join(','), before: null, after: { postIds, approval } });
       return `Published ${postIds.length} post(s).`;
     }
     if (action === 'schedule') {
@@ -790,6 +798,9 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
       return `Scheduled ${postIds.length} post(s).`;
     }
     if (action === 'archive') {
+      if (!canPerform(role, 'blogs', 'edit')) {
+        return 'Permission denied for archive.';
+      }
       await Promise.all(postIds.map((postId) => onArchive(postId)));
       return `Archived ${postIds.length} post(s).`;
     }
