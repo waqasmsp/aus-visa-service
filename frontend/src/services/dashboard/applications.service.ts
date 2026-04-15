@@ -15,6 +15,7 @@ import { delay } from './async';
 import { assertPermission, DestructiveApprovalContext, enforceDestructiveApproval } from './authPolicy';
 import { writeAuditEvent } from './audit.service';
 import { mapApplicationDtoToUi, mapApplicationStatusToDto } from './mappers/applications.mapper';
+import { trackAdminEvent } from './dashboardAnalytics.service';
 
 const DELETE_RESTORE_WINDOW_MS = 1000 * 60 * 15;
 
@@ -137,6 +138,7 @@ export const applicationsService = {
       before: null,
       after: created
     });
+    trackAdminEvent({ name: 'applications_created', module: 'applications', actorRole, entityId: created.id, status: 'success' });
     return mapApplicationDtoToUi(created);
   },
 
@@ -156,6 +158,7 @@ export const applicationsService = {
       before,
       after: record
     });
+    trackAdminEvent({ name: 'applications_updated', module: 'applications', actorRole, entityId: id, status: 'success' });
     return mapApplicationDtoToUi(record);
   },
 
@@ -177,6 +180,7 @@ export const applicationsService = {
       before,
       after: { ...record, reason: approval?.reason, secondApprover: approval?.secondApprover }
     });
+    trackAdminEvent({ name: 'applications_deleted', module: 'applications', actorRole, entityId: id, status: 'success' });
   },
 
   async restore(id: string, actorRole: DashboardUserRole): Promise<void> {
@@ -197,6 +201,7 @@ export const applicationsService = {
       before: { ...record, is_deleted: true },
       after: record
     });
+    trackAdminEvent({ name: 'applications_restored', module: 'applications', actorRole, entityId: id, status: 'success' });
   },
 
   async bulkAssignOwner(payload: BulkAssignOwnerRequest, actorRole: DashboardUserRole): Promise<void> {

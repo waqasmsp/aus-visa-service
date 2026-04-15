@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { DashboardUserRole } from '../../../../types/dashboard/applications';
 import { canPerform, collectDestructiveApproval } from '../../../../services/dashboard/authPolicy';
 import { writeAuditEvent } from '../../../../services/dashboard/audit.service';
+import { computeWebhookHealthSnapshot, trackAdminEvent } from '../../../../services/dashboard/dashboardAnalytics.service';
 
 type WebhookEventKey =
   | 'contact.form.submitted'
@@ -285,6 +286,18 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
     () => endpoints.find((endpoint) => endpoint.id === selectedEndpointId) ?? endpoints[0] ?? null,
     [endpoints, selectedEndpointId]
   );
+  const webhookHealth = useMemo(
+    () =>
+      computeWebhookHealthSnapshot(
+        logs.map((entry) => ({
+          endpointId: entry.endpointId,
+          endpointName: entry.endpointName,
+          statusCode: entry.statusCode,
+          latencyMs: entry.latencyMs
+        }))
+      ),
+    [logs]
+  );
 
   const resetForm = () => {
     setFormState({ id: null, name: '', url: '' });
@@ -320,6 +333,7 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
       );
       setSecretStatusMessage('Endpoint updated.');
       writeAuditEvent({ actor, action: 'edit', entityType: 'webhooks', entityId: formState.id, before: null, after: { ...formState } });
+      trackAdminEvent({ name: 'webhooks_endpoint_updated', module: 'webhooks', actorRole: role, entityId: formState.id, status: 'success' });
     } else {
       const newEndpoint: WebhookEndpoint = {
         id: generateId(),
@@ -335,6 +349,7 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
       setSelectedEndpointId(newEndpoint.id);
       setSecretStatusMessage('Endpoint created with a unique signing secret.');
       writeAuditEvent({ actor, action: 'create', entityType: 'webhooks', entityId: newEndpoint.id, before: null, after: newEndpoint });
+      trackAdminEvent({ name: 'webhooks_endpoint_created', module: 'webhooks', actorRole: role, entityId: newEndpoint.id, status: 'success' });
     }
 
     resetForm();
@@ -372,6 +387,7 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
     if (!approval) return;
     setEndpoints((current) => current.filter((endpoint) => endpoint.id !== endpointId));
     writeAuditEvent({ actor, action: 'delete', entityType: 'webhooks', entityId: endpointId, before: null, after: approval });
+    trackAdminEvent({ name: 'webhooks_endpoint_deleted', module: 'webhooks', actorRole: role, entityId: endpointId, status: 'success' });
     if (selectedEndpointId === endpointId) {
       const fallbackEndpoint = endpoints.find((endpoint) => endpoint.id !== endpointId);
       setSelectedEndpointId(fallbackEndpoint?.id ?? '');
@@ -443,6 +459,14 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
       deliveredAt: new Date().toISOString()
     };
     setLogs((current) => [replayResult, ...current]);
+    trackAdminEvent({
+      name: 'webhooks_delivery_replayed',
+      module: 'webhooks',
+      actorRole: role,
+      entityId: logEntry.endpointId,
+      status: 'success',
+      metadata: { eventKey: logEntry.eventKey }
+    });
   };
 
   const sendTestWebhook = () => {
@@ -472,6 +496,14 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
     };
 
     setLogs((current) => [newLog, ...current]);
+    trackAdminEvent({
+      name: 'webhooks_test_sent',
+      module: 'webhooks',
+      actorRole: role,
+      entityId: selectedEndpoint.id,
+      status: wasSuccessful ? 'success' : 'error',
+      metadata: { statusCode, eventKey: selectedTemplateEvent, endpointName: selectedEndpoint.name }
+    });
     setTestResult(
       wasSuccessful
         ? `Test webhook sent to ${selectedEndpoint.url} with ${selectedTemplateEvent} payload.`
@@ -481,6 +513,35 @@ export function WebhooksIntegrationTab({ role, actor }: { role: DashboardUserRol
 
   return (
     <div className="dashboard-webhooks-layout">
+      <section className="dashboard-webhooks-card">
+        <div className="dashboard-panel__header">
+          <h2>Webhook Health</h2>
+          <small>Aggregate reliability metrics for recent deliveries.</small>
+        </div>
+        <div className="dashboard-kpi-grid dashboard-kpi-grid--short">
+          <article className="dashboard-kpi-card">
+            <p>Total Deliveries</p>
+            <strong>{webhookHealth.totalDeliveries}</strong>
+            <span>Sampled from local delivery log</span>
+          </article>
+          <article className="dashboard-kpi-card">
+            <p>Success Rate</p>
+            <strong>{webhookHealth.successRate.toFixed(1)}%</strong>
+            <span>2xx/3xx responses</span>
+          </article>
+          <article className="dashboard-kpi-card">
+            <p>Avg Latency</p>
+            <strong>{Math.round(webhookHealth.averageLatencyMs)} ms</strong>
+            <span>P95 {Math.round(webhookHealth.p95LatencyMs)} ms</span>
+          </article>
+        </div>
+        <p className="dashboard-panel__note">
+          {webhookHealth.failingEndpoints.length
+            ? `Endpoints with failures: ${webhookHealth.failingEndpoints.join(', ')}`
+            : 'No failing endpoints observed in the current sample.'}
+        </p>
+      </section>
+
       <section className="dashboard-webhooks-card">
         <div className="dashboard-panel__header dashboard-panel__header--spread">
           <div>

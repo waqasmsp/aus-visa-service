@@ -12,6 +12,7 @@ import { DashboardUserRole } from '../../types/dashboard/applications';
 import { delay } from './async';
 import { assertPermission, DestructiveApprovalContext, enforceDestructiveApproval } from './authPolicy';
 import { writeAuditEvent } from './audit.service';
+import { trackAdminEvent } from './dashboardAnalytics.service';
 import { mapUserDtoToUi } from './mappers/users.mapper';
 
 const normalizePhone = (value: string): string => value.replace(/[^\d+]/g, '').replace(/^00/, '+');
@@ -190,6 +191,7 @@ export const usersService = {
     };
     userStore = [record, ...userStore];
     writeAuditEvent({ actor: role, action: 'create', entityType: 'users', entityId: id, before: null, after: record });
+    trackAdminEvent({ name: 'users_created', module: 'users', actorRole: role, entityId: id, status: 'success' });
     return mapUserDtoToUi(record);
   },
 
@@ -225,6 +227,7 @@ export const usersService = {
     };
     userStore = userStore.map((item) => (item.id === id ? updated : item));
     writeAuditEvent({ actor: role, action: 'edit', entityType: 'users', entityId: id, before, after: updated });
+    trackAdminEvent({ name: 'users_updated', module: 'users', actorRole: role, entityId: id, status: 'success' });
     return mapUserDtoToUi(updated);
   },
 
@@ -272,6 +275,7 @@ export const usersService = {
     const after = userStore.find((item) => item.id === id);
     if (after) {
       writeAuditEvent({ actor: role, action: 'delete', entityType: 'users', entityId: id, before, after: { ...after, ...approval } });
+      trackAdminEvent({ name: 'users_deleted', module: 'users', actorRole: role, entityId: id, status: 'success' });
     }
   },
 
@@ -323,6 +327,13 @@ export const usersService = {
         await this.create(row, role);
         importedCount += 1;
       }
+      trackAdminEvent({
+        name: 'users_imported',
+        module: 'users',
+        actorRole: role,
+        status: 'success',
+        metadata: { importedCount, source: 'csv' }
+      });
     }
 
     return {
