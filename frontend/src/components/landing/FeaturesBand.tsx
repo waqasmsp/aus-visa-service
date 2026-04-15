@@ -15,7 +15,7 @@ export function FeaturesBand({ eyebrow, title, items }: FeaturesBandProps) {
       <section className="features-band" aria-label="Our features">
         <header className="features-band__header">
           <div className="features-band__copy">
-            <p className="features-band__eyebrow">{eyebrow}</p>
+            {eyebrow ? <p className="features-band__eyebrow">{eyebrow}</p> : null}
             <h2>{title}</h2>
           </div>
         </header>
