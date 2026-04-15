@@ -20,7 +20,7 @@ export type ThemeSettings = {
 
 export const defaultThemeSettings: ThemeSettings = {
   global: {
-    appBackground: 'var(--theme-hero-family-muted, var(--color-bg, #f8fafc))',
+    appBackground: 'var(--color-bg, #f8fafc)',
     headerBackground:
       'linear-gradient(110deg, var(--color-primary-tint-10, rgb(37 99 235 / 0.1)) 0 58%, rgb(15 23 42 / 0.03) 58% 100%), linear-gradient(180deg, var(--color-primary-tint-20, rgb(37 99 235 / 0.2)) 0%, var(--color-primary-tint-5, rgb(37 99 235 / 0.05)) 70%, transparent 100%)',
     buttonBackground: 'var(--gradient-accent, linear-gradient(135deg, var(--color-brand-cyan-500, #0ea5e9), var(--color-primary, #1d4ed8)))',
@@ -33,7 +33,7 @@ export const defaultThemeSettings: ThemeSettings = {
     pageHeroBackground:
       'linear-gradient(110deg, rgb(15 23 42 / 0.03) 0 42%, var(--color-primary-tint-10, rgb(37 99 235 / 0.1)) 42% 100%), linear-gradient(180deg, var(--color-primary-tint-20, rgb(37 99 235 / 0.2)) 0%, var(--color-primary-tint-5, rgb(37 99 235 / 0.05)) 70%, transparent 100%)',
     enableApplicationSectionBackground: false,
-    applicationSectionBackground: 'var(--theme-hero-family-muted, var(--theme-section-bg-alt))'
+    applicationSectionBackground: 'var(--theme-section-bg-alt, var(--color-neutral-100, #f1f5f9))'
   }
 };
 
