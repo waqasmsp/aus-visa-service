@@ -26,6 +26,7 @@ export * from './webhooks/signatures';
 
 export * from './fraud';
 export * from './monitoring';
+export * from './feature-flags';
 export * from './security';
 
 export * from './permissions';
