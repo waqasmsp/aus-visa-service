@@ -23,3 +23,7 @@ export * from './webhooks/models';
 export * from './webhooks/repository';
 export * from './webhooks/service';
 export * from './webhooks/signatures';
+
+export * from './fraud';
+export * from './monitoring';
+export * from './security';

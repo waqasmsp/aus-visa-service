@@ -57,7 +57,9 @@ export function CheckoutPanel({
           currency,
           method,
           provider: method === 'paypal' ? 'paypal' : method === 'google_pay' ? 'googlepay' : 'stripe',
-          returnUrl
+          returnUrl,
+          paymentMethodToken: selectedSavedMethodId ?? `tok_${Date.now()}`,
+          billingCountry: 'US'
         },
         {
           correlationId: `checkout-${Date.now()}`,
@@ -91,7 +93,9 @@ export function CheckoutPanel({
       const finalized = await client.finalize(
         session.checkoutSessionId,
         method === 'paypal' ? 'paypal' : method === 'google_pay' ? 'googlepay' : 'stripe',
-        processorPayload
+        processorPayload,
+        'match',
+        selectedSavedMethodId ? 'match' : 'unavailable'
       );
       setTransaction(finalized);
     } catch (checkoutError) {

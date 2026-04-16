@@ -4,6 +4,8 @@ import { CreatePaymentIntentDto, RequestContext } from '../dtos';
 import { CreateCheckoutSessionDto, FinalizeCheckoutSessionDto, ResumeCheckoutDto } from './dtos';
 import { CheckoutRepository } from './repository';
 import { CheckoutSession, ResumeCheckoutState, TransactionRecord } from './models';
+import { FraudControlsService } from '../fraud';
+import { assertTokenizedPaymentOnly } from '../security';
 
 const nowIso = () => new Date().toISOString();
 const buildId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
@@ -28,13 +30,19 @@ const resolveProviderForMethod = (
 };
 
 export class CheckoutFlowService {
-  constructor(private readonly payments: PaymentService, private readonly repository: CheckoutRepository) {}
+  constructor(
+    private readonly payments: PaymentService,
+    private readonly repository: CheckoutRepository,
+    private readonly fraudControls?: FraudControlsService
+  ) {}
 
   async createPaymentIntentOrOrder(input: CreateCheckoutSessionDto, context: RequestContext): Promise<CheckoutSession> {
+    assertTokenizedPaymentOnly({ paymentMethodToken: input.paymentMethodToken, metadata: input.metadata });
     const provider = resolveProviderForMethod(input.method, input.provider);
     const intentPayload: CreatePaymentIntentDto = {
       amount: input.amount,
       currency: input.currency,
+      paymentMethodId: input.paymentMethodToken,
       metadata: {
         userId: input.userId,
         applicationId: input.applicationId,
@@ -74,6 +82,28 @@ export class CheckoutFlowService {
     const session = await this.repository.findSessionById(input.checkoutSessionId);
     if (!session) {
       throw new Error(`Checkout session not found: ${input.checkoutSessionId}`);
+    }
+
+    assertTokenizedPaymentOnly({
+      paymentMethodToken: session.paymentIntentId,
+      processorPayload: input.processorPayload
+    });
+
+    if (this.fraudControls) {
+      const decision = await this.fraudControls.assess({
+        userId: session.userId,
+        applicationId: session.applicationId,
+        provider: input.provider,
+        amount: session.amount,
+        currency: session.currency,
+        paymentMethodToken: session.paymentIntentId,
+        avsResult: input.avsResult,
+        cvvResult: input.cvvResult
+      });
+
+      if (decision.blocked) {
+        throw new Error(`Payment blocked by fraud controls: ${decision.reasons.join('; ')}`);
+      }
     }
 
     const processorStatus = typeof input.processorPayload.status === 'string' ? input.processorPayload.status : 'processing';

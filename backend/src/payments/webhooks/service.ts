@@ -12,6 +12,8 @@ import {
 } from './repository';
 import { DomainEventHandler, DomainEventPayload, QueuedWebhookEvent, WebhookAuditRecord } from './models';
 import { validateWebhookSignature } from './signatures';
+import { PaymentSecurityMonitoringService } from '../monitoring';
+import { maskSensitiveValue } from '../security';
 
 export class WebhookRejectedError extends Error {
   constructor(message: string, readonly statusCode = 401) {
@@ -41,7 +43,8 @@ export class WebhookIngestionService {
     private readonly auditRepository: WebhookAuditRepository,
     private readonly queueRepository: WebhookQueueRepository,
     private readonly secrets: WebhookSecretConfig,
-    private readonly config: WebhookValidationConfig
+    private readonly config: WebhookValidationConfig,
+    private readonly monitoring?: PaymentSecurityMonitoringService
   ) {}
 
   async ingest(input: EnqueueWebhookRequest): Promise<{ accepted: true; eventId: string; auditRecordId: string }> {
@@ -54,14 +57,15 @@ export class WebhookIngestionService {
       provider: input.provider,
       endpoint: input.endpoint,
       receivedAt: new Date().toISOString(),
-      rawPayload: input.request.rawBody,
-      headers: normalizeHeaders(input.request.headers),
+      rawPayload: JSON.stringify(maskSensitiveValue(payload)),
+      headers: maskSensitiveValue(normalizeHeaders(input.request.headers)) as Record<string, string>,
       verification,
       processingStatus: verification.isValid ? 'queued' : 'rejected'
     };
 
     if (!verification.isValid) {
       await this.auditRepository.save(baseAuditRecord);
+      await this.monitoring?.recordWebhookSignatureFailure(input.provider);
       throw new WebhookRejectedError(verification.reason ?? 'Webhook signature validation failed.', 401);
     }
 
@@ -127,7 +131,8 @@ export class WebhookQueueWorker {
     private readonly processedEventRepository: ProcessedEventRepository,
     private readonly auditRepository: WebhookAuditRepository,
     private readonly handlers: Record<string, DomainEventHandler>,
-    private readonly config: Pick<WebhookValidationConfig, 'maxProcessingAttempts'>
+    private readonly config: Pick<WebhookValidationConfig, 'maxProcessingAttempts'>,
+    private readonly monitoring?: PaymentSecurityMonitoringService
   ) {}
 
   async processNext(): Promise<{ processed: number; deadLettered: number; skipped: number }> {
@@ -148,6 +153,7 @@ export class WebhookQueueWorker {
       }
 
       await handler(this.toDomainEvent(next.provider, next.internalEventType, next.webhookEvent));
+      await this.monitoring?.recordDomainEvent(next.internalEventType);
       await this.processedEventRepository.markProcessed(next.eventId);
       await this.auditRepository.update(next.auditRecordId, { processingStatus: 'processed' });
       return { processed: 1, deadLettered: 0, skipped: 0 };

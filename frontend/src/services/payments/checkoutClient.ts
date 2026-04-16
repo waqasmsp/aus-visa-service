@@ -11,6 +11,9 @@ export type CreateCheckoutSessionInput = {
   method: 'card' | 'paypal' | 'google_pay';
   provider?: 'stripe' | 'paypal' | 'googlepay';
   returnUrl: string;
+  paymentMethodToken: string;
+  ipAddress?: string;
+  billingCountry?: string;
 };
 
 const requestHeaders = (meta: RequestMeta): HeadersInit => ({
@@ -39,12 +42,14 @@ export class CheckoutApiClient {
   async finalize(
     checkoutSessionId: string,
     provider: 'stripe' | 'paypal' | 'googlepay',
-    processorPayload: Record<string, unknown>
+    processorPayload: Record<string, unknown>,
+    avsResult?: 'match' | 'mismatch' | 'unavailable',
+    cvvResult?: 'match' | 'mismatch' | 'unavailable'
   ): Promise<PaymentTransaction> {
     const response = await fetch(`${this.baseUrl}/finalize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ checkoutSessionId, provider, processorPayload })
+      body: JSON.stringify({ checkoutSessionId, provider, processorPayload, avsResult, cvvResult })
     });
 
     if (!response.ok) {
