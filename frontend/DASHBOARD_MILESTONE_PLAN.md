@@ -1,137 +1,66 @@
 # Dashboard Delivery Plan (Phased Rollout)
 
-This plan sequences dashboard work into four release-controlled modules and adds hardening criteria before full availability.
+This plan sequences the dashboard redesign into four implementation phases with explicit acceptance gates.
 
 ## Release controls
 
-- Each module is guarded by `featureFlags.service` toggles for progressive rollout and safe rollback.
-- Rollout policy: 10% internal canary → 50% staff pilot → 100% production when acceptance checks pass.
-- Rollback policy: disable module flag and route users to dashboard overview while preserving read-only access where possible.
+- Each phase is guarded by feature flags for progressive rollout and safe rollback.
+- Rollout progression target: internal canary → staff pilot → full production after acceptance criteria pass.
+- Rollback policy: disable the active phase flag and return affected routes to the overview experience.
 
-## Phase 1 — Data layer + table framework + top nav
-
-### Scope
-- Shared data services, async/loading/error framework, table primitives, and dashboard top navigation.
-- Baseline telemetry plumbed for high-value admin actions.
-
-### Acceptance criteria
-- **Happy path CRUD (framework readiness)**
-  - [ ] Shared list/create/update/delete abstractions are reusable by applications/users/pages/blogs modules.
-  - [ ] Table framework supports sorting, search, pagination, bulk selection, and empty states.
-- **Validation + error paths**
-  - [ ] API/service failures surface actionable inline errors and non-blocking retry actions.
-  - [ ] Form-level validation messages are announced and associated to inputs.
-- **Permission enforcement**
-  - [ ] Role guard checks prevent hidden or disabled actions from executing.
-  - [ ] Unauthorized navigation resolves to safe fallback (overview + role-appropriate notice).
-- **Accessibility (keyboard + screen reader)**
-  - [ ] Top nav, sidebar, table row actions, and dialogs are fully keyboard reachable.
-  - [ ] Focus order remains logical on open/close transitions for drawers and modals.
-  - [ ] ARIA labels/roles are present for table actions, toasts, and profile controls.
-
-## Phase 2 — Applications + Users CRUD
+## Phase 1 — Foundation
 
 ### Scope
-- Full create/read/update/delete flows for visa applications and user records.
-- Bulk operations, import/export, and audit trails.
+- Design tokens (color, spacing, typography, radius, elevation) and semantic theme mapping.
+- Shared UI primitives and interaction contracts.
+- Modal + toast feedback system for all mutation flows.
+- Reusable dashboard table framework (sorting, filtering, pagination, selection, empty/loading/error states).
 
 ### Acceptance criteria
-- **Happy path CRUD**
-  - [ ] Applications: create, edit, soft delete, restore, bulk assign/status update, export selected.
-  - [ ] Users: create, edit, activate/deactivate, soft delete, CSV import/export.
-- **Validation + error paths**
-  - [ ] Duplicate detection for users (email/phone) blocks save with clear remediation text.
-  - [ ] Applications not found, expired restore window, and destructive approval requirements return explicit errors.
-- **Permission enforcement**
-  - [ ] Admin/manager/user permissions are enforced for each mutation and destructive action.
-  - [ ] Disallowed controls are disabled and accompanied by role-specific helper text.
-- **Accessibility (keyboard + screen reader)**
-  - [ ] Create/edit dialogs trap focus and restore focus to trigger after close.
-  - [ ] Status updates and mutation feedback are screen-reader announced via live region.
+- [ ] **Visual consistency pass complete:** tokenized styling is applied across all foundational components and legacy bridge styles are reconciled.
+- [ ] **All CRUD actions have modal + toast feedback:** destructive/confirming actions open accessible modals and emit success/failure toasts.
+- [ ] **Keyboard navigation + accessibility baseline met:** tab order, focus trap/restore, ARIA semantics, and live-region announcements pass baseline checks.
+- [ ] **Mobile breakpoints verified for every dashboard module:** shared primitives and table framework render correctly across mobile/tablet/desktop breakpoints.
 
-## Phase 3 — Pages + Blogs parity
+## Phase 2 — Core modules refresh (Pages, Users, Settings, Applications)
 
 ### Scope
-- Bring CMS pages/blog workflows to parity for editor/manager/admin lifecycle states.
-- Publish guardrails, versioning, review loop, and performance widgets.
+- Visual and interaction refresh for Pages, Users, Settings, and Applications modules.
+- Standardize form behavior, list/detail patterns, and state messaging.
+- Align all core module CRUD flows with foundation primitives.
 
 ### Acceptance criteria
-- **Happy path CRUD**
-  - [ ] Pages: create, edit, archive/remove, rollback versions, batch publish/archive.
-  - [ ] Blogs: draft, edit, submit review, approve, publish/schedule, archive.
-- **Validation + error paths**
-  - [ ] Slug uniqueness, required SEO fields, and publish guardrails block invalid publishes.
-  - [ ] Revision conflicts and missing snapshots return recoverable error states.
-- **Permission enforcement**
-  - [ ] Editor/manager/admin capability matrix is respected on status transitions.
-  - [ ] Admin-only actions (override/publish delete) are explicitly gated.
-- **Accessibility (keyboard + screen reader)**
-  - [ ] Rich editor sidebars and publishing controls are keyboard operable.
-  - [ ] Preview drawers and review queues expose semantic headings and labels.
+- [ ] **Visual consistency pass complete:** Pages, Users, Settings, and Applications conform to shared tokens, spacing rhythm, and component usage.
+- [ ] **All CRUD actions have modal + toast feedback:** create/update/delete/archive/restore actions in every core module include standardized confirmation and feedback.
+- [ ] **Keyboard navigation + accessibility baseline met:** all module screens, drawers, forms, filters, and tables are fully keyboard operable and screen-reader labeled.
+- [ ] **Mobile breakpoints verified for every dashboard module:** each refreshed module is validated at standard mobile breakpoints with no clipping, overlap, or inaccessible controls.
 
-## Phase 4 — Settings + Webhooks + RBAC + Audit
+## Phase 3 — New feature: Users Chat Center (end-to-end)
 
 ### Scope
-- Settings modules, webhook management/health, RBAC controls, and audit log workflows.
+- Build Users Chat Center end-to-end: chat list, thread view, filters, assignment/escalation controls, and message actions.
+- Integrate chat workflows with user context and audit telemetry.
+- Ensure parity with foundation interaction patterns.
 
 ### Acceptance criteria
-- **Happy path CRUD**
-  - [ ] Settings save/reset works by tab and only persists changed fields.
-  - [ ] Webhooks: endpoint create/edit/delete, status toggles, secret rotate, subscriptions, delivery policy updates, replay flow.
-  - [ ] Audit log filters/export are fully functional.
-- **Validation + error paths**
-  - [ ] Webhook URL validation enforces HTTPS and blocks invalid endpoints.
-  - [ ] Save failures do not lose draft state and surface actionable errors.
-- **Permission enforcement**
-  - [ ] RBAC restrictions apply to integrations, destructive webhook actions, and audit exports.
-  - [ ] Sensitive security toggles require admin role + explicit confirmation path.
-- **Accessibility (keyboard + screen reader)**
-  - [ ] Settings tab switches announce active panel context and preserve focus.
-  - [ ] Webhook matrix checkboxes include accessible names and state announcements.
+- [ ] **Visual consistency pass complete:** Chat Center surfaces match dashboard design language and component system.
+- [ ] **All CRUD actions have modal + toast feedback:** thread state changes, assignments, notes/actions, and destructive operations provide modal confirmation and toast outcomes.
+- [ ] **Keyboard navigation + accessibility baseline met:** chat list/thread navigation, composer actions, and drawer/dialog interactions satisfy keyboard and assistive-tech baseline.
+- [ ] **Mobile breakpoints verified for every dashboard module:** Chat Center and adjacent user-context panels are validated on mobile layouts and touch interactions.
 
-## Regression checklist (admin / manager / user journeys)
+## Phase 4 — Role optimization
 
-### Admin journey
-- [ ] Can access all enabled modules from sidebar and top nav profile controls.
-- [ ] Can perform full CRUD in applications/users/pages/blogs/settings/webhooks.
-- [ ] Sees audit entries + analytics events emitted for high-value actions.
+### Scope
+- Role-specific dashboards for admin/manager/user personas.
+- Card intelligence (prioritized insights, status cues, next-best actions).
+- Workflow shortcuts tailored by role and permissions.
 
-### Manager journey
-- [ ] Restricted from admin-only destructive/settings controls.
-- [ ] Can complete approved workflows (applications triage, blogs review, operational settings).
-- [ ] Unauthorized attempts show non-breaking denial messaging.
+### Acceptance criteria
+- [ ] **Visual consistency pass complete:** role-specific views preserve a unified visual system while differentiating role context clearly.
+- [ ] **All CRUD actions have modal + toast feedback:** shortcuts and role-specific workflows keep consistent confirmation and outcome feedback patterns.
+- [ ] **Keyboard navigation + accessibility baseline met:** personalized cards, shortcuts, and role routes are fully keyboard reachable with semantic labels.
+- [ ] **Mobile breakpoints verified for every dashboard module:** role dashboards and shortcut surfaces maintain usability, readability, and target sizing on mobile.
 
-### User journey
-- [ ] Can access personal applications/documents/payments/profile paths.
-- [ ] Cannot access admin CRM/CMS/settings mutation routes.
-- [ ] Feature-flag-paused modules gracefully route to overview with clear notice.
+## Phase completion gate
 
-### Cross-module regression matrix
-- [ ] Empty, loading, and error states render in every dashboard panel.
-- [ ] Keyboard traversal works for all module primary actions.
-- [ ] Screen-reader labels are present for icon-only/menu actions.
-- [ ] Mobile breakpoints maintain readability, tap-target size, and overflow containment.
-
-## Analytics instrumentation requirements
-
-Track high-value events by module with actor role and entity ID when available:
-- applications_created / updated / deleted / restored
-- users_created / updated / deleted / imported
-- pages_created / updated / deleted / published
-- webhooks_endpoint_created / updated / deleted
-- webhooks_test_sent / webhooks_delivery_replayed
-
-Webhook health metrics must include:
-- delivery volume
-- success rate (2xx/3xx)
-- average + p95 latency
-- failing endpoints list
-
-## Final hardening pass (release gate)
-
-Before enabling all module flags to 100%:
-- [ ] UX consistency audit: spacing, typography, CTA priority, feedback semantics.
-- [ ] Edge-case coverage: duplicates, stale restores, invalid URLs, guardrail denials, destructive confirmations.
-- [ ] Completeness audit: every page has explicit empty/loading/error states.
-- [ ] Mobile responsiveness: no clipped tables, inaccessible controls, or horizontal overflow blockers at common breakpoints.
-- [ ] Role-based smoke test: admin, manager, and user journeys pass end-to-end.
+A phase is complete only when every acceptance checkbox for that phase is validated in QA sign-off and documented in release notes.
