@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import {
@@ -47,6 +48,7 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
   const [detailsApplication, setDetailsApplication] = useState<VisaApplication | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<VisaApplication | null>(null);
   const [activePreset, setActivePreset] = useState(() => (typeof window === 'undefined' ? '' : window.localStorage.getItem(presetStorageKey) ?? ''));
+  const { notifyError, notifyInfo, notifySuccess, formatNotificationMessage } = useDashboardNotifications();
 
   const table = useDashboardTableState<ApplicationFilters>({
     basePath,
@@ -144,11 +146,14 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
           role
         );
       }
+      notifySuccess(formatNotificationMessage({ entity: 'application', action: editingApplication ? 'edit' : 'create', result: 'success', id: editingApplication?.id }, editingApplication ? 'Application updated.' : 'Application created.'));
       setOpenCreateModal(false);
       setEditingApplication(null);
       await loadApplications();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'application', action: editingApplication ? 'edit' : 'create', result: 'error', id: editingApplication?.id }, message));
     }
   };
 
@@ -157,18 +162,24 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
       await applicationsService.softDelete(application.id, role, {
         reason: `Deleted via applications dashboard by ${role}`
       });
+      notifySuccess(formatNotificationMessage({ entity: 'application', action: 'delete', result: 'success', id: application.id }, 'Application deleted.'));
       await loadApplications();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'application', action: 'delete', result: 'error', id: application.id }, message));
     }
   };
 
   const restoreApplication = async (application: VisaApplication) => {
     try {
       await applicationsService.restore(application.id, role);
+      notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success', id: application.id }, 'Application restored.'));
       await loadApplications();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'error', id: application.id }, message));
     }
   };
 
@@ -194,11 +205,19 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
           <ApplicationsBulkActionBar
             selectedCount={selectedIds.length}
             canMutate={roleActions.canBulk}
-            onAssignOwner={async (owner) => { await applicationsService.bulkAssignOwner({ ids: selectedIds, owner }, role); await loadApplications(); }}
-            onUpdateStatus={async (status) => { await applicationsService.bulkStatusUpdate({ ids: selectedIds, status }, role); await loadApplications(); }}
+            onAssignOwner={async (owner) => {
+              await applicationsService.bulkAssignOwner({ ids: selectedIds, owner }, role);
+              notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success' }, `Assigned owner ${owner} to ${selectedIds.length} application(s).`));
+              await loadApplications();
+            }}
+            onUpdateStatus={async (status) => {
+              await applicationsService.bulkStatusUpdate({ ids: selectedIds, status }, role);
+              notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success' }, `Updated status to ${status} for ${selectedIds.length} application(s).`));
+              await loadApplications();
+            }}
             onExport={async () => {
               const uri = await applicationsService.exportSelected(selectedIds, role);
-              window.alert(`Export ready: ${uri}`);
+              notifyInfo(formatNotificationMessage({ entity: 'application', action: 'export', result: 'success' }, `Export ready: ${uri}`));
             }}
           />
           <article className="dashboard-panel">

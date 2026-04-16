@@ -8,6 +8,7 @@ import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
 import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
 import { exportAuditEventsCsv, listAuditEvents, writeAuditEvent } from '../../../services/dashboard/audit.service';
+import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 
@@ -184,8 +185,8 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
   const [auditActor, setAuditActor] = useState('');
   const [auditAction, setAuditAction] = useState('');
   const [auditEntityType, setAuditEntityType] = useState('');
-  const [saveMessage, setSaveMessage] = useState('');
   const [saveError, setSaveError] = useState('');
+  const { notifyError, notifyInfo, notifySuccess, formatNotificationMessage } = useDashboardNotifications();
 
   const validationErrors = useMemo(() => computeValidationErrors(draftState), [draftState]);
 
@@ -313,19 +314,16 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
 
   const updatePlatform = <K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) => {
     setDraftState((prev) => ({ ...prev, platform: { ...prev.platform, [key]: value } }));
-    setSaveMessage('');
     setSaveError('');
   };
 
   const updateThemeGlobal = <K extends keyof ThemeSettings['global']>(key: K, value: ThemeSettings['global'][K]) => {
     setDraftState((prev) => ({ ...prev, theme: { ...prev.theme, global: { ...prev.theme.global, [key]: value } } }));
-    setSaveMessage('');
     setSaveError('');
   };
 
   const updateThemeSection = <K extends keyof ThemeSettings['sections']>(key: K, value: ThemeSettings['sections'][K]) => {
     setDraftState((prev) => ({ ...prev, theme: { ...prev.theme, sections: { ...prev.theme.sections, [key]: value } } }));
-    setSaveMessage('');
     setSaveError('');
   };
 
@@ -347,26 +345,32 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
       return;
     }
     if (!canManageSettings) {
-      setSaveError('Your role cannot manage platform settings.');
+      const message = 'Your role cannot manage platform settings.';
+      setSaveError(message);
+      notifyError(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'error' }, message));
       return;
     }
 
     if (Object.keys(validationErrors).length > 0) {
-      setSaveMessage('');
-      setSaveError('Resolve validation errors before saving.');
+      const message = 'Resolve validation errors before saving.';
+      setSaveError(message);
+      notifyError(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'error' }, message));
       return;
     }
 
     if (tab === 'branding' && blockingContrastWarnings.length > 0) {
-      setSaveMessage('');
-      setSaveError('Cannot save branding tab until contrast warnings are resolved (minimum 4.5:1).');
+      const message = 'Cannot save branding tab until contrast warnings are resolved (minimum 4.5:1).';
+      setSaveError(message);
+      notifyError(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'error' }, message));
       return;
     }
 
     const actor = actorEmail ?? `${role}@ausvisaservice.local`;
     const approval = collectDestructiveApproval('settings', 'manage_settings', `${tab} settings`);
     if (!approval) {
-      setSaveError('Settings update canceled by policy safeguards.');
+      const message = 'Settings update canceled by policy safeguards.';
+      setSaveError(message);
+      notifyInfo(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'info' }, message));
       return;
     }
     const now = new Date().toISOString();
@@ -445,10 +449,15 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
       setSavedState(newSavedState);
       setHistory(mergedHistory);
       setSaveError('');
-      setSaveMessage(newHistory.length ? `Saved ${tab.replace('-', ' ')} settings.` : 'No changes to save for this tab.');
+      if (newHistory.length) {
+        notifySuccess(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'success' }, `Saved ${tab.replace('-', ' ')} settings.`));
+      } else {
+        notifyInfo(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'info' }, 'No changes to save for this tab.'));
+      }
     } catch {
-      setSaveMessage('');
-      setSaveError('Unable to save settings. Please try again.');
+      const message = 'Unable to save settings. Please try again.';
+      setSaveError(message);
+      notifyError(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'error' }, message));
     }
   };
 
@@ -477,8 +486,8 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
       setDraftState((prev) => ({ ...prev, theme: savedState.theme }));
     }
 
-    setSaveMessage('Tab changes reset.');
     setSaveError('');
+    notifyInfo(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'info' }, 'Tab changes reset.'));
   };
 
   const renderHelp = (text: string) => <small className="dashboard-settings-help">{text}</small>;
@@ -803,6 +812,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
                 link.download = `audit-export-${new Date().toISOString().slice(0, 10)}.csv`;
                 link.click();
                 URL.revokeObjectURL(url);
+                notifyInfo(formatNotificationMessage({ entity: 'settings', action: 'export', result: 'success' }, 'Audit CSV export started.'));
               }}
             >
               Export CSV
@@ -853,7 +863,6 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               Reset {topTabs.find((tab) => tab.id === activeTab)?.label}
             </DashboardButton>
           </div>
-          {saveMessage ? <p className="dashboard-auth__message is-success">{saveMessage}</p> : null}
           {saveError ? <p className="dashboard-auth__message is-error">{saveError}</p> : null}
         </article>
       ) : null}

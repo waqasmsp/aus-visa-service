@@ -24,13 +24,8 @@ import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
 import { DashboardTextarea } from '../common/DashboardTextarea';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
-import {
-  DashboardEmptyState,
-  DashboardErrorState,
-  DashboardLoadingSkeleton,
-  MutationToastRegion,
-  useMutationToasts
-} from '../common/asyncUi';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 
 const defaultForm = (): CreatePageRequestDto => ({
   title: '',
@@ -196,7 +191,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
   const [compareFrom, setCompareFrom] = useState<number | null>(null);
   const [compareTo, setCompareTo] = useState<number | null>(null);
 
-  const { toasts, dismissToast, notifyError, notifySuccess } = useMutationToasts();
+  const { notifyError, notifySuccess, notifyInfo, formatNotificationMessage } = useDashboardNotifications();
   const table = useDashboardTableState<TableFilters>({
     basePath: '/dashboard/pages',
     defaultState: {
@@ -269,7 +264,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
     const validation = pagesService.validateSchema(payload);
     setFormErrors(validation);
     if (Object.keys(validation).length > 0) {
-      notifyError('Required fields are missing.');
+      notifyError(formatNotificationMessage({ entity: 'page', action: editorMode === 'create' ? 'create' : 'edit', result: 'error', id: editorPageId ?? undefined }, 'Required fields are missing.'));
       return;
     }
 
@@ -277,7 +272,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
     try {
       if (editorMode === 'create') {
         await pagesService.create(payload, role);
-        notifySuccess('Page created successfully.');
+        notifySuccess(formatNotificationMessage({ entity: 'page', action: 'create', result: 'success' }, 'Page created successfully.'));
       } else if (editorPageId) {
         const previous = pages;
         const optimistic = pages.map((page) =>
@@ -302,14 +297,14 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
           async () => {
             const updated = await pagesService.update(editorPageId, payload, role);
             setPages((prev) => prev.map((page) => (page.id === editorPageId ? updated : page)));
-            notifySuccess('Page updated successfully.');
+            notifySuccess(formatNotificationMessage({ entity: 'page', action: 'edit', result: 'success', id: editorPageId }, 'Page updated successfully.'));
           }
         );
       }
       setEditorOpen(false);
       await loadPages();
     } catch (mutationError) {
-      notifyError(extractApiErrorMessage(mutationError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: editorMode === 'create' ? 'create' : 'edit', result: 'error', id: editorPageId ?? deleteTarget?.id ?? undefined }, extractApiErrorMessage(mutationError)));
     } finally {
       setEditorSubmitting(false);
     }
@@ -326,12 +321,12 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
           await pagesService.remove(deleteTarget.id, role, {
             reason: `Page deletion requested by ${role}`
           });
-          notifySuccess('Page removed.');
+          notifySuccess(formatNotificationMessage({ entity: 'page', action: 'delete', result: 'success', id: deleteTarget.id }, 'Page removed.'));
         }
       );
       setDeleteTarget(null);
     } catch (mutationError) {
-      notifyError(extractApiErrorMessage(mutationError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: 'delete', result: 'error', id: deleteTarget?.id }, extractApiErrorMessage(mutationError)));
     }
   };
 
@@ -348,15 +343,15 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
         ? { reason: `Bulk publish confirmed by ${role}` }
         : null;
       const response = await pagesService.batchTransition({ ids: selectedPageIds, action: batchAction }, role, destructiveApproval ?? undefined);
-      response.warnings.forEach((warning) => notifyError(warning));
+      response.warnings.forEach((warning) => notifyError(formatNotificationMessage({ entity: 'page', action: 'status_change', result: 'warning' }, warning)));
       if (response.updated.length > 0) {
-        notifySuccess(`Updated ${response.updated.length} page(s).`);
+        notifyInfo(formatNotificationMessage({ entity: 'page', action: 'status_change', result: 'success' }, `Updated ${response.updated.length} page(s).`));
       }
       setBatchAction(null);
       setSelectedPageIds([]);
       await loadPages();
     } catch (batchError) {
-      notifyError(extractApiErrorMessage(batchError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: 'status_change', result: 'error' }, extractApiErrorMessage(batchError)));
     }
   };
 
@@ -368,7 +363,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
     try {
       setVersions(await pagesService.getVersionHistory(page.id));
     } catch (historyError) {
-      notifyError(extractApiErrorMessage(historyError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: 'edit', result: 'error', id: page.id }, extractApiErrorMessage(historyError)));
     }
   };
 
@@ -377,7 +372,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
     try {
       setCompareResult(await pagesService.compareSnapshots(versionPage.id, compareFrom, compareTo));
     } catch (compareError) {
-      notifyError(extractApiErrorMessage(compareError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: 'edit', result: 'error', id: versionPage?.id }, extractApiErrorMessage(compareError)));
     }
   };
 
@@ -385,11 +380,11 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
     if (!versionPage) return;
     try {
       await pagesService.rollbackToVersion(versionPage.id, version, role);
-      notifySuccess(`Rolled back to version ${version}.`);
+      notifyInfo(formatNotificationMessage({ entity: 'page', action: 'edit', result: 'success', id: versionPage.id }, `Rolled back to version ${version}.`));
       setVersions(await pagesService.getVersionHistory(versionPage.id));
       await loadPages();
     } catch (rollbackError) {
-      notifyError(extractApiErrorMessage(rollbackError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: 'edit', result: 'error', id: versionPage?.id }, extractApiErrorMessage(rollbackError)));
     }
   };
 
@@ -397,18 +392,17 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
     try {
       const guardrails = await pagesService.checkPublishGuardrails(page.id);
       if (guardrails.canPublish) {
-        notifySuccess('Publish checks passed.');
+        notifyInfo(formatNotificationMessage({ entity: 'page', action: 'status_change', result: 'success', id: page.id }, 'Publish checks passed.'));
       } else {
-        guardrails.warnings.forEach((warning) => notifyError(warning));
+        guardrails.warnings.forEach((warning) => notifyInfo(formatNotificationMessage({ entity: 'page', action: 'status_change', result: 'info', id: page.id }, warning)));
       }
     } catch (guardrailsError) {
-      notifyError(extractApiErrorMessage(guardrailsError));
+      notifyError(formatNotificationMessage({ entity: 'page', action: 'status_change', result: 'error', id: page.id }, extractApiErrorMessage(guardrailsError)));
     }
   };
 
   return (
     <section className="dashboard-stack">
-      <MutationToastRegion toasts={toasts} onDismiss={dismissToast} />
       {loading ? <DashboardLoadingSkeleton rows={5} /> : null}
       {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadPages()} /> : null}
       {!loading && !error ? (
