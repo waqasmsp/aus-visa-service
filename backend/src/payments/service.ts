@@ -10,9 +10,18 @@ import {
 } from './dtos';
 import { PaymentService, PaymentsAdapter } from './interfaces';
 import { Charge, Dispute, PaymentIntent, Refund, Subscription, WebhookEvent } from './models';
+import { assertSecretManagerConfig, ProviderSecretConfig } from './security';
 
 export class DefaultPaymentService implements PaymentService {
-  constructor(private readonly adapters: Record<string, PaymentsAdapter>, private readonly defaultProvider = 'stripe') {}
+  constructor(
+    private readonly adapters: Record<string, PaymentsAdapter>,
+    private readonly defaultProvider = 'stripe',
+    secretConfigByProvider?: Record<string, ProviderSecretConfig>
+  ) {
+    if (secretConfigByProvider) {
+      assertSecretManagerConfig(secretConfigByProvider);
+    }
+  }
 
   private resolveAdapter(provider?: string): PaymentsAdapter {
     return this.adapters[provider ?? this.defaultProvider] ?? this.adapters[this.defaultProvider];

@@ -31,10 +31,16 @@ export function PaymentsReturnPage({ pathname }: PaymentsReturnPageProps) {
         setResumeState(resumed);
 
         if (resumed.status === 'succeeded' || resumed.status === 'processing') {
-          const finalized = await client.finalize(checkoutSessionId, provider, {
-            status: resumed.status === 'succeeded' ? 'succeeded' : 'processing',
-            reference: `resume-${checkoutSessionId}`
-          });
+          const finalized = await client.finalize(
+            checkoutSessionId,
+            provider,
+            {
+              status: resumed.status === 'succeeded' ? 'succeeded' : 'processing',
+              reference: `resume-${checkoutSessionId}`
+            },
+            'unavailable',
+            'unavailable'
+          );
           setTransaction(finalized);
         }
       } finally {

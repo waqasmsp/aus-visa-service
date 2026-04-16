@@ -16,6 +16,7 @@ import {
   TransactionPermissionAction,
   TransactionView
 } from './models';
+import { maskPaymentAdminReference } from '../security';
 
 const permissionMatrix: Record<'admin' | 'manager' | 'user', Record<TransactionPermissionAction, boolean>> = {
   admin: {
@@ -40,7 +41,7 @@ const randomId = (prefix: string): string => `${prefix}_${Math.random().toString
 export class TransactionCenterService {
   constructor(private readonly repository: TransactionCenterRepository) {}
 
-  async searchTransactions(query: TransactionQueryDto): Promise<TransactionView[]> {
+  async searchTransactions(query: TransactionQueryDto, context?: Pick<TransactionActionContext, 'role'>): Promise<TransactionView[]> {
     const rows = await this.repository.listTransactions();
     const search = query.search?.trim().toLowerCase();
 
@@ -51,7 +52,13 @@ export class TransactionCenterService {
         .join(' ')
         .toLowerCase()
         .includes(search);
-    });
+    }).map((row) => ({
+      ...row,
+      references: {
+        ...row.references,
+        providerReference: context ? maskPaymentAdminReference(row.references.providerReference, context.role) : row.references.providerReference
+      }
+    }));
   }
 
   async issueRefund(input: IssueRefundDto, context: TransactionActionContext): Promise<void> {

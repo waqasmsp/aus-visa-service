@@ -11,12 +11,17 @@ export type CreateCheckoutSessionDto = {
   provider?: PaymentProvider;
   returnUrl: string;
   metadata?: Record<string, string>;
+  paymentMethodToken: string;
+  ipAddress?: string;
+  billingCountry?: string;
 };
 
 export type FinalizeCheckoutSessionDto = {
   checkoutSessionId: string;
   provider: PaymentProvider;
   processorPayload: Record<string, unknown>;
+  avsResult?: 'match' | 'mismatch' | 'unavailable';
+  cvvResult?: 'match' | 'mismatch' | 'unavailable';
 };
 
 export type ResumeCheckoutDto = {

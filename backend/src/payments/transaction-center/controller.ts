@@ -13,8 +13,8 @@ import { TransactionCenterService } from './service';
 export class TransactionCenterController {
   constructor(private readonly service: TransactionCenterService) {}
 
-  async list(req: { query: TransactionQueryDto }) {
-    return this.service.searchTransactions(req.query);
+  async list(req: { query: TransactionQueryDto; context?: Pick<TransactionActionContext, 'role'> }) {
+    return this.service.searchTransactions(req.query, req.context);
   }
 
   async issueRefund(req: { body: IssueRefundDto; context: TransactionActionContext }) {
