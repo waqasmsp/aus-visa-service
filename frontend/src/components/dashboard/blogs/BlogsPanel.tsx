@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card } from '../../primitives/Card';
 import { PrimaryButton } from '../../primitives/PrimaryButton';
-import { collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
+import { ConfirmActionModal } from '../common/ConfirmActionModal';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
@@ -72,6 +72,7 @@ export function BlogsPanel({
   const [bulkValue, setBulkValue] = useState('');
   const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
   const [trashLog, setTrashLog] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<BlogRow | null>(null);
 
   const allSelected = useMemo(
     () => posts.length > 0 && posts.every((post) => selectedPostIds.includes(post.id)),
@@ -112,11 +113,6 @@ export function BlogsPanel({
       if (onArchive) {
         onArchive(post.id);
       }
-      return;
-    }
-    const approval = collectDestructiveApproval('blogs', 'delete', post.title);
-    if (!approval) {
-      setWorkflowMessage('Delete canceled by policy safeguards.');
       return;
     }
 
@@ -223,7 +219,7 @@ export function BlogsPanel({
                     {canEdit ? <button type="button" onClick={() => onEdit?.(post.id)}>Edit</button> : null}
                     {canPublish ? <button type="button">Review</button> : null}
                     {canArchive ? <button type="button" onClick={() => onArchive?.(post.id)}>Archive</button> : null}
-                    {canDelete ? <button type="button" className="danger" onClick={() => void runDeleteWorkflow(post)}>Delete</button> : null}
+                    {canDelete ? <button type="button" className="danger" onClick={() => setDeleteTarget(post)}>Delete</button> : null}
                   </div>
                 </td>
               </tr>
@@ -234,6 +230,23 @@ export function BlogsPanel({
       <div className="dashboard-blog-list-cta">
         <PrimaryButton type="button" onClick={onCreate} disabled={!actions.includes('create')}>Create new post</PrimaryButton>
       </div>
+
+      <ConfirmActionModal
+        open={Boolean(deleteTarget)}
+        variant="danger"
+        title="Delete blog post?"
+        description="Deleting a blog post moves it to trash with a limited recovery window."
+        entityName={deleteTarget?.title ?? 'Unknown post'}
+        irreversibleWarning="This is irreversible after the trash recovery window expires."
+        confirmLabel="Delete post"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await runDeleteWorkflow(deleteTarget);
+          setDeleteTarget(null);
+        }}
+        preventCloseWhilePending
+      />
     </Card>
   );
 }

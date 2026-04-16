@@ -3,6 +3,7 @@ import { BlogEditorForm } from './BlogEditorForm';
 import { PostPreviewDrawer } from './PostPreviewDrawer';
 import { PublishingControls } from './PublishingControls';
 import { SeoSidebar } from './SeoSidebar';
+import { ConfirmActionModal } from '../common/ConfirmActionModal';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 type BlogWorkflowStatus = 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived';
@@ -127,6 +128,7 @@ export function BlogEditorPanel({
   const [timezone, setTimezone] = useState('UTC');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<'editor' | 'public-shell'>('editor');
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
   const dirty = useMemo(() => JSON.stringify(formState) !== JSON.stringify(savedState), [formState, savedState]);
 
@@ -227,9 +229,11 @@ export function BlogEditorPanel({
 
   const handleWorkflowAction = (action: 'save-draft' | 'submit-review' | 'approve-review' | 'schedule' | 'publish-now' | 'archive' | 'override-publish' | 'reset') => {
     if (action === 'reset') {
-      if (!dirty || window.confirm('Discard unsaved changes and revert to last saved state?')) {
+      if (!dirty) {
         setFormState(savedState);
+        return;
       }
+      setConfirmResetOpen(true);
       return;
     }
 
@@ -340,6 +344,21 @@ export function BlogEditorPanel({
         featuredImage={formState.featuredImage}
         content={formState.content}
         mode={previewMode}
+      />
+
+      <ConfirmActionModal
+        open={confirmResetOpen}
+        variant="warning"
+        title="Discard unsaved changes?"
+        description="Your latest edits will be reset to the most recently saved state."
+        entityName={formState.title.trim() || 'Untitled post'}
+        irreversibleWarning="Unsaved changes cannot be recovered after this reset."
+        confirmLabel="Discard changes"
+        onCancel={() => setConfirmResetOpen(false)}
+        onConfirm={async () => {
+          setFormState(savedState);
+          setConfirmResetOpen(false);
+        }}
       />
     </article>
   );

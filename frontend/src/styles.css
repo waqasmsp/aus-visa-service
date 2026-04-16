@@ -6828,6 +6828,32 @@ body.body--menu-open {
   width: min(920px, 100%);
 }
 
+.dashboard-confirm-action {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dashboard-confirm-action--danger {
+  border-color: rgba(180, 35, 24, 0.28);
+}
+
+.dashboard-confirm-action--warning {
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.dashboard-confirm-action--info {
+  border-color: rgba(29, 78, 216, 0.28);
+}
+
+.dashboard-confirm-action__warning {
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(180, 35, 24, 0.08);
+  color: #7a271a;
+  font-weight: 600;
+}
+
 .dashboard-field-error {
   display: block;
   color: #b42318;

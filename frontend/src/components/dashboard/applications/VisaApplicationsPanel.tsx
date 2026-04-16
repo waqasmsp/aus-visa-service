@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
 import { useDashboardTableState } from '../common/useDashboardTableState';
+import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import {
   ApplicationFilters,
   ApplicationStatus,
@@ -10,7 +11,7 @@ import {
 import { DashboardQueryState } from '../../../types/dashboard/query';
 import { applicationsService } from '../../../services/dashboard/applications.service';
 import { extractApiErrorMessage } from '../../../services/dashboard/async';
-import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
+import { canPerform } from '../../../services/dashboard/authPolicy';
 import { ApplicationsFilterBar } from './ApplicationsFilterBar';
 import { ApplicationsBulkActionBar } from './ApplicationsBulkActionBar';
 import { ApplicationsTable } from './ApplicationsTable';
@@ -44,6 +45,7 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
   const [editingApplication, setEditingApplication] = useState<VisaApplication | null>(null);
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [detailsApplication, setDetailsApplication] = useState<VisaApplication | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VisaApplication | null>(null);
   const [activePreset, setActivePreset] = useState(() => (typeof window === 'undefined' ? '' : window.localStorage.getItem(presetStorageKey) ?? ''));
 
   const table = useDashboardTableState<ApplicationFilters>({
@@ -151,11 +153,10 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
   };
 
   const softDeleteApplication = async (application: VisaApplication) => {
-    const approval = collectDestructiveApproval('applications', 'delete', application.id);
-    if (!approval) return;
-
     try {
-      await applicationsService.softDelete(application.id, role, approval);
+      await applicationsService.softDelete(application.id, role, {
+        reason: `Deleted via applications dashboard by ${role}`
+      });
       await loadApplications();
     } catch (mutationError) {
       setError(extractApiErrorMessage(mutationError));
@@ -228,7 +229,7 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
                   onSort={table.setSort}
                   onViewDetails={setDetailsApplication}
                   onEdit={(application) => { setEditingApplication(application); setOpenCreateModal(true); }}
-                  onDelete={(application) => void softDeleteApplication(application)}
+                  onDelete={(application) => setDeleteTarget(application)}
                   onRestore={(application) => void restoreApplication(application)}
                 />
                 <div className="dashboard-panel__header">
@@ -248,6 +249,22 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
           </article>
           {openCreateModal ? <ApplicationFormModal editingApplication={editingApplication} onClose={() => { setOpenCreateModal(false); setEditingApplication(null); }} onSubmit={(payload) => void upsertApplication(payload)} /> : null}
           {detailsApplication ? <ApplicationDetailsDrawer application={detailsApplication} onClose={() => setDetailsApplication(null)} /> : null}
+          <ConfirmActionModal
+            open={Boolean(deleteTarget)}
+            variant="danger"
+            title="Delete visa application?"
+            description="Removing this application will hide it from active queues and require restore workflows to recover it."
+            entityName={deleteTarget?.id ?? 'Unknown application'}
+            irreversibleWarning="This action is irreversible from standard queue views. Confirm only if this record should be removed."
+            confirmLabel="Delete application"
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={async () => {
+              if (!deleteTarget) return;
+              await softDeleteApplication(deleteTarget);
+              setDeleteTarget(null);
+            }}
+            preventCloseWhilePending
+          />
         </>
       ) : null}
     </section>
