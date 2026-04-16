@@ -7,7 +7,7 @@ import { DashboardCheckbox } from '../common/DashboardCheckbox';
 import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
 import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
-import { exportAuditEventsCsv, listAuditEvents, writeAuditEvent } from '../../../services/dashboard/audit.service';
+import { listAuditEvents, writeAuditEvent } from '../../../services/dashboard/audit.service';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
@@ -50,7 +50,8 @@ type HistoryEntry = {
 };
 
 type TopLevelTab = 'general' | 'security' | 'workflow' | 'notifications' | 'integrations' | 'branding' | 'access-roles' | 'audit-logs';
-type IntegrationTab = 'payment' | 'email' | 'webhooks' | 'analytics';
+type MacroTab = 'platform' | 'security' | 'integrations' | 'branding-access';
+type SectionId = 'operations' | 'workflow' | 'notifications' | 'mfa' | 'audit' | 'payments' | 'email' | 'webhooks' | 'analytics' | 'branding' | 'access';
 
 const DASHBOARD_SETTINGS_STORAGE_KEY = 'aus-visa-dashboard-settings-v2';
 const DASHBOARD_SETTINGS_HISTORY_STORAGE_KEY = 'aus-visa-dashboard-settings-history';
@@ -77,22 +78,32 @@ const defaultPlatformSettings: PlatformSettings = {
   allowSelfRoleEscalation: false
 };
 
-const topTabs: Array<{ id: TopLevelTab; label: string; adminOnly?: boolean }> = [
-  { id: 'general', label: 'General' },
+const macroTabs: Array<{ id: MacroTab; label: string; adminOnly?: boolean }> = [
+  { id: 'platform', label: 'Platform' },
   { id: 'security', label: 'Security', adminOnly: true },
-  { id: 'workflow', label: 'Workflow' },
-  { id: 'notifications', label: 'Notifications' },
   { id: 'integrations', label: 'Integrations', adminOnly: true },
-  { id: 'branding', label: 'Branding' },
-  { id: 'access-roles', label: 'Access & Roles', adminOnly: true },
-  { id: 'audit-logs', label: 'Audit Logs', adminOnly: true }
+  { id: 'branding-access', label: 'Branding & Access' }
 ];
 
-const integrationTabs: Array<{ id: IntegrationTab; label: string }> = [
-  { id: 'payment', label: 'Payment' },
-  { id: 'email', label: 'Email' },
-  { id: 'webhooks', label: 'Webhooks' },
-  { id: 'analytics', label: 'Analytics' }
+const macroTabToLegacyTabs: Record<MacroTab, TopLevelTab[]> = {
+  platform: ['general', 'workflow', 'notifications'],
+  security: ['security', 'audit-logs'],
+  integrations: ['integrations'],
+  'branding-access': ['branding', 'access-roles']
+};
+
+const sectionDefinitions: Array<{ id: SectionId; macro: MacroTab; label: string; tab: TopLevelTab; integrationTab?: 'payment' | 'email' | 'webhooks' | 'analytics'; adminOnly?: boolean }> = [
+  { id: 'operations', macro: 'platform', label: 'Operations', tab: 'general' },
+  { id: 'workflow', macro: 'platform', label: 'Workflow', tab: 'workflow' },
+  { id: 'notifications', macro: 'platform', label: 'Notifications', tab: 'notifications' },
+  { id: 'mfa', macro: 'security', label: 'MFA & Session', tab: 'security', adminOnly: true },
+  { id: 'audit', macro: 'security', label: 'Audit Logs', tab: 'audit-logs', adminOnly: true },
+  { id: 'payments', macro: 'integrations', label: 'Payments', tab: 'integrations', integrationTab: 'payment', adminOnly: true },
+  { id: 'email', macro: 'integrations', label: 'Email', tab: 'integrations', integrationTab: 'email', adminOnly: true },
+  { id: 'webhooks', macro: 'integrations', label: 'Webhooks', tab: 'integrations', integrationTab: 'webhooks', adminOnly: true },
+  { id: 'analytics', macro: 'integrations', label: 'Analytics', tab: 'integrations', integrationTab: 'analytics', adminOnly: true },
+  { id: 'branding', macro: 'branding-access', label: 'Branding', tab: 'branding' },
+  { id: 'access', macro: 'branding-access', label: 'Access & Roles', tab: 'access-roles', adminOnly: true }
 ];
 
 const tabFieldScope: Record<Exclude<TopLevelTab, 'audit-logs'>, Array<keyof PlatformSettings> | 'theme'> = {
@@ -167,17 +178,14 @@ const computeValidationErrors = (state: SettingsState): Record<string, string> =
   return errors;
 };
 
-const formatDateTime = (iso: string): string =>
-  new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(iso));
-
 export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actorEmail?: string }) {
   const isAdmin = role === 'admin';
-  const visibleTabs = useMemo(() => topTabs.filter((tab) => !tab.adminOnly || isAdmin), [isAdmin]);
-  const [activeTab, setActiveTab] = useState<TopLevelTab>(visibleTabs[0]?.id ?? 'general');
-  const [activeIntegrationTab, setActiveIntegrationTab] = useState<IntegrationTab>('payment');
+  const visibleMacroTabs = useMemo(() => macroTabs.filter((tab) => !tab.adminOnly || isAdmin), [isAdmin]);
+  const [activeMacroTab, setActiveMacroTab] = useState<MacroTab>(visibleMacroTabs[0]?.id ?? 'platform');
+  const visibleSections = useMemo(() => sectionDefinitions.filter((section) => !section.adminOnly || isAdmin), [isAdmin]);
+  const sectionMap = useMemo(() => Object.fromEntries(visibleSections.map((section) => [section.id, section])) as Record<SectionId, (typeof visibleSections)[number]>, [visibleSections]);
+  const [activeSection, setActiveSection] = useState<SectionId>('operations');
+  const [expandedMobileSections, setExpandedMobileSections] = useState<SectionId[]>(['operations']);
   const [savedState, setSavedState] = useState<SettingsState>(() => loadSettingsState());
   const [draftState, setDraftState] = useState<SettingsState>(() => loadSettingsState());
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadSettingsHistory());
@@ -258,7 +266,8 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
   }, [draftState, savedState]);
 
   const hasUnsavedChanges = useMemo(() => Object.values(tabDirtyMap).some(Boolean), [tabDirtyMap]);
-  const currentTabDirty = tabDirtyMap[activeTab];
+  const activeLegacyTab = sectionMap[activeSection]?.tab ?? 'general';
+  const currentTabDirty = tabDirtyMap[activeLegacyTab];
   const canManageSettings = canPerform(role, 'settings', 'manage_settings');
   const filteredAuditEvents = useMemo(
     () =>
@@ -306,11 +315,38 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
   }, [hasUnsavedChanges]);
 
   useEffect(() => {
-    if (visibleTabs.some((tab) => tab.id === activeTab)) {
+    if (visibleMacroTabs.some((tab) => tab.id === activeMacroTab)) {
       return;
     }
-    setActiveTab(visibleTabs[0]?.id ?? 'general');
-  }, [activeTab, visibleTabs]);
+    setActiveMacroTab(visibleMacroTabs[0]?.id ?? 'platform');
+  }, [activeMacroTab, visibleMacroTabs]);
+
+  useEffect(() => {
+    const sectionsForMacro = visibleSections.filter((section) => section.macro === activeMacroTab);
+    if (sectionsForMacro.some((section) => section.id === activeSection)) {
+      return;
+    }
+    setActiveSection(sectionsForMacro[0]?.id ?? visibleSections[0]?.id ?? 'operations');
+  }, [activeMacroTab, activeSection, visibleSections]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab') as MacroTab | null;
+    const section = params.get('section') as SectionId | null;
+
+    if (tab && visibleMacroTabs.some((entry) => entry.id === tab)) {
+      setActiveMacroTab(tab);
+    }
+    if (section && sectionMap[section]) {
+      setActiveSection(section);
+      const linkedSection = sectionMap[section];
+      setActiveMacroTab(linkedSection.macro);
+    }
+  }, [visibleMacroTabs, sectionMap]);
 
   const updatePlatform = <K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) => {
     setDraftState((prev) => ({ ...prev, platform: { ...prev.platform, [key]: value } }));
@@ -327,8 +363,18 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
     setSaveError('');
   };
 
-  const switchTopTab = (nextTab: TopLevelTab) => {
-    if (nextTab === activeTab) {
+  const setDeepLink = (macroTab: MacroTab, section: SectionId) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', macroTab);
+    params.set('section', section);
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+  };
+
+  const switchMacroTab = (nextTab: MacroTab) => {
+    if (nextTab === activeMacroTab) {
       return;
     }
     if (currentTabDirty) {
@@ -337,7 +383,20 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         return;
       }
     }
-    setActiveTab(nextTab);
+    const firstSection = visibleSections.find((section) => section.macro === nextTab);
+    const nextSection = firstSection?.id ?? activeSection;
+    setActiveMacroTab(nextTab);
+    setActiveSection(nextSection);
+    setDeepLink(nextTab, nextSection);
+  };
+
+  const switchSection = (section: SectionId) => {
+    const next = sectionMap[section];
+    if (!next) {
+      return;
+    }
+    setActiveSection(section);
+    setDeepLink(next.macro, section);
   };
 
   const saveTab = (tab: TopLevelTab) => {
@@ -495,6 +554,59 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
   const renderValidation = (field: string) =>
     validationErrors[field] ? <small className="dashboard-auth__message is-error">{validationErrors[field]}</small> : null;
 
+  const macroUnsavedCount = useMemo(
+    () =>
+      Object.fromEntries(
+        visibleMacroTabs.map((tab) => [
+          tab.id,
+          macroTabToLegacyTabs[tab.id].reduce((count, legacyTab) => count + (tabDirtyMap[legacyTab] ? 1 : 0), 0)
+        ])
+      ) as Record<MacroTab, number>,
+    [tabDirtyMap, visibleMacroTabs]
+  );
+
+  const macroValidationCount = useMemo(() => {
+    const counts: Record<MacroTab, number> = {
+      platform: 0,
+      security: 0,
+      integrations: 0,
+      'branding-access': 0
+    };
+    if (validationErrors.supportSlaHours) counts.platform += 1;
+    if (validationErrors.defaultApplicationSla) counts.platform += 1;
+    if (validationErrors.requiredReviewerCount) counts.platform += 1;
+    if (validationErrors.approvalQuorum) counts.platform += 1;
+    counts['branding-access'] += blockingContrastWarnings.length;
+    return counts;
+  }, [validationErrors, blockingContrastWarnings]);
+
+  const validateActiveTab = () => {
+    const count = macroValidationCount[activeMacroTab];
+    if (count > 0) {
+      notifyError(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'error' }, `${count} validation issues need attention.`));
+      return;
+    }
+    notifySuccess(formatNotificationMessage({ entity: 'settings', action: 'edit', result: 'success' }, 'No validation issues found in this tab.'));
+  };
+
+  const saveMacro = (macro: MacroTab) => {
+    macroTabToLegacyTabs[macro].forEach((tab) => {
+      if (tab !== 'audit-logs') {
+        saveTab(tab);
+      }
+    });
+  };
+
+  const resetMacro = (macro: MacroTab) => {
+    macroTabToLegacyTabs[macro].forEach((tab) => {
+      if (tab !== 'audit-logs') {
+        resetTab(tab);
+      }
+    });
+  };
+
+  const activeSections = visibleSections.filter((section) => section.macro === activeMacroTab);
+
   return (
     <section className="dashboard-stack">
       <article className="dashboard-panel">
@@ -504,368 +616,332 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         </div>
 
         <div className="dashboard-settings-tablist" role="tablist" aria-label="Settings tabs">
-          {visibleTabs.map((tab) => (
+          {visibleMacroTabs.map((tab) => (
             <DashboardButton
               key={tab.id}
               type="button"
               role="tab"
-              aria-selected={activeTab === tab.id}
-              className={`dashboard-settings-tab ${activeTab === tab.id ? 'is-active' : ''}`}
+              aria-selected={activeMacroTab === tab.id}
+              className={`dashboard-settings-tab ${activeMacroTab === tab.id ? 'is-active' : ''}`}
               variant="ghost"
               size="sm"
-              onClick={() => switchTopTab(tab.id)}
+              onClick={() => switchMacroTab(tab.id)}
             >
               {tab.label}
-              {tabDirtyMap[tab.id] ? <span className="dashboard-settings-tab__dirty">•</span> : null}
+              {macroValidationCount[tab.id] > 0 ? <span className="dashboard-settings-tab__badge is-error">{macroValidationCount[tab.id]}</span> : null}
+              {macroUnsavedCount[tab.id] > 0 ? <span className="dashboard-settings-tab__badge">{macroUnsavedCount[tab.id]}</span> : null}
             </DashboardButton>
           ))}
         </div>
       </article>
 
-      {activeTab === 'general' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-grid">
-            <label>
-              Support SLA (Hours)
-              <DashboardInput value={draftState.platform.supportSlaHours} onChange={(event) => updatePlatform('supportSlaHours', event.target.value)} />
-              {renderHelp('Target first-response SLA used in support dashboards and escalations.')}
-              {renderValidation('supportSlaHours')}
-            </label>
-            <label>
-              Application SLA (Hours)
-              <DashboardInput
-                value={draftState.platform.defaultApplicationSla}
-                onChange={(event) => updatePlatform('defaultApplicationSla', event.target.value)}
-              />
-              {renderHelp('Default completion SLA for new visa applications.')}
-              {renderValidation('defaultApplicationSla')}
-            </label>
-            <label>
-              <DashboardCheckbox checked={draftState.platform.maintenanceMode} onChange={(event) => updatePlatform('maintenanceMode', event.target.checked)} label="Maintenance Mode" />
-              {renderHelp('Shows maintenance notices and pauses customer submissions.')}
-            </label>
-          </div>
-        </article>
-      ) : null}
-
-      {activeTab === 'security' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-grid">
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.requireMfaForAdmins}
-                onChange={(event) => updatePlatform('requireMfaForAdmins', event.target.checked)}
-                label="Require MFA for Admins"
-              />
-              {renderHelp('Applies strong authentication to all admin sessions.')}
-            </label>
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.allowSelfRoleEscalation}
-                onChange={(event) => updatePlatform('allowSelfRoleEscalation', event.target.checked)}
-                label="Allow self role escalation"
-              />
-              {renderHelp('Critical policy: should remain disabled for production environments.')}
-            </label>
-          </div>
-        </article>
-      ) : null}
-
-      {activeTab === 'workflow' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-grid">
-            <label>
-              Required Reviewer Count
-              <DashboardInput
-                value={draftState.platform.requiredReviewerCount}
-                onChange={(event) => updatePlatform('requiredReviewerCount', event.target.value)}
-              />
-              {renderHelp('Minimum reviewers needed before a blog can be published.')}
-              {renderValidation('requiredReviewerCount')}
-            </label>
-            <label>
-              Approval Quorum (%)
-              <DashboardInput value={draftState.platform.approvalQuorum} onChange={(event) => updatePlatform('approvalQuorum', event.target.value)} />
-              {renderHelp('Percentage of assigned reviewers required for approval.')}
-              {renderValidation('approvalQuorum')}
-            </label>
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.autoAssignCases}
-                onChange={(event) => updatePlatform('autoAssignCases', event.target.checked)}
-                label="Auto assign new cases"
-              />
-            </label>
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.complianceChecklistGate}
-                onChange={(event) => updatePlatform('complianceChecklistGate', event.target.checked)}
-                label="Enforce compliance checklist before publish"
-              />
-            </label>
-          </div>
-        </article>
-      ) : null}
-
-      {activeTab === 'notifications' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-grid">
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.abandonedEmailAutomation}
-                onChange={(event) => updatePlatform('abandonedEmailAutomation', event.target.checked)}
-                label="Abandoned lead email automation"
-              />
-              {renderHelp('Automatically sends follow-ups for incomplete applications.')}
-            </label>
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.paymentAutoRetry}
-                onChange={(event) => updatePlatform('paymentAutoRetry', event.target.checked)}
-                label="Payment auto retry"
-              />
-              {renderHelp('Retries failed payments before moving invoices to manual collections.')}
-            </label>
-          </div>
-        </article>
-      ) : null}
-
-      {activeTab === 'integrations' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-subtabs" role="tablist" aria-label="Integration tabs">
-            {integrationTabs.map((tab) => (
-              <DashboardButton
-                key={tab.id}
-                type="button"
-                className={`dashboard-settings-subtab ${activeIntegrationTab === tab.id ? 'is-active' : ''}`}
-                variant="ghost"
-                size="sm"
-                onClick={() => setActiveIntegrationTab(tab.id)}
-              >
-                {tab.label}
-              </DashboardButton>
+      <article className="dashboard-panel dashboard-settings-layout">
+        <aside className="dashboard-settings-sidenav" aria-label="Settings sections">
+          {activeSections.map((section) => (
+            <button
+              key={section.id}
+              type="button"
+              className={`dashboard-settings-sidenav__item ${activeSection === section.id ? 'is-active' : ''}`}
+              onClick={() => switchSection(section.id)}
+            >
+              {section.label}
+            </button>
+          ))}
+        </aside>
+        <div className="dashboard-settings-main">
+          <div className="dashboard-settings-accordion">
+            {activeSections.map((section) => (
+              <article key={section.id} className="dashboard-settings-accordion__item">
+                <button
+                  type="button"
+                  className={`dashboard-settings-accordion__trigger ${activeSection === section.id ? 'is-open' : ''}`}
+                  onClick={() => {
+                    switchSection(section.id);
+                    setExpandedMobileSections((prev) => (prev.includes(section.id) ? prev.filter((entry) => entry !== section.id) : [...prev, section.id]));
+                  }}
+                >
+                  {section.label}
+                </button>
+                <div className={`dashboard-settings-accordion__panel ${expandedMobileSections.includes(section.id) || activeSection === section.id ? 'is-open' : ''}`}>
+                  {section.id === 'operations' ? (
+                    <div className="dashboard-settings-grid">
+                      <label>
+                        Support SLA (Hours)
+                        <DashboardInput value={draftState.platform.supportSlaHours} onChange={(event) => updatePlatform('supportSlaHours', event.target.value)} />
+                        {renderHelp('Target first-response SLA used in support dashboards and escalations.')}
+                        {renderValidation('supportSlaHours')}
+                      </label>
+                      <label>
+                        Application SLA (Hours)
+                        <DashboardInput
+                          value={draftState.platform.defaultApplicationSla}
+                          onChange={(event) => updatePlatform('defaultApplicationSla', event.target.value)}
+                        />
+                        {renderHelp('Default completion SLA for new visa applications.')}
+                        {renderValidation('defaultApplicationSla')}
+                      </label>
+                      <label>
+                        <DashboardCheckbox checked={draftState.platform.maintenanceMode} onChange={(event) => updatePlatform('maintenanceMode', event.target.checked)} label="Maintenance Mode" />
+                        {renderHelp('Shows maintenance notices and pauses customer submissions.')}
+                      </label>
+                    </div>
+                  ) : null}
+                  {section.id === 'workflow' ? (
+                    <div className="dashboard-settings-grid">
+                      <label>
+                        Required Reviewer Count
+                        <DashboardInput
+                          value={draftState.platform.requiredReviewerCount}
+                          onChange={(event) => updatePlatform('requiredReviewerCount', event.target.value)}
+                        />
+                        {renderHelp('Minimum reviewers needed before a blog can be published.')}
+                        {renderValidation('requiredReviewerCount')}
+                      </label>
+                      <label>
+                        Approval Quorum (%)
+                        <DashboardInput value={draftState.platform.approvalQuorum} onChange={(event) => updatePlatform('approvalQuorum', event.target.value)} />
+                        {renderHelp('Percentage of assigned reviewers required for approval.')}
+                        {renderValidation('approvalQuorum')}
+                      </label>
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.autoAssignCases}
+                          onChange={(event) => updatePlatform('autoAssignCases', event.target.checked)}
+                          label="Auto assign new cases"
+                        />
+                      </label>
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.complianceChecklistGate}
+                          onChange={(event) => updatePlatform('complianceChecklistGate', event.target.checked)}
+                          label="Enforce compliance checklist before publish"
+                        />
+                      </label>
+                    </div>
+                  ) : null}
+                  {section.id === 'notifications' ? (
+                    <div className="dashboard-settings-grid">
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.abandonedEmailAutomation}
+                          onChange={(event) => updatePlatform('abandonedEmailAutomation', event.target.checked)}
+                          label="Abandoned lead email automation"
+                        />
+                        {renderHelp('Automatically sends follow-ups for incomplete applications.')}
+                      </label>
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.paymentAutoRetry}
+                          onChange={(event) => updatePlatform('paymentAutoRetry', event.target.checked)}
+                          label="Payment auto retry"
+                        />
+                        {renderHelp('Retries failed payments before moving invoices to manual collections.')}
+                      </label>
+                    </div>
+                  ) : null}
+                  {section.id === 'mfa' ? (
+                    <div className="dashboard-settings-grid">
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.requireMfaForAdmins}
+                          onChange={(event) => updatePlatform('requireMfaForAdmins', event.target.checked)}
+                          label="Require MFA for Admins"
+                        />
+                        {renderHelp('Applies strong authentication to all admin sessions.')}
+                      </label>
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.allowSelfRoleEscalation}
+                          onChange={(event) => updatePlatform('allowSelfRoleEscalation', event.target.checked)}
+                          label="Allow self role escalation"
+                        />
+                        {renderHelp('Critical policy: should remain disabled for production environments.')}
+                      </label>
+                    </div>
+                  ) : null}
+                  {section.id === 'audit' ? (
+                    <div>
+                      <div className="dashboard-panel__header">
+                        <h2>Audit Explorer</h2>
+                        <small>{filteredAuditEvents.length} entries</small>
+                      </div>
+                      <div className="dashboard-filter-grid dashboard-filter-grid--dense">
+                        <DashboardInput value={auditSearch} onChange={(event) => setAuditSearch(event.target.value)} placeholder="Search actor/action/entity/diff" />
+                        <DashboardInput value={auditActor} onChange={(event) => setAuditActor(event.target.value)} placeholder="Actor email/name" />
+                        <DashboardInput value={auditAction} onChange={(event) => setAuditAction(event.target.value)} placeholder="Action" />
+                        <DashboardSelect value={auditEntityType} onChange={(event) => setAuditEntityType(event.target.value)}>
+                          <option value="">All entity types</option>
+                          <option value="applications">Applications</option>
+                          <option value="users">Users</option>
+                          <option value="blogs">Blogs</option>
+                          <option value="pages">Pages</option>
+                          <option value="settings">Settings</option>
+                          <option value="webhooks">Webhooks</option>
+                        </DashboardSelect>
+                      </div>
+                      {filteredAuditEvents.length ? (
+                        <div className="dashboard-table-wrap">
+                          <table className="dashboard-table">
+                            <thead>
+                              <tr>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Entity</th>
+                                <th>Before</th>
+                                <th>After</th>
+                                <th>Session</th>
+                                <th>Timestamp</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredAuditEvents.map((entry) => (
+                                <tr key={entry.id}>
+                                  <td>{entry.actor}</td>
+                                  <td>{entry.action}</td>
+                                  <td>
+                                    {entry.entityType}:{entry.entityId}
+                                  </td>
+                                  <td>{JSON.stringify(entry.before).slice(0, 80)}</td>
+                                  <td>{JSON.stringify(entry.after).slice(0, 80)}</td>
+                                  <td>{entry.requestMetadata.sessionId ?? 'n/a'}</td>
+                                  <td>{new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.timestamp))}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="dashboard-panel__note">No audit events found for current filters.</p>
+                      )}
+                    </div>
+                  ) : null}
+                  {section.macro === 'integrations' ? (
+                    <div className="dashboard-settings-grid">
+                      {section.id === 'payments' ? (
+                        <>
+                          <label>
+                            Payment Provider
+                            <DashboardSelect
+                              value={draftState.platform.paymentProvider}
+                              onChange={(event) => updatePlatform('paymentProvider', event.target.value as PlatformSettings['paymentProvider'])}
+                            >
+                              <option value="stripe">Stripe</option>
+                              <option value="braintree">Braintree</option>
+                            </DashboardSelect>
+                          </label>
+                          <label>
+                            Payment API Key
+                            <DashboardInput value={draftState.platform.paymentApiKey} onChange={(event) => updatePlatform('paymentApiKey', event.target.value)} />
+                          </label>
+                        </>
+                      ) : null}
+                      {section.id === 'email' ? (
+                        <>
+                          <label>
+                            Email Provider
+                            <DashboardSelect
+                              value={draftState.platform.emailProvider}
+                              onChange={(event) => updatePlatform('emailProvider', event.target.value as PlatformSettings['emailProvider'])}
+                            >
+                              <option value="ses">Amazon SES</option>
+                              <option value="sendgrid">SendGrid</option>
+                            </DashboardSelect>
+                          </label>
+                          <label>
+                            Email API Key
+                            <DashboardInput value={draftState.platform.emailApiKey} onChange={(event) => updatePlatform('emailApiKey', event.target.value)} />
+                          </label>
+                        </>
+                      ) : null}
+                      {section.id === 'webhooks' ? <WebhooksIntegrationTab role={role} actor={actorEmail ?? `${role}@ausvisaservice.local`} /> : null}
+                      {section.id === 'analytics' ? (
+                        <label>
+                          Analytics Write Key
+                          <DashboardInput value={draftState.platform.analyticsWriteKey} onChange={(event) => updatePlatform('analyticsWriteKey', event.target.value)} />
+                        </label>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {section.id === 'branding' ? (
+                    <article className="dashboard-panel">
+                      <div className="dashboard-settings-grid">
+                        <label>
+                          Primary Brand Color
+                          <DashboardInput value={draftState.platform.primaryBrand} onChange={(event) => updatePlatform('primaryBrand', event.target.value)} />
+                          {renderHelp('Brand token used for charts and admin highlights.')}
+                        </label>
+                        <label>
+                          App Background
+                          <DashboardInput type="text" value={draftState.theme.global.appBackground} onChange={(event) => updateThemeGlobal('appBackground', event.target.value)} />
+                        </label>
+                        <label>
+                          Header Background
+                          <DashboardInput type="text" value={draftState.theme.global.headerBackground} onChange={(event) => updateThemeGlobal('headerBackground', event.target.value)} />
+                        </label>
+                        <label>
+                          Button Background
+                          <DashboardInput type="text" value={draftState.theme.global.buttonBackground} onChange={(event) => updateThemeGlobal('buttonBackground', event.target.value)} />
+                        </label>
+                        <label>
+                          Button Text Color
+                          <DashboardInput type="text" value={draftState.theme.global.buttonText} onChange={(event) => updateThemeGlobal('buttonText', event.target.value)} />
+                        </label>
+                        <label>
+                          Footer Background
+                          <DashboardInput type="text" value={draftState.theme.global.footerBackground} onChange={(event) => updateThemeGlobal('footerBackground', event.target.value)} />
+                        </label>
+                      </div>
+                      <div className="dashboard-toggle-list">
+                        <label>
+                          <DashboardCheckbox
+                            checked={draftState.theme.sections.enableApplicationSectionBackground}
+                            onChange={(event) => updateThemeSection('enableApplicationSectionBackground', event.target.checked)}
+                            label="Override Application Section Background"
+                          />
+                        </label>
+                        <label>
+                          Application Section Background
+                          <DashboardInput
+                            type="text"
+                            value={draftState.theme.sections.applicationSectionBackground}
+                            onChange={(event) => updateThemeSection('applicationSectionBackground', event.target.value)}
+                            disabled={!draftState.theme.sections.enableApplicationSectionBackground}
+                          />
+                        </label>
+                      </div>
+                    </article>
+                  ) : null}
+                  {section.id === 'access' ? (
+                    <div className="dashboard-settings-grid">
+                      <label>
+                        <DashboardCheckbox
+                          checked={draftState.platform.roleChangeRequiresApproval}
+                          onChange={(event) => updatePlatform('roleChangeRequiresApproval', event.target.checked)}
+                          label="Role changes require admin approval"
+                        />
+                      </label>
+                    </div>
+                  ) : null}
+                </div>
+              </article>
             ))}
           </div>
-
-          <div className="dashboard-settings-grid">
-            {activeIntegrationTab === 'payment' ? (
-              <>
-                <label>
-                  Payment Provider
-                  <DashboardSelect
-                    value={draftState.platform.paymentProvider}
-                    onChange={(event) => updatePlatform('paymentProvider', event.target.value as PlatformSettings['paymentProvider'])}
-                  >
-                    <option value="stripe">Stripe</option>
-                    <option value="braintree">Braintree</option>
-                  </DashboardSelect>
-                </label>
-                <label>
-                  Payment API Key
-                  <DashboardInput value={draftState.platform.paymentApiKey} onChange={(event) => updatePlatform('paymentApiKey', event.target.value)} />
-                  {renderHelp('Admin only secret. Used for payment authorization and retries.')}
-                </label>
-              </>
-            ) : null}
-
-            {activeIntegrationTab === 'email' ? (
-              <>
-                <label>
-                  Email Provider
-                  <DashboardSelect
-                    value={draftState.platform.emailProvider}
-                    onChange={(event) => updatePlatform('emailProvider', event.target.value as PlatformSettings['emailProvider'])}
-                  >
-                    <option value="ses">Amazon SES</option>
-                    <option value="sendgrid">SendGrid</option>
-                  </DashboardSelect>
-                </label>
-                <label>
-                  Email API Key
-                  <DashboardInput value={draftState.platform.emailApiKey} onChange={(event) => updatePlatform('emailApiKey', event.target.value)} />
-                </label>
-              </>
-            ) : null}
-
-            {activeIntegrationTab === 'webhooks' ? <WebhooksIntegrationTab role={role} actor={actorEmail ?? `${role}@ausvisaservice.local`} /> : null}
-
-            {activeIntegrationTab === 'analytics' ? (
-              <label>
-                Analytics Write Key
-                <DashboardInput value={draftState.platform.analyticsWriteKey} onChange={(event) => updatePlatform('analyticsWriteKey', event.target.value)} />
-              </label>
-            ) : null}
-          </div>
-        </article>
-      ) : null}
-
-      {activeTab === 'branding' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-grid">
-            <label>
-              Primary Brand Color
-              <DashboardInput value={draftState.platform.primaryBrand} onChange={(event) => updatePlatform('primaryBrand', event.target.value)} />
-              {renderHelp('Brand token used for charts and admin highlights.')}
-            </label>
-            <label>
-              App Background
-              <DashboardInput type="text" value={draftState.theme.global.appBackground} onChange={(event) => updateThemeGlobal('appBackground', event.target.value)} />
-            </label>
-            <label>
-              Header Background
-              <DashboardInput type="text" value={draftState.theme.global.headerBackground} onChange={(event) => updateThemeGlobal('headerBackground', event.target.value)} />
-            </label>
-            <label>
-              Button Background
-              <DashboardInput type="text" value={draftState.theme.global.buttonBackground} onChange={(event) => updateThemeGlobal('buttonBackground', event.target.value)} />
-            </label>
-            <label>
-              Button Text Color
-              <DashboardInput type="text" value={draftState.theme.global.buttonText} onChange={(event) => updateThemeGlobal('buttonText', event.target.value)} />
-            </label>
-            <label>
-              Footer Background
-              <DashboardInput type="text" value={draftState.theme.global.footerBackground} onChange={(event) => updateThemeGlobal('footerBackground', event.target.value)} />
-            </label>
-          </div>
-          <div className="dashboard-toggle-list">
-            <label>
-              <DashboardCheckbox
-                checked={draftState.theme.sections.enableApplicationSectionBackground}
-                onChange={(event) => updateThemeSection('enableApplicationSectionBackground', event.target.checked)}
-                label="Override Application Section Background"
-              />
-            </label>
-            <label>
-              Application Section Background
-              <DashboardInput
-                type="text"
-                value={draftState.theme.sections.applicationSectionBackground}
-                onChange={(event) => updateThemeSection('applicationSectionBackground', event.target.value)}
-                disabled={!draftState.theme.sections.enableApplicationSectionBackground}
-              />
-            </label>
-          </div>
-          {contrastWarnings.length ? (
-            <div className="dashboard-settings-warnings" role="status" aria-live="polite">
-              {contrastWarnings.map((warning) => (
-                <p key={warning.id} className={`dashboard-auth__message ${warning.severity === 'error' ? 'is-error' : 'is-warning'}`}>
-                  {warning.message}
-                </p>
-              ))}
-            </div>
-          ) : null}
-        </article>
-      ) : null}
-
-      {activeTab === 'access-roles' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-grid">
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.roleChangeRequiresApproval}
-                onChange={(event) => updatePlatform('roleChangeRequiresApproval', event.target.checked)}
-                label="Role changes require admin approval"
-              />
-              {renderHelp('RBAC policy change requests must be approved by an admin.')}
-            </label>
-            <label>
-              <DashboardCheckbox
-                checked={draftState.platform.allowSelfRoleEscalation}
-                onChange={(event) => updatePlatform('allowSelfRoleEscalation', event.target.checked)}
-                label="Allow self role escalation"
-              />
-              {renderHelp('Sensitive setting. Enabling this weakens RBAC protections.')}
-            </label>
-          </div>
-        </article>
-      ) : null}
-
-      {activeTab === 'audit-logs' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-panel__header">
-            <h2>Audit Explorer</h2>
-            <small>{filteredAuditEvents.length} entries</small>
-          </div>
-          <div className="dashboard-filter-grid dashboard-filter-grid--dense">
-            <DashboardInput value={auditSearch} onChange={(event) => setAuditSearch(event.target.value)} placeholder="Search actor/action/entity/diff" />
-            <DashboardInput value={auditActor} onChange={(event) => setAuditActor(event.target.value)} placeholder="Actor email/name" />
-            <DashboardInput value={auditAction} onChange={(event) => setAuditAction(event.target.value)} placeholder="Action" />
-            <DashboardSelect value={auditEntityType} onChange={(event) => setAuditEntityType(event.target.value)}>
-              <option value="">All entity types</option>
-              <option value="applications">Applications</option>
-              <option value="users">Users</option>
-              <option value="blogs">Blogs</option>
-              <option value="pages">Pages</option>
-              <option value="settings">Settings</option>
-              <option value="webhooks">Webhooks</option>
-            </DashboardSelect>
-            <DashboardButton
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                const csv = exportAuditEventsCsv(filteredAuditEvents);
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `audit-export-${new Date().toISOString().slice(0, 10)}.csv`;
-                link.click();
-                URL.revokeObjectURL(url);
-                notifyInfo(formatNotificationMessage({ entity: 'settings', action: 'export', result: 'success' }, 'Audit CSV export started.'));
-              }}
-            >
-              Export CSV
-            </DashboardButton>
-          </div>
-          {filteredAuditEvents.length ? (
-            <div className="dashboard-table-wrap">
-              <table className="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>Actor</th>
-                    <th>Action</th>
-                    <th>Entity</th>
-                    <th>Before</th>
-                    <th>After</th>
-                    <th>Session</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAuditEvents.map((entry) => (
-                    <tr key={entry.id}>
-                      <td>{entry.actor}</td>
-                      <td>{entry.action}</td>
-                      <td>{entry.entityType}:{entry.entityId}</td>
-                      <td>{JSON.stringify(entry.before).slice(0, 80)}</td>
-                      <td>{JSON.stringify(entry.after).slice(0, 80)}</td>
-                      <td>{entry.requestMetadata.sessionId ?? 'n/a'}</td>
-                      <td>{formatDateTime(entry.timestamp)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="dashboard-panel__note">No audit events found for current filters.</p>
-          )}
-        </article>
-      ) : null}
-
-      {activeTab !== 'audit-logs' ? (
-        <article className="dashboard-panel">
-          <div className="dashboard-settings-actions">
-            <DashboardButton type="button" variant="primary" onClick={() => saveTab(activeTab)} disabled={!canManageSettings}>
-              Save {topTabs.find((tab) => tab.id === activeTab)?.label}
-            </DashboardButton>
-            <DashboardButton type="button" variant="ghost" onClick={() => resetTab(activeTab)}>
-              Reset {topTabs.find((tab) => tab.id === activeTab)?.label}
-            </DashboardButton>
-          </div>
-          {saveError ? <p className="dashboard-auth__message is-error">{saveError}</p> : null}
-        </article>
-      ) : null}
+        </div>
+      </article>
+      <article className="dashboard-panel dashboard-settings-actions-bar">
+        <div className="dashboard-settings-actions">
+          <DashboardButton type="button" variant="primary" onClick={() => saveMacro(activeMacroTab)} disabled={!canManageSettings}>
+            Save {macroTabs.find((tab) => tab.id === activeMacroTab)?.label}
+          </DashboardButton>
+          <DashboardButton type="button" variant="ghost" onClick={() => resetMacro(activeMacroTab)}>
+            Discard changes
+          </DashboardButton>
+          <DashboardButton type="button" variant="secondary" onClick={validateActiveTab}>
+            Validate tab
+          </DashboardButton>
+        </div>
+        {saveError ? <p className="dashboard-auth__message is-error">{saveError}</p> : null}
+      </article>
     </section>
   );
 }

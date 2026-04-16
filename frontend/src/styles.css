@@ -5377,6 +5377,105 @@ body.body--menu-open {
   color: var(--dashboard-warning);
 }
 
+.dashboard-settings-tab__badge {
+  margin-left: 0.35rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dashboard-settings-tab__badge.is-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.dashboard-settings-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.dashboard-settings-sidenav {
+  display: grid;
+  gap: 0.4rem;
+  align-content: flex-start;
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100dvh - 10rem);
+}
+
+.dashboard-settings-sidenav__item {
+  border: 1px solid var(--dashboard-border);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  font: inherit;
+  color: #274a71;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboard-settings-sidenav__item.is-active {
+  border-color: rgb(37 99 235 / 0.5);
+  background: rgb(37 99 235 / 0.12);
+}
+
+.dashboard-settings-main {
+  min-width: 0;
+}
+
+.dashboard-settings-accordion {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.dashboard-settings-accordion__item {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.85rem;
+  overflow: hidden;
+}
+
+.dashboard-settings-accordion__trigger {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.75rem 0.8rem;
+  background: #f8fbff;
+  color: #274a71;
+  cursor: pointer;
+}
+
+.dashboard-settings-accordion__trigger.is-open {
+  background: #edf4ff;
+}
+
+.dashboard-settings-accordion__panel {
+  display: none;
+  padding: 0.8rem;
+}
+
+.dashboard-settings-accordion__panel.is-open {
+  display: block;
+}
+
+.dashboard-settings-actions-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  border-color: #cdddff;
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(8px);
+}
+
 .dashboard-settings-subtabs {
   display: flex;
   flex-wrap: wrap;
@@ -5993,6 +6092,14 @@ body.body--menu-open {
 
   .dashboard-auth__shell {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-settings-sidenav {
+    display: none;
   }
 }
 
