@@ -20,6 +20,7 @@ import { useDashboardTableState } from '../../components/dashboard/common/useDas
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 import { SettingsPanel } from '../../components/dashboard/settings/SettingsPanel';
+import { TransactionCenterPanel } from '../../components/dashboard/payments/TransactionCenterPanel';
 import { canPerform, collectDestructiveApproval } from '../../services/dashboard/authPolicy';
 import { writeAuditEvent } from '../../services/dashboard/audit.service';
 import { isModuleEnabled, listModuleFlags } from '../../services/dashboard/featureFlags.service';
@@ -619,24 +620,7 @@ function DocumentsPanel({ role }: { role: DashboardRole }) {
 }
 
 function PaymentsPanel({ role }: { role: DashboardRole }) {
-  return (
-    <section className="dashboard-stack">
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header">
-          <h2>Payments and Payouts</h2>
-        </div>
-        <p>
-          Track checkout conversions, refunds, and settlement windows. Role <strong>{role.toUpperCase()}</strong> currently has invoice
-          visibility and transaction audit controls.
-        </p>
-        <ul className="dashboard-simple-list">
-          <li>Today revenue: $8,420</li>
-          <li>Pending settlements: $11,290</li>
-          <li>Refund requests: 4</li>
-        </ul>
-      </article>
-    </section>
-  );
+  return <TransactionCenterPanel role={role} />;
 }
 
 function ContactEntriesPanel({ audience }: { audience: 'admin' | 'manager' }) {
@@ -1196,20 +1180,7 @@ function ManagerDocumentsPanel() {
 }
 
 function ManagerPaymentsPanel() {
-  return (
-    <section className="dashboard-stack">
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header">
-          <h2>Payment Reconciliation</h2>
-        </div>
-        <ul className="dashboard-simple-list">
-          <li>Settlements pending: $11,290</li>
-          <li>Failed transactions (24h): 8</li>
-          <li>Refund approvals required: 3</li>
-        </ul>
-      </article>
-    </section>
-  );
+  return <TransactionCenterPanel role="manager" />;
 }
 
 function ManagerSettingsPanel() {

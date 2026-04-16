@@ -12,3 +12,8 @@ export * from './checkout/dtos';
 export * from './checkout/models';
 export * from './checkout/repository';
 export * from './checkout/service';
+export * from './transaction-center/controller';
+export * from './transaction-center/dtos';
+export * from './transaction-center/models';
+export * from './transaction-center/repository';
+export * from './transaction-center/service';
