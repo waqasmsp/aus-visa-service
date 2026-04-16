@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton, DashboardNoResultsState } from '../common/asyncUi';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
@@ -18,6 +18,7 @@ import { ApplicationsBulkActionBar } from './ApplicationsBulkActionBar';
 import { ApplicationsTable } from './ApplicationsTable';
 import { ApplicationFormModal } from './ApplicationFormModal';
 import { ApplicationDetailsDrawer } from './ApplicationDetailsDrawer';
+import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
 
 type Props = {
   role: DashboardUserRole;
@@ -40,6 +41,7 @@ const defaultFilters: ApplicationFilters = {
 
 export function VisaApplicationsPanel({ role, basePath }: Props) {
   const [applications, setApplications] = useState<VisaApplication[]>([]);
+  const [totalApplicationsCount, setTotalApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -80,6 +82,7 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
         filters: table.state.filters
       });
       setApplications(response.items);
+      setTotalApplicationsCount(response.meta.total);
       setSelectedIds((prev) => prev.filter((id) => response.items.some((item) => item.id === id)));
     } catch (loadError) {
       setError(extractApiErrorMessage(loadError));
@@ -252,7 +255,11 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
               applications={applications}
             />
             {applications.length === 0 ? (
-              <DashboardEmptyState title="No applications found" description="Try different filter criteria or preset combinations." />
+              table.state.search || Object.values(table.state.filters).some((value) => value && value !== 'All' && value !== 'false') ? (
+                <DashboardNoResultsState description="No applications match your filters." onReset={() => table.setState((prev) => ({ ...prev, search: '', filters: defaultFilters, pagination: { ...prev.pagination, page: 1 } }))} />
+              ) : (
+                <DashboardEmptyState title="No applications found" description="Try different filter criteria or preset combinations." />
+              )
             ) : (
               <>
                 <ApplicationsTable
@@ -269,18 +276,13 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
                   onDelete={(application) => setDeleteTarget(application)}
                   onRestore={(application) => void restoreApplication(application)}
                 />
-                <div className="dashboard-panel__header">
-                  <small>Page {table.state.pagination.page}</small>
-                  <div>
-                    <button type="button" disabled={table.state.pagination.page === 1} onClick={() => table.setPage(table.state.pagination.page - 1)}>Prev</button>
-                    <button type="button" onClick={() => table.setPage(table.state.pagination.page + 1)}>Next</button>
-                    <select value={table.state.pagination.pageSize} onChange={(event) => table.setPageSize(Number(event.target.value))}>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </select>
-                  </div>
-                </div>
+                <DataTablePaginationFooter
+                  page={table.state.pagination.page}
+                  pageSize={table.state.pagination.pageSize}
+                  total={totalApplicationsCount}
+                  onPageChange={table.setPage}
+                  onPageSizeChange={table.setPageSize}
+                />
               </>
             )}
           </article>

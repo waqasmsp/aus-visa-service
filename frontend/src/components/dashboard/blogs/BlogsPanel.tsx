@@ -3,6 +3,8 @@ import { Card } from '../../primitives/Card';
 import { PrimaryButton } from '../../primitives/PrimaryButton';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton, DashboardNoResultsState } from '../common/asyncUi';
+import { DataTablePaginationFooter, DataTableRowActions } from '../common/DataTablePrimitives';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
@@ -73,6 +75,8 @@ export function BlogsPanel({
   const [bulkValue, setBulkValue] = useState('');
   const [trashLog, setTrashLog] = useState<Record<string, string>>({});
   const [deleteTarget, setDeleteTarget] = useState<BlogRow | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const { notifyError, notifyInfo, formatNotificationMessage } = useDashboardNotifications();
 
   const allSelected = useMemo(
@@ -123,6 +127,10 @@ export function BlogsPanel({
     notifyInfo(formatNotificationMessage({ entity: 'blog', action: 'delete', result: 'success', id: post.id }, outcome ?? `${post.title} moved to trash. Recoverable until ${new Date(recoveryUntil).toLocaleDateString('en-US')}.`));
   };
 
+  const total = posts.length;
+  const start = (page - 1) * pageSize;
+  const pagedPosts = posts.slice(start, start + pageSize);
+
   return (
     <Card className="dashboard-panel dashboard-blog-list-panel" as="article">
       <div className="dashboard-panel__header">
@@ -155,10 +163,10 @@ export function BlogsPanel({
         </button>
       </div>
 
-      {loading ? <p className="dashboard-panel__note">Loading dashboard posts...</p> : null}
-      {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
+      {loading ? <DashboardLoadingSkeleton rows={4} /> : null}
+      {error ? <DashboardErrorState message={error} onRetry={() => undefined} /> : null}
 
-      <div className="dashboard-table-wrap dashboard-blog-list-table-wrap">
+      <div className="dashboard-table-wrap dashboard-table-wrap--sticky dashboard-blog-list-table-wrap">
         <table className="dashboard-table dashboard-blog-list-table">
           <thead>
             <tr>
@@ -180,10 +188,12 @@ export function BlogsPanel({
           <tbody>
             {!loading && !error && posts.length === 0 ? (
               <tr>
-                <td colSpan={11}>No posts available for the current filter.</td>
+                <td colSpan={11}>
+                  <DashboardNoResultsState description="No posts match your current filters." onReset={() => setSelectedPostIds([])} />
+                </td>
               </tr>
             ) : null}
-            {posts.map((post) => (
+            {pagedPosts.map((post) => (
               <tr key={post.id}>
                 <td>
                   <input
@@ -215,18 +225,20 @@ export function BlogsPanel({
                   <span className={`dashboard-chip dashboard-chip--${post.status.toLowerCase().replace(/\s+/g, '-')}`}>{post.status}</span>
                 </td>
                 <td>
-                  <div className="dashboard-actions-inline">
+                  <DataTableRowActions>
                     {canEdit ? <button type="button" onClick={() => onEdit?.(post.id)}>Edit</button> : null}
                     {canPublish ? <button type="button">Review</button> : null}
                     {canArchive ? <button type="button" onClick={() => onArchive?.(post.id)}>Archive</button> : null}
                     {canDelete ? <button type="button" className="danger" onClick={() => setDeleteTarget(post)}>Delete</button> : null}
-                  </div>
+                  </DataTableRowActions>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {!loading && !error && posts.length === 0 ? <DashboardEmptyState title="No posts yet" description="Create a new post to get started." /> : null}
+      <DataTablePaginationFooter page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
       <div className="dashboard-blog-list-cta">
         <PrimaryButton type="button" onClick={onCreate} disabled={!actions.includes('create')}>Create new post</PrimaryButton>
       </div>

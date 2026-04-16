@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton, DashboardNoResultsState } from '../common/asyncUi';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
@@ -13,6 +13,7 @@ import { UsersFilterBar } from './UsersFilterBar';
 import { UsersTable } from './UsersTable';
 import { UserDetailDrawer } from './UserDetailDrawer';
 import { UserEditorFormModel, UserEditorModal } from './UserEditorModal';
+import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
 
 type Props = {
   role: DashboardUserRole;
@@ -50,6 +51,7 @@ const parseCsvRows = (csv: string): UserImportRow[] => {
 
 export function UsersPanel({ role, basePath }: Props) {
   const [users, setUsers] = useState<PortalUser[]>([]);
+  const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedUser, setSelectedUser] = useState<PortalUser | null>(null);
@@ -92,6 +94,7 @@ export function UsersPanel({ role, basePath }: Props) {
         filters: table.state.filters
       });
       setUsers(response.items);
+      setTotalUsersCount(response.meta.total);
     } catch (loadError) {
       setError(extractApiErrorMessage(loadError));
     } finally {
@@ -267,7 +270,14 @@ export function UsersPanel({ role, basePath }: Props) {
             ) : null}
 
             {users.length === 0 ? (
-              <DashboardEmptyState title="No users found" description="Try broadening your filter criteria." />
+              table.state.search || Object.values(table.state.filters).some((value) => value && value !== 'All' && value !== 'false') ? (
+                <DashboardNoResultsState
+                  description="No users match your filters."
+                  onReset={() => table.setState((prev) => ({ ...prev, search: '', filters: defaultFilters, pagination: { ...prev.pagination, page: 1 } }))}
+                />
+              ) : (
+                <DashboardEmptyState title="No users found" description="Try broadening your filter criteria." />
+              )
             ) : (
               <UsersTable
                 users={users}
@@ -282,6 +292,13 @@ export function UsersPanel({ role, basePath }: Props) {
                 onDelete={(user) => setDeleteTarget(user)}
               />
             )}
+            <DataTablePaginationFooter
+              page={table.state.pagination.page}
+              pageSize={table.state.pagination.pageSize}
+              total={totalUsersCount}
+              onPageChange={table.setPage}
+              onPageSizeChange={table.setPageSize}
+            />
           </article>
 
           {showEditor ? (
