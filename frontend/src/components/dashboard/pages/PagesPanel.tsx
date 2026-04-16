@@ -16,6 +16,13 @@ import { extractApiErrorMessage, runOptimisticMutation } from '../../../services
 import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
 import { DashboardUserRole } from '../../../types/dashboard/applications';
 import { useDashboardTableState } from '../common/useDashboardTableState';
+import { DashboardButton } from '../common/DashboardButton';
+import { DashboardCheckbox } from '../common/DashboardCheckbox';
+import { DashboardDateTime } from '../common/DashboardDateTime';
+import { DashboardField } from '../common/DashboardField';
+import { DashboardInput } from '../common/DashboardInput';
+import { DashboardSelect } from '../common/DashboardSelect';
+import { DashboardTextarea } from '../common/DashboardTextarea';
 import {
   DashboardEmptyState,
   DashboardErrorState,
@@ -83,103 +90,83 @@ function PageEditorModal({
       <div className="dashboard-sidepanel">
         <div className="dashboard-panel__header dashboard-panel__header--spread">
           <h3>{mode === 'create' ? 'Create page' : 'Edit page'}</h3>
-          <button type="button" onClick={onClose}>
+          <DashboardButton type="button" variant="ghost" size="sm" onClick={onClose}>
             Close
-          </button>
+          </DashboardButton>
         </div>
         <div className="dashboard-stack">
-          <label>
-            Title *
-            <input value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
-            {errors.title ? <small className="dashboard-field-error">{errors.title}</small> : null}
-          </label>
-          <label>
-            Slug *
-            <input value={form.slug} onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))} placeholder="/page-slug" />
-            {errors.slug ? <small className="dashboard-field-error">{errors.slug}</small> : null}
-          </label>
-          <label>
-            Locale *
-            <select value={form.locale} onChange={(event) => setForm((prev) => ({ ...prev, locale: event.target.value as LocaleCode }))}>
+          <DashboardField label="Title" required error={errors.title}>
+            <DashboardInput value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
+          </DashboardField>
+          <DashboardField label="Slug" required error={errors.slug}>
+            <DashboardInput value={form.slug} onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))} placeholder="/page-slug" />
+          </DashboardField>
+          <DashboardField label="Locale" required>
+            <DashboardSelect value={form.locale} onChange={(event) => setForm((prev) => ({ ...prev, locale: event.target.value as LocaleCode }))}>
               <option value="EN">EN</option>
               <option value="AR">AR</option>
               <option value="UR">UR</option>
-            </select>
-          </label>
-          <label>
-            Status *
-            <select value={form.status} onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as PageStatus }))}>
+            </DashboardSelect>
+          </DashboardField>
+          <DashboardField label="Status" required>
+            <DashboardSelect value={form.status} onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as PageStatus }))}>
               <option value="Draft">Draft</option>
               <option value="Published">Published</option>
               <option value="Archived">Archived</option>
-            </select>
-          </label>
-          <label>
-            Template *
-            <select value={form.template} onChange={(event) => setForm((prev) => ({ ...prev, template: event.target.value as PageTemplateType }))}>
+            </DashboardSelect>
+          </DashboardField>
+          <DashboardField label="Template" required>
+            <DashboardSelect value={form.template} onChange={(event) => setForm((prev) => ({ ...prev, template: event.target.value as PageTemplateType }))}>
               <option value="Content">Content</option>
               <option value="Landing">Landing</option>
               <option value="Policy">Policy</option>
               <option value="Campaign">Campaign</option>
-            </select>
-          </label>
-          <label>
-            SEO Title *
-            <input
+            </DashboardSelect>
+          </DashboardField>
+          <DashboardField label="SEO Title" required error={errors['seo.metaTitle']}>
+            <DashboardInput
               value={form.seo.metaTitle}
               onChange={(event) => setForm((prev) => ({ ...prev, seo: { ...prev.seo, metaTitle: event.target.value } }))}
             />
-            {errors['seo.metaTitle'] ? <small className="dashboard-field-error">{errors['seo.metaTitle']}</small> : null}
-          </label>
-          <label>
-            SEO Description *
-            <textarea
+          </DashboardField>
+          <DashboardField label="SEO Description" required error={errors['seo.metaDescription']}>
+            <DashboardTextarea
               value={form.seo.metaDescription}
               onChange={(event) => setForm((prev) => ({ ...prev, seo: { ...prev.seo, metaDescription: event.target.value } }))}
             />
-            {errors['seo.metaDescription'] ? <small className="dashboard-field-error">{errors['seo.metaDescription']}</small> : null}
-          </label>
-          <label>
-            Canonical URL *
-            <input
+          </DashboardField>
+          <DashboardField label="Canonical URL" required error={errors['seo.canonicalUrl']}>
+            <DashboardInput
               value={form.seo.canonicalUrl}
               onChange={(event) => setForm((prev) => ({ ...prev, seo: { ...prev.seo, canonicalUrl: event.target.value } }))}
               placeholder="https://example.com/page"
             />
-            {errors['seo.canonicalUrl'] ? <small className="dashboard-field-error">{errors['seo.canonicalUrl']}</small> : null}
-          </label>
-          <label>
-            Publish At
-            <input
-              type="datetime-local"
+          </DashboardField>
+          <DashboardField label="Publish At">
+            <DashboardDateTime
               value={form.schedule.publishAt}
               onChange={(event) => setForm((prev) => ({ ...prev, schedule: { ...prev.schedule, publishAt: event.target.value } }))}
             />
-          </label>
-          <label>
-            Unpublish At
-            <input
-              type="datetime-local"
+          </DashboardField>
+          <DashboardField label="Unpublish At">
+            <DashboardDateTime
               value={form.schedule.unpublishAt}
               onChange={(event) => setForm((prev) => ({ ...prev, schedule: { ...prev.schedule, unpublishAt: event.target.value } }))}
             />
-          </label>
-          <label className="dashboard-checkbox-row">
-            <input
-              type="checkbox"
-              checked={form.seo.noindex}
-              onChange={(event) => setForm((prev) => ({ ...prev, seo: { ...prev.seo, noindex: event.target.checked } }))}
-            />
-            Noindex
-          </label>
+          </DashboardField>
+          <DashboardCheckbox
+            checked={form.seo.noindex}
+            onChange={(event) => setForm((prev) => ({ ...prev, seo: { ...prev.seo, noindex: event.target.checked } }))}
+            label="Noindex"
+          />
 
           <div className="dashboard-actions-inline">
-            <button type="button" className="dashboard-primary-button" disabled={submitting} onClick={() => void onSubmit(form)}>
-              {submitting ? 'Saving…' : 'Save page'}
-            </button>
-            <button type="button" onClick={onClose}>
+            <DashboardButton type="button" variant="primary" loading={submitting} loadingLabel="Saving…" onClick={() => void onSubmit(form)}>
+              Save page
+            </DashboardButton>
+            <DashboardButton type="button" variant="secondary" onClick={onClose}>
               Cancel
-            </button>
+            </DashboardButton>
           </div>
         </div>
       </div>
@@ -209,12 +196,12 @@ function ConfirmModal({
         <h3>{title}</h3>
         <p>{message}</p>
         <div className="dashboard-actions-inline">
-          <button type="button" className="dashboard-primary-button" onClick={() => void onConfirm()}>
+          <DashboardButton type="button" variant="primary" onClick={() => void onConfirm()}>
             {confirmLabel}
-          </button>
-          <button type="button" onClick={onCancel}>
+          </DashboardButton>
+          <DashboardButton type="button" variant="secondary" onClick={onCancel}>
             Cancel
-          </button>
+          </DashboardButton>
         </div>
       </article>
     </div>
@@ -464,67 +451,67 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
         <article className="dashboard-panel">
           <div className="dashboard-panel__header dashboard-panel__header--spread">
             <h2>CMS Pages</h2>
-            <button type="button" className="dashboard-primary-button" onClick={openCreate} disabled={!canPerform(role, 'pages', 'create')}>
+            <DashboardButton type="button" variant="primary" onClick={openCreate} disabled={!canPerform(role, 'pages', 'create')}>
               Add New Page
-            </button>
+            </DashboardButton>
           </div>
 
           <div className="dashboard-filter-grid dashboard-filter-grid--dense">
             <label>
               Search
-              <input value={table.state.search} onChange={(event) => table.setSearch(event.target.value)} placeholder="title, slug, editor" />
+              <DashboardInput value={table.state.search} onChange={(event) => table.setSearch(event.target.value)} placeholder="title, slug, editor" />
             </label>
             <label>
               Status
-              <select value={table.state.filters.status} onChange={(event) => table.setFilter('status', event.target.value as TableFilters['status'])}>
+              <DashboardSelect value={table.state.filters.status} onChange={(event) => table.setFilter('status', event.target.value as TableFilters['status'])}>
                 <option value="All">All</option>
                 <option value="Published">Published</option>
                 <option value="Draft">Draft</option>
                 <option value="Archived">Archived</option>
-              </select>
+              </DashboardSelect>
             </label>
             <label>
               Locale
-              <select value={table.state.filters.locale} onChange={(event) => table.setFilter('locale', event.target.value as TableFilters['locale'])}>
+              <DashboardSelect value={table.state.filters.locale} onChange={(event) => table.setFilter('locale', event.target.value as TableFilters['locale'])}>
                 <option value="All">All</option>
                 <option value="EN">EN</option>
                 <option value="AR">AR</option>
                 <option value="UR">UR</option>
-              </select>
+              </DashboardSelect>
             </label>
             <label>
               Template
-              <select value={table.state.filters.template} onChange={(event) => table.setFilter('template', event.target.value as TableFilters['template'])}>
+              <DashboardSelect value={table.state.filters.template} onChange={(event) => table.setFilter('template', event.target.value as TableFilters['template'])}>
                 <option value="All">All</option>
                 <option value="Content">Content</option>
                 <option value="Landing">Landing</option>
                 <option value="Policy">Policy</option>
                 <option value="Campaign">Campaign</option>
-              </select>
+              </DashboardSelect>
             </label>
             <label>
               Updated By
-              <input value={table.state.filters.updatedBy} onChange={(event) => table.setFilter('updatedBy', event.target.value)} placeholder="editor" />
+              <DashboardInput value={table.state.filters.updatedBy} onChange={(event) => table.setFilter('updatedBy', event.target.value)} placeholder="editor" />
             </label>
             <label>
               Updated From
-              <input type="date" value={table.state.filters.updatedAtFrom} onChange={(event) => table.setFilter('updatedAtFrom', event.target.value)} />
+              <DashboardInput type="date" value={table.state.filters.updatedAtFrom} onChange={(event) => table.setFilter('updatedAtFrom', event.target.value)} />
             </label>
             <label>
               Updated To
-              <input type="date" value={table.state.filters.updatedAtTo} onChange={(event) => table.setFilter('updatedAtTo', event.target.value)} />
+              <DashboardInput type="date" value={table.state.filters.updatedAtTo} onChange={(event) => table.setFilter('updatedAtTo', event.target.value)} />
             </label>
           </div>
 
           {selectedPageIds.length > 0 ? (
             <div className="dashboard-batch-bar">
               <strong>{selectedPageIds.length}</strong> selected
-              <button type="button" onClick={() => setBatchAction('publish')}>
+              <DashboardButton type="button" variant="secondary" size="sm" onClick={() => setBatchAction('publish')}>
                 Batch publish
-              </button>
-              <button type="button" onClick={() => setBatchAction('archive')}>
+              </DashboardButton>
+              <DashboardButton type="button" variant="secondary" size="sm" onClick={() => setBatchAction('archive')}>
                 Batch archive
-              </button>
+              </DashboardButton>
             </div>
           ) : null}
 
@@ -578,18 +565,18 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
                         <td>{page.views.toLocaleString()}</td>
                         <td>
                           <div className="dashboard-actions-inline">
-                            <button type="button" onClick={() => openEdit(page)} disabled={!canPerform(role, 'pages', 'edit')}>
+                            <DashboardButton type="button" variant="secondary" size="sm" onClick={() => openEdit(page)} disabled={!canPerform(role, 'pages', 'edit')}>
                               Edit
-                            </button>
-                            <button type="button" onClick={() => void checkPublishGuardrails(page)}>
+                            </DashboardButton>
+                            <DashboardButton type="button" variant="secondary" size="sm" onClick={() => void checkPublishGuardrails(page)}>
                               Guardrails
-                            </button>
-                            <button type="button" onClick={() => void openVersions(page)}>
+                            </DashboardButton>
+                            <DashboardButton type="button" variant="ghost" size="sm" onClick={() => void openVersions(page)}>
                               Versions
-                            </button>
-                            <button type="button" className="danger" onClick={() => setDeleteTarget(page)} disabled={!canPerform(role, 'pages', 'delete')}>
+                            </DashboardButton>
+                            <DashboardButton type="button" variant="danger" size="sm" onClick={() => setDeleteTarget(page)} disabled={!canPerform(role, 'pages', 'delete')}>
                               Remove
-                            </button>
+                            </DashboardButton>
                           </div>
                         </td>
                       </tr>
@@ -635,9 +622,9 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
           <article className="dashboard-modal-card dashboard-modal-card--wide">
             <div className="dashboard-panel__header dashboard-panel__header--spread">
               <h3>Version history — {versionPage.title}</h3>
-              <button type="button" onClick={() => setVersionPage(null)}>
+              <DashboardButton type="button" variant="ghost" size="sm" onClick={() => setVersionPage(null)}>
                 Close
-              </button>
+              </DashboardButton>
             </div>
             <div className="dashboard-version-grid">
               <div>
@@ -647,15 +634,15 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
                     <li key={version.id}>
                       <strong>v{version.version}</strong> · {version.capturedAt.slice(0, 10)} · {version.reason}
                       <div className="dashboard-actions-inline">
-                        <button type="button" onClick={() => setCompareFrom(version.version)}>
+                        <DashboardButton type="button" variant="secondary" size="sm" onClick={() => setCompareFrom(version.version)}>
                           Compare from
-                        </button>
-                        <button type="button" onClick={() => setCompareTo(version.version)}>
+                        </DashboardButton>
+                        <DashboardButton type="button" variant="secondary" size="sm" onClick={() => setCompareTo(version.version)}>
                           Compare to
-                        </button>
-                        <button type="button" onClick={() => void rollback(version.version)}>
+                        </DashboardButton>
+                        <DashboardButton type="button" variant="danger" size="sm" onClick={() => void rollback(version.version)}>
                           Rollback
-                        </button>
+                        </DashboardButton>
                       </div>
                     </li>
                   ))}
@@ -666,9 +653,9 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
                 <p>
                   From <strong>{compareFrom ?? '-'}</strong> to <strong>{compareTo ?? '-'}</strong>
                 </p>
-                <button type="button" onClick={() => void runCompare()} disabled={!compareFrom || !compareTo}>
+                <DashboardButton type="button" variant="primary" onClick={() => void runCompare()} disabled={!compareFrom || !compareTo}>
                   Compare snapshots
-                </button>
+                </DashboardButton>
                 {compareResult ? (
                   <ul className="dashboard-simple-list">
                     {compareResult.changes.map((change) => (

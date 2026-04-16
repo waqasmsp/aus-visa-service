@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../../utils/themeColors';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../../utils/themeSettings';
 import { WebhooksIntegrationTab } from './integrations/WebhooksIntegrationTab';
+import { DashboardButton } from '../common/DashboardButton';
+import { DashboardCheckbox } from '../common/DashboardCheckbox';
+import { DashboardInput } from '../common/DashboardInput';
+import { DashboardSelect } from '../common/DashboardSelect';
 import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
 import { exportAuditEventsCsv, listAuditEvents, writeAuditEvent } from '../../../services/dashboard/audit.service';
 
@@ -492,17 +496,19 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
 
         <div className="dashboard-settings-tablist" role="tablist" aria-label="Settings tabs">
           {visibleTabs.map((tab) => (
-            <button
+            <DashboardButton
               key={tab.id}
               type="button"
               role="tab"
               aria-selected={activeTab === tab.id}
               className={`dashboard-settings-tab ${activeTab === tab.id ? 'is-active' : ''}`}
+              variant="ghost"
+              size="sm"
               onClick={() => switchTopTab(tab.id)}
             >
               {tab.label}
               {tabDirtyMap[tab.id] ? <span className="dashboard-settings-tab__dirty">•</span> : null}
-            </button>
+            </DashboardButton>
           ))}
         </div>
       </article>
@@ -512,13 +518,13 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
           <div className="dashboard-settings-grid">
             <label>
               Support SLA (Hours)
-              <input value={draftState.platform.supportSlaHours} onChange={(event) => updatePlatform('supportSlaHours', event.target.value)} />
+              <DashboardInput value={draftState.platform.supportSlaHours} onChange={(event) => updatePlatform('supportSlaHours', event.target.value)} />
               {renderHelp('Target first-response SLA used in support dashboards and escalations.')}
               {renderValidation('supportSlaHours')}
             </label>
             <label>
               Application SLA (Hours)
-              <input
+              <DashboardInput
                 value={draftState.platform.defaultApplicationSla}
                 onChange={(event) => updatePlatform('defaultApplicationSla', event.target.value)}
               />
@@ -526,8 +532,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               {renderValidation('defaultApplicationSla')}
             </label>
             <label>
-              <input type="checkbox" checked={draftState.platform.maintenanceMode} onChange={(event) => updatePlatform('maintenanceMode', event.target.checked)} />
-              Maintenance Mode
+              <DashboardCheckbox checked={draftState.platform.maintenanceMode} onChange={(event) => updatePlatform('maintenanceMode', event.target.checked)} label="Maintenance Mode" />
               {renderHelp('Shows maintenance notices and pauses customer submissions.')}
             </label>
           </div>
@@ -538,21 +543,19 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         <article className="dashboard-panel">
           <div className="dashboard-settings-grid">
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.platform.requireMfaForAdmins}
                 onChange={(event) => updatePlatform('requireMfaForAdmins', event.target.checked)}
+                label="Require MFA for Admins"
               />
-              Require MFA for Admins
               {renderHelp('Applies strong authentication to all admin sessions.')}
             </label>
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.platform.allowSelfRoleEscalation}
                 onChange={(event) => updatePlatform('allowSelfRoleEscalation', event.target.checked)}
+                label="Allow self role escalation"
               />
-              Allow self role escalation
               {renderHelp('Critical policy: should remain disabled for production environments.')}
             </label>
           </div>
@@ -564,7 +567,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
           <div className="dashboard-settings-grid">
             <label>
               Required Reviewer Count
-              <input
+              <DashboardInput
                 value={draftState.platform.requiredReviewerCount}
                 onChange={(event) => updatePlatform('requiredReviewerCount', event.target.value)}
               />
@@ -573,21 +576,23 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
             </label>
             <label>
               Approval Quorum (%)
-              <input value={draftState.platform.approvalQuorum} onChange={(event) => updatePlatform('approvalQuorum', event.target.value)} />
+              <DashboardInput value={draftState.platform.approvalQuorum} onChange={(event) => updatePlatform('approvalQuorum', event.target.value)} />
               {renderHelp('Percentage of assigned reviewers required for approval.')}
               {renderValidation('approvalQuorum')}
             </label>
             <label>
-              <input type="checkbox" checked={draftState.platform.autoAssignCases} onChange={(event) => updatePlatform('autoAssignCases', event.target.checked)} />
-              Auto assign new cases
+              <DashboardCheckbox
+                checked={draftState.platform.autoAssignCases}
+                onChange={(event) => updatePlatform('autoAssignCases', event.target.checked)}
+                label="Auto assign new cases"
+              />
             </label>
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.platform.complianceChecklistGate}
                 onChange={(event) => updatePlatform('complianceChecklistGate', event.target.checked)}
+                label="Enforce compliance checklist before publish"
               />
-              Enforce compliance checklist before publish
             </label>
           </div>
         </article>
@@ -597,17 +602,19 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         <article className="dashboard-panel">
           <div className="dashboard-settings-grid">
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.platform.abandonedEmailAutomation}
                 onChange={(event) => updatePlatform('abandonedEmailAutomation', event.target.checked)}
+                label="Abandoned lead email automation"
               />
-              Abandoned lead email automation
               {renderHelp('Automatically sends follow-ups for incomplete applications.')}
             </label>
             <label>
-              <input type="checkbox" checked={draftState.platform.paymentAutoRetry} onChange={(event) => updatePlatform('paymentAutoRetry', event.target.checked)} />
-              Payment auto retry
+              <DashboardCheckbox
+                checked={draftState.platform.paymentAutoRetry}
+                onChange={(event) => updatePlatform('paymentAutoRetry', event.target.checked)}
+                label="Payment auto retry"
+              />
               {renderHelp('Retries failed payments before moving invoices to manual collections.')}
             </label>
           </div>
@@ -618,14 +625,16 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         <article className="dashboard-panel">
           <div className="dashboard-settings-subtabs" role="tablist" aria-label="Integration tabs">
             {integrationTabs.map((tab) => (
-              <button
+              <DashboardButton
                 key={tab.id}
                 type="button"
                 className={`dashboard-settings-subtab ${activeIntegrationTab === tab.id ? 'is-active' : ''}`}
+                variant="ghost"
+                size="sm"
                 onClick={() => setActiveIntegrationTab(tab.id)}
               >
                 {tab.label}
-              </button>
+              </DashboardButton>
             ))}
           </div>
 
@@ -634,17 +643,17 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               <>
                 <label>
                   Payment Provider
-                  <select
+                  <DashboardSelect
                     value={draftState.platform.paymentProvider}
                     onChange={(event) => updatePlatform('paymentProvider', event.target.value as PlatformSettings['paymentProvider'])}
                   >
                     <option value="stripe">Stripe</option>
                     <option value="braintree">Braintree</option>
-                  </select>
+                  </DashboardSelect>
                 </label>
                 <label>
                   Payment API Key
-                  <input value={draftState.platform.paymentApiKey} onChange={(event) => updatePlatform('paymentApiKey', event.target.value)} />
+                  <DashboardInput value={draftState.platform.paymentApiKey} onChange={(event) => updatePlatform('paymentApiKey', event.target.value)} />
                   {renderHelp('Admin only secret. Used for payment authorization and retries.')}
                 </label>
               </>
@@ -654,17 +663,17 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               <>
                 <label>
                   Email Provider
-                  <select
+                  <DashboardSelect
                     value={draftState.platform.emailProvider}
                     onChange={(event) => updatePlatform('emailProvider', event.target.value as PlatformSettings['emailProvider'])}
                   >
                     <option value="ses">Amazon SES</option>
                     <option value="sendgrid">SendGrid</option>
-                  </select>
+                  </DashboardSelect>
                 </label>
                 <label>
                   Email API Key
-                  <input value={draftState.platform.emailApiKey} onChange={(event) => updatePlatform('emailApiKey', event.target.value)} />
+                  <DashboardInput value={draftState.platform.emailApiKey} onChange={(event) => updatePlatform('emailApiKey', event.target.value)} />
                 </label>
               </>
             ) : null}
@@ -674,7 +683,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
             {activeIntegrationTab === 'analytics' ? (
               <label>
                 Analytics Write Key
-                <input value={draftState.platform.analyticsWriteKey} onChange={(event) => updatePlatform('analyticsWriteKey', event.target.value)} />
+                <DashboardInput value={draftState.platform.analyticsWriteKey} onChange={(event) => updatePlatform('analyticsWriteKey', event.target.value)} />
               </label>
             ) : null}
           </div>
@@ -686,42 +695,41 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
           <div className="dashboard-settings-grid">
             <label>
               Primary Brand Color
-              <input value={draftState.platform.primaryBrand} onChange={(event) => updatePlatform('primaryBrand', event.target.value)} />
+              <DashboardInput value={draftState.platform.primaryBrand} onChange={(event) => updatePlatform('primaryBrand', event.target.value)} />
               {renderHelp('Brand token used for charts and admin highlights.')}
             </label>
             <label>
               App Background
-              <input type="text" value={draftState.theme.global.appBackground} onChange={(event) => updateThemeGlobal('appBackground', event.target.value)} />
+              <DashboardInput type="text" value={draftState.theme.global.appBackground} onChange={(event) => updateThemeGlobal('appBackground', event.target.value)} />
             </label>
             <label>
               Header Background
-              <input type="text" value={draftState.theme.global.headerBackground} onChange={(event) => updateThemeGlobal('headerBackground', event.target.value)} />
+              <DashboardInput type="text" value={draftState.theme.global.headerBackground} onChange={(event) => updateThemeGlobal('headerBackground', event.target.value)} />
             </label>
             <label>
               Button Background
-              <input type="text" value={draftState.theme.global.buttonBackground} onChange={(event) => updateThemeGlobal('buttonBackground', event.target.value)} />
+              <DashboardInput type="text" value={draftState.theme.global.buttonBackground} onChange={(event) => updateThemeGlobal('buttonBackground', event.target.value)} />
             </label>
             <label>
               Button Text Color
-              <input type="text" value={draftState.theme.global.buttonText} onChange={(event) => updateThemeGlobal('buttonText', event.target.value)} />
+              <DashboardInput type="text" value={draftState.theme.global.buttonText} onChange={(event) => updateThemeGlobal('buttonText', event.target.value)} />
             </label>
             <label>
               Footer Background
-              <input type="text" value={draftState.theme.global.footerBackground} onChange={(event) => updateThemeGlobal('footerBackground', event.target.value)} />
+              <DashboardInput type="text" value={draftState.theme.global.footerBackground} onChange={(event) => updateThemeGlobal('footerBackground', event.target.value)} />
             </label>
           </div>
           <div className="dashboard-toggle-list">
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.theme.sections.enableApplicationSectionBackground}
                 onChange={(event) => updateThemeSection('enableApplicationSectionBackground', event.target.checked)}
+                label="Override Application Section Background"
               />
-              Override Application Section Background
             </label>
             <label>
               Application Section Background
-              <input
+              <DashboardInput
                 type="text"
                 value={draftState.theme.sections.applicationSectionBackground}
                 onChange={(event) => updateThemeSection('applicationSectionBackground', event.target.value)}
@@ -745,21 +753,19 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         <article className="dashboard-panel">
           <div className="dashboard-settings-grid">
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.platform.roleChangeRequiresApproval}
                 onChange={(event) => updatePlatform('roleChangeRequiresApproval', event.target.checked)}
+                label="Role changes require admin approval"
               />
-              Role changes require admin approval
               {renderHelp('RBAC policy change requests must be approved by an admin.')}
             </label>
             <label>
-              <input
-                type="checkbox"
+              <DashboardCheckbox
                 checked={draftState.platform.allowSelfRoleEscalation}
                 onChange={(event) => updatePlatform('allowSelfRoleEscalation', event.target.checked)}
+                label="Allow self role escalation"
               />
-              Allow self role escalation
               {renderHelp('Sensitive setting. Enabling this weakens RBAC protections.')}
             </label>
           </div>
@@ -773,10 +779,10 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
             <small>{filteredAuditEvents.length} entries</small>
           </div>
           <div className="dashboard-filter-grid dashboard-filter-grid--dense">
-            <input value={auditSearch} onChange={(event) => setAuditSearch(event.target.value)} placeholder="Search actor/action/entity/diff" />
-            <input value={auditActor} onChange={(event) => setAuditActor(event.target.value)} placeholder="Actor email/name" />
-            <input value={auditAction} onChange={(event) => setAuditAction(event.target.value)} placeholder="Action" />
-            <select value={auditEntityType} onChange={(event) => setAuditEntityType(event.target.value)}>
+            <DashboardInput value={auditSearch} onChange={(event) => setAuditSearch(event.target.value)} placeholder="Search actor/action/entity/diff" />
+            <DashboardInput value={auditActor} onChange={(event) => setAuditActor(event.target.value)} placeholder="Actor email/name" />
+            <DashboardInput value={auditAction} onChange={(event) => setAuditAction(event.target.value)} placeholder="Action" />
+            <DashboardSelect value={auditEntityType} onChange={(event) => setAuditEntityType(event.target.value)}>
               <option value="">All entity types</option>
               <option value="applications">Applications</option>
               <option value="users">Users</option>
@@ -784,9 +790,10 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               <option value="pages">Pages</option>
               <option value="settings">Settings</option>
               <option value="webhooks">Webhooks</option>
-            </select>
-            <button
+            </DashboardSelect>
+            <DashboardButton
               type="button"
+              variant="secondary"
               onClick={() => {
                 const csv = exportAuditEventsCsv(filteredAuditEvents);
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -799,7 +806,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
               }}
             >
               Export CSV
-            </button>
+            </DashboardButton>
           </div>
           {filteredAuditEvents.length ? (
             <div className="dashboard-table-wrap">
@@ -839,12 +846,12 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
       {activeTab !== 'audit-logs' ? (
         <article className="dashboard-panel">
           <div className="dashboard-settings-actions">
-            <button type="button" className="dashboard-primary-button" onClick={() => saveTab(activeTab)} disabled={!canManageSettings}>
+            <DashboardButton type="button" variant="primary" onClick={() => saveTab(activeTab)} disabled={!canManageSettings}>
               Save {topTabs.find((tab) => tab.id === activeTab)?.label}
-            </button>
-            <button type="button" className="dashboard-ghost-button" onClick={() => resetTab(activeTab)}>
+            </DashboardButton>
+            <DashboardButton type="button" variant="ghost" onClick={() => resetTab(activeTab)}>
               Reset {topTabs.find((tab) => tab.id === activeTab)?.label}
-            </button>
+            </DashboardButton>
           </div>
           {saveMessage ? <p className="dashboard-auth__message is-success">{saveMessage}</p> : null}
           {saveError ? <p className="dashboard-auth__message is-error">{saveError}</p> : null}

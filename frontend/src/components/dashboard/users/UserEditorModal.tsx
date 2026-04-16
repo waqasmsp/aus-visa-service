@@ -1,5 +1,9 @@
 import { FormEvent, useState } from 'react';
 import { PortalUser } from '../../../types/dashboard/users';
+import { DashboardButton } from '../common/DashboardButton';
+import { DashboardField } from '../common/DashboardField';
+import { DashboardInput } from '../common/DashboardInput';
+import { DashboardSelect } from '../common/DashboardSelect';
 
 type FormModel = {
   fullName: string;
@@ -41,23 +45,23 @@ export function UserEditorModal({ editingUser, preferredSegment = 'registered', 
     <div className="dashboard-panel" role="dialog" aria-modal="true">
       <div className="dashboard-panel__header dashboard-panel__header--spread">
         <h3>{editingUser ? `Edit ${editingUser.fullName}` : `Create ${form.segment === 'lead' ? 'Lead' : 'User'}`}</h3>
-        <button type="button" onClick={onClose}>Close</button>
+        <DashboardButton type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
       </div>
       <form className="dashboard-filter-grid" onSubmit={submit}>
-        <label>Full name<input value={form.fullName} onChange={(event) => setForm((prev) => ({ ...prev, fullName: event.target.value }))} required /></label>
-        <label>Email<input type="email" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} required /></label>
-        <label>Phone<input value={form.phone} onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))} required /></label>
-        <label>Segment<select value={form.segment} onChange={(event) => setForm((prev) => ({ ...prev, segment: event.target.value as FormModel['segment'] }))}><option value="registered">Registered</option><option value="lead">Lead</option></select></label>
-        <label>Purchase state<select value={form.purchased ? 'true' : 'false'} onChange={(event) => setForm((prev) => ({ ...prev, purchased: event.target.value === 'true' }))}><option value="false">Abandoned</option><option value="true">Purchased</option></select></label>
-        <label>Acquisition source<input value={form.source} onChange={(event) => setForm((prev) => ({ ...prev, source: event.target.value }))} required /></label>
-        <label>Country<input value={form.country} onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))} required /></label>
-        <label>Role scope<select value={form.roleScope} onChange={(event) => setForm((prev) => ({ ...prev, roleScope: event.target.value as FormModel['roleScope'] }))}>
+        <DashboardField label="Full name" required><DashboardInput value={form.fullName} onChange={(event) => setForm((prev) => ({ ...prev, fullName: event.target.value }))} required /></DashboardField>
+        <DashboardField label="Email" required><DashboardInput type="email" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} required /></DashboardField>
+        <DashboardField label="Phone" required><DashboardInput value={form.phone} onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))} required /></DashboardField>
+        <DashboardField label="Segment"><DashboardSelect value={form.segment} onChange={(event) => setForm((prev) => ({ ...prev, segment: event.target.value as FormModel['segment'] }))}><option value="registered">Registered</option><option value="lead">Lead</option></DashboardSelect></DashboardField>
+        <DashboardField label="Purchase state"><DashboardSelect value={form.purchased ? 'true' : 'false'} onChange={(event) => setForm((prev) => ({ ...prev, purchased: event.target.value === 'true' }))}><option value="false">Abandoned</option><option value="true">Purchased</option></DashboardSelect></DashboardField>
+        <DashboardField label="Acquisition source" required><DashboardInput value={form.source} onChange={(event) => setForm((prev) => ({ ...prev, source: event.target.value }))} required /></DashboardField>
+        <DashboardField label="Country" required><DashboardInput value={form.country} onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))} required /></DashboardField>
+        <DashboardField label="Role scope"><DashboardSelect value={form.roleScope} onChange={(event) => setForm((prev) => ({ ...prev, roleScope: event.target.value as FormModel['roleScope'] }))}>
           <option value="editor">editor</option>
           <option value="manager">manager</option>
           <option value="admin" disabled={!canSetAdminRole}>admin</option>
-        </select></label>
+        </DashboardSelect></DashboardField>
         <div>
-          <button type="submit" className="dashboard-primary-button">Save</button>
+          <DashboardButton type="submit" variant="primary">Save</DashboardButton>
         </div>
       </form>
     </div>
