@@ -1,0 +1,37 @@
+@layer components {
+  .dashboard-button,
+  .dashboard-primary-button {
+    @apply inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .dashboard-ghost-button {
+    @apply inline-flex h-10 items-center justify-center rounded-md border border-border bg-surface px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .dashboard-auth__input,
+  .dashboard-controls input,
+  .dashboard-controls select,
+  .dashboard-controls textarea {
+    @apply h-10 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+
+  .dashboard-table-wrap {
+    @apply relative w-full overflow-auto rounded-md border border-border bg-surface;
+  }
+
+  .dashboard-table {
+    @apply w-full text-sm;
+  }
+
+  .dashboard-table th {
+    @apply h-11 border-b border-border bg-muted px-4 text-left font-medium text-muted-foreground;
+  }
+
+  .dashboard-table td {
+    @apply border-b border-border p-4 align-middle;
+  }
+
+  .dashboard-panel {
+    @apply rounded-lg border border-border bg-surface p-6 shadow-xl;
+  }
+}

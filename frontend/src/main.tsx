@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import App from './App';
 import './styles/tokens.css';
+import './styles/tailwind.css';
 import './styles.css';
 import { applyThemeSettings, loadThemeSettings } from './utils/themeSettings';
 
