@@ -10,6 +10,8 @@ import { ContactPage } from './containers/ContactPage';
 import { DashboardExperience } from './containers/dashboard/DashboardExperience';
 import { LandingPage } from './containers/LandingPage';
 import { PricingPage } from './containers/PricingPage';
+import { PaymentsCheckoutPage } from './containers/payments/PaymentsCheckoutPage';
+import { PaymentsReturnPage } from './containers/payments/PaymentsReturnPage';
 import { PrivacyPolicyPage } from './containers/PrivacyPolicyPage';
 import { TermsAndConditionsPage } from './containers/TermsAndConditionsPage';
 import { VisaDetailsPage } from './containers/VisaDetailsPage';
@@ -37,6 +39,8 @@ export default function App({ pathname }: AppProps) {
   const isVisaDetailsPage = normalizedPath.startsWith('/visa/');
   const isVisaServicesPage = normalizedPath === '/visa-services';
   const isPrivacyPolicyPage = normalizedPath === '/privacy-policy';
+  const isPaymentsPage = normalizedPath === '/payments';
+  const isPaymentsReturnPage = normalizedPath === '/payments/return';
   const isTermsAndConditionsPage = normalizedPath === '/terms-and-conditions' || normalizedPath === '/terms-and-condition';
 
   const blogSlug = isBlogDetailPage ? normalizedPath.replace('/blog/', '') : '';
@@ -65,6 +69,10 @@ export default function App({ pathname }: AppProps) {
               ? 'Privacy Policy | Global Visas'
               : isTermsAndConditionsPage
                 ? 'Terms and Conditions | Global Visas'
+                : isPaymentsPage
+                  ? 'Secure Checkout | Global Visas'
+                  : isPaymentsReturnPage
+                    ? 'Payment Return | Global Visas'
       : undefined;
   const seoDescription = isDashboardRoute
     ? 'AUS Visa Service dashboards for admins, managers, and users to manage applications, profiles, pages, and settings.'
@@ -88,6 +96,10 @@ export default function App({ pathname }: AppProps) {
               ? 'Read Global Visas privacy policy to understand how personal information is collected, used, stored, and protected.'
               : isTermsAndConditionsPage
                 ? 'Review Global Visas terms and conditions for service use, user responsibilities, payments, and legal notices.'
+                : isPaymentsPage
+                  ? 'Complete your visa checkout with card, wallet, and PayPal options, including strong customer authentication support.'
+                  : isPaymentsReturnPage
+                    ? 'Return from bank or wallet authentication to finalize and verify your Global Visas payment securely.'
       : undefined;
   const seoKeywords = isDashboardRoute
     ? ['dashboard', 'visa applications', 'admin panel', 'users management', 'visa workflow']
@@ -111,6 +123,10 @@ export default function App({ pathname }: AppProps) {
               ? ['privacy policy', 'global visas privacy', 'data protection', 'personal information', 'cookies policy']
               : isTermsAndConditionsPage
                 ? ['terms and conditions', 'global visas terms', 'service terms', 'visa service agreement', 'legal terms']
+                : isPaymentsPage
+                  ? ['secure checkout', 'stripe elements', 'paypal smart buttons', 'google pay', '3ds sca']
+                  : isPaymentsReturnPage
+                    ? ['payment return', 'auth redirect', 'payment verification', 'order receipt', 'transaction reference']
       : undefined;
 
   return (
@@ -156,6 +172,10 @@ export default function App({ pathname }: AppProps) {
         <PrivacyPolicyPage pathname={pathname} />
       ) : isTermsAndConditionsPage ? (
         <TermsAndConditionsPage pathname={pathname} />
+      ) : isPaymentsPage ? (
+        <PaymentsCheckoutPage pathname={pathname} />
+      ) : isPaymentsReturnPage ? (
+        <PaymentsReturnPage pathname={pathname} />
       ) : (
         <LandingPage pathname={pathname} />
       )}

@@ -7,3 +7,8 @@ export * from './interfaces';
 export * from './mappers';
 export * from './models';
 export * from './service';
+export * from './checkout/controller';
+export * from './checkout/dtos';
+export * from './checkout/models';
+export * from './checkout/repository';
+export * from './checkout/service';

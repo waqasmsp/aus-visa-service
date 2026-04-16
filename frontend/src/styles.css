@@ -6857,3 +6857,120 @@ body.body--menu-open {
   white-space: normal;
   word-break: break-word;
 }
+
+/* Payments */
+.payments-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.payments-page__hero p {
+  color: #4a5568;
+}
+
+.checkout-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.checkout-panel__form,
+.payments-order-summary,
+.payments-status,
+.payments-saved-methods,
+.payments-method-selector {
+  border: 1px solid #dce3ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 1rem;
+}
+
+.checkout-panel__wallets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+
+.checkout-panel__wallets button,
+.payments-status__actions button,
+.payments-saved-methods__header button {
+  min-height: 42px;
+  border-radius: 8px;
+  border: 1px solid #0a4cd3;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  background: #0a4cd3;
+  color: #fff;
+}
+
+.checkout-panel__wallets button:last-child,
+.payments-status__actions button:last-child {
+  background: #fff;
+  color: #0a4cd3;
+}
+
+.payments-method-selector__options,
+.payments-saved-methods ul,
+.payments-order-summary ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.payments-method-selector__option,
+.payments-saved-methods li label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.payments-method-selector__option small {
+  display: block;
+  color: #5b6678;
+}
+
+.payments-saved-methods__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.payments-order-summary ul li,
+.payments-order-summary__total,
+.payments-status dl div,
+.payments-order-summary dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.payments-order-summary__total {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5ebf4;
+}
+
+.payments-status__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+
+.checkout-panel__error {
+  color: #af1c1c;
+}
+
+@media (max-width: 860px) {
+  .checkout-panel {
+    grid-template-columns: 1fr;
+  }
+}
