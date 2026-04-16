@@ -31,20 +31,20 @@ export function UserChatsTable({ conversations, canManage, onViewThread, onSoftD
         <DataTableColumnVisibility columns={columns} visibleColumnIds={visibleColumnIds} onToggle={toggleColumn} onReset={resetColumns} />
       </div>
       <div className="dashboard-table-wrap dashboard-table-wrap--sticky">
-        <table className="dashboard-table">
+        <table className="dashboard-table" aria-label="User chat conversations table">
           <thead className="dashboard-table__thead--sticky">
             <tr>
-              {columns.filter((column) => isVisible(column.id)).map((column) => <th key={column.id}>{column.label}</th>)}
+              {columns.filter((column) => isVisible(column.id)).map((column) => <th key={column.id} scope="col">{column.label}</th>)}
             </tr>
           </thead>
           <tbody>
             {conversations.map((conversation) => (
               <tr key={conversation.id}>
                 {isVisible('user') ? (
-                  <td>
+                  <th scope="row">
                     <strong>{conversation.userName}</strong>
                     <small>{conversation.userEmail}</small>
-                  </td>
+                  </th>
                 ) : null}
                 {isVisible('lastMessage') ? (
                   <td>

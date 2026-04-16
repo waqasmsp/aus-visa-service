@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getThemeContrastWarnings, sanitizeThemeColorValue } from '../../../utils/themeColors';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { getAdditionalContrastWarnings, getThemeContrastWarnings, sanitizeThemeColorValue } from '../../../utils/themeColors';
 import { applyThemeSettings, defaultThemeSettings, loadThemeSettings, saveThemeSettings, ThemeSettings } from '../../../utils/themeSettings';
 import { WebhooksIntegrationTab } from './integrations/WebhooksIntegrationTab';
 import { DashboardButton } from '../common/DashboardButton';
@@ -179,6 +179,7 @@ const computeValidationErrors = (state: SettingsState): Record<string, string> =
 };
 
 export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actorEmail?: string }) {
+  const settingsTablistId = useId();
   const isAdmin = role === 'admin';
   const visibleMacroTabs = useMemo(() => macroTabs.filter((tab) => !tab.adminOnly || isAdmin), [isAdmin]);
   const [activeMacroTab, setActiveMacroTab] = useState<MacroTab>(visibleMacroTabs[0]?.id ?? 'platform');
@@ -223,8 +224,8 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
   );
 
   const contrastWarnings = useMemo(
-    () =>
-      getThemeContrastWarnings({
+    () => [
+      ...getThemeContrastWarnings({
         buttonBackground: sanitizedThemeSettings.global.buttonBackground,
         buttonText: sanitizedThemeSettings.global.buttonText,
         headerBackground: sanitizedThemeSettings.global.headerBackground,
@@ -232,6 +233,28 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         footerBackground: sanitizedThemeSettings.global.footerBackground,
         footerText: '#334155'
       }),
+      ...getAdditionalContrastWarnings([
+        {
+          id: 'dashboard-form-border',
+          label: 'Dashboard form border vs surface',
+          background: '#ffffff',
+          foreground: '#94a3b8',
+          minRatio: 3
+        },
+        {
+          id: 'dashboard-muted-text',
+          label: 'Dashboard muted text vs surface',
+          background: '#ffffff',
+          foreground: '#475569'
+        },
+        {
+          id: 'dashboard-chip',
+          label: 'Dashboard chip text vs chip surface',
+          background: '#dbeafe',
+          foreground: '#1e40af'
+        }
+      ])
+    ],
     [sanitizedThemeSettings]
   );
 
@@ -619,9 +642,12 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
           {visibleMacroTabs.map((tab) => (
             <DashboardButton
               key={tab.id}
+              id={`${settingsTablistId}-${tab.id}`}
               type="button"
               role="tab"
               aria-selected={activeMacroTab === tab.id}
+              aria-controls={`${settingsTablistId}-panel`}
+              tabIndex={activeMacroTab === tab.id ? 0 : -1}
               className={`dashboard-settings-tab ${activeMacroTab === tab.id ? 'is-active' : ''}`}
               variant="ghost"
               size="sm"
@@ -635,7 +661,7 @@ export function SettingsPanel({ role, actorEmail }: { role: DashboardRole; actor
         </div>
       </article>
 
-      <article className="dashboard-panel dashboard-settings-layout">
+      <article className="dashboard-panel dashboard-settings-layout" role="tabpanel" id={`${settingsTablistId}-panel`} aria-labelledby={`${settingsTablistId}-${activeMacroTab}`}>
         <aside className="dashboard-settings-sidenav" aria-label="Settings sections">
           {activeSections.map((section) => (
             <button

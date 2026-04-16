@@ -24,11 +24,19 @@ export type SanitizedColorResult = {
 };
 
 export type ContrastWarning = {
-  id: 'button' | 'header' | 'footer';
+  id: 'button' | 'header' | 'footer' | 'dashboard-form-border' | 'dashboard-muted-text' | 'dashboard-chip';
   label: string;
   message: string;
   ratio: number | null;
   severity: 'warning' | 'error';
+};
+
+export type ContrastPairInput = {
+  id: ContrastWarning['id'];
+  label: string;
+  background: string;
+  foreground: string;
+  minRatio?: number;
 };
 
 const hasBalancedParentheses = (value: string) => {
@@ -332,4 +340,18 @@ export const getThemeContrastWarnings = ({
       minRatio
     })
   ].filter((warning): warning is ContrastWarning => Boolean(warning));
+};
+
+export const getAdditionalContrastWarnings = (pairs: ContrastPairInput[]): ContrastWarning[] => {
+  return pairs
+    .map((pair) =>
+      assessContrastPair({
+        id: pair.id,
+        label: pair.label,
+        background: pair.background,
+        foreground: pair.foreground,
+        minRatio: pair.minRatio ?? 4.5
+      })
+    )
+    .filter((warning): warning is ContrastWarning => Boolean(warning));
 };

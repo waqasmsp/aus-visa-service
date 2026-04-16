@@ -1,9 +1,10 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useId, useRef, useState } from 'react';
 import { VisaApplication } from '../../../types/dashboard/applications';
 import { DashboardButton } from '../common/DashboardButton';
 import { DashboardField } from '../common/DashboardField';
 import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
+import { useFocusTrap } from '../common/useFocusTrap';
 
 type FormModel = {
   applicant: string;
@@ -22,6 +23,10 @@ type Props = {
 };
 
 export function ApplicationFormModal({ editingApplication, onClose, onSubmit }: Props) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
   const [form, setForm] = useState<FormModel>({
     applicant: editingApplication?.applicant ?? '',
     email: editingApplication?.email ?? '',
@@ -36,13 +41,15 @@ export function ApplicationFormModal({ editingApplication, onClose, onSubmit }: 
     event.preventDefault();
     onSubmit(form);
   };
+  useFocusTrap({ active: true, containerRef: dialogRef, initialFocusRef: closeRef, onClose });
 
   return (
-    <div className="dashboard-panel" role="dialog" aria-modal="true">
+    <div ref={dialogRef} className="dashboard-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
       <div className="dashboard-panel__header">
-        <h3>{editingApplication ? `Edit ${editingApplication.id}` : 'Add Application'}</h3>
-        <DashboardButton type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
+        <h3 id={titleId}>{editingApplication ? `Edit ${editingApplication.id}` : 'Add Application'}</h3>
+        <DashboardButton ref={closeRef} type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
       </div>
+      <p id={descriptionId} className="sr-only">Use this dialog to create or edit visa applications and workflow assignments.</p>
       <form className="dashboard-filter-grid" onSubmit={submit}>
         <DashboardField label="Applicant" required><DashboardInput value={form.applicant} onChange={(event) => setForm((prev) => ({ ...prev, applicant: event.target.value }))} required /></DashboardField>
         <DashboardField label="Email" required><DashboardInput type="email" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} required /></DashboardField>

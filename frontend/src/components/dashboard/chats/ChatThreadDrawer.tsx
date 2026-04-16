@@ -1,4 +1,7 @@
+import { useId, useRef } from 'react';
 import { UserChatConversation } from '../../../types/dashboard/chats';
+import { DashboardButton } from '../common/DashboardButton';
+import { useFocusTrap } from '../common/useFocusTrap';
 
 type Props = {
   conversation: UserChatConversation;
@@ -6,14 +9,20 @@ type Props = {
 };
 
 export function ChatThreadDrawer({ conversation, onClose }: Props) {
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+  useFocusTrap({ active: true, containerRef: drawerRef, initialFocusRef: closeRef, onClose });
+
   return (
-    <aside className="dashboard-panel" aria-label={`Conversation thread ${conversation.id}`}>
+    <aside ref={drawerRef} className="dashboard-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
       <div className="dashboard-panel__header dashboard-panel__header--spread">
-        <h3>{conversation.userName} · thread</h3>
-        <button type="button" onClick={onClose}>Close</button>
+        <h3 id={titleId}>{conversation.userName} · thread</h3>
+        <DashboardButton ref={closeRef} type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
       </div>
 
-      <p className="dashboard-panel__note">
+      <p id={descriptionId} className="dashboard-panel__note">
         {conversation.userEmail} · Assigned to {conversation.assignedAgent} · {conversation.status}
       </p>
 

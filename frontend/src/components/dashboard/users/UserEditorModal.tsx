@@ -1,9 +1,10 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useId, useRef, useState } from 'react';
 import { PortalUser } from '../../../types/dashboard/users';
 import { DashboardButton } from '../common/DashboardButton';
 import { DashboardField } from '../common/DashboardField';
 import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
+import { useFocusTrap } from '../common/useFocusTrap';
 
 type FormModel = {
   fullName: string;
@@ -25,6 +26,10 @@ type Props = {
 };
 
 export function UserEditorModal({ editingUser, preferredSegment = 'registered', canSetAdminRole, onClose, onSubmit }: Props) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
   const [form, setForm] = useState<FormModel>({
     fullName: editingUser?.fullName ?? '',
     email: editingUser?.email ?? '',
@@ -40,13 +45,15 @@ export function UserEditorModal({ editingUser, preferredSegment = 'registered', 
     event.preventDefault();
     onSubmit(form);
   };
+  useFocusTrap({ active: true, containerRef: dialogRef, initialFocusRef: closeRef, onClose });
 
   return (
-    <div className="dashboard-panel" role="dialog" aria-modal="true">
+    <div ref={dialogRef} className="dashboard-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
       <div className="dashboard-panel__header dashboard-panel__header--spread">
-        <h3>{editingUser ? `Edit ${editingUser.fullName}` : `Create ${form.segment === 'lead' ? 'Lead' : 'User'}`}</h3>
-        <DashboardButton type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
+        <h3 id={titleId}>{editingUser ? `Edit ${editingUser.fullName}` : `Create ${form.segment === 'lead' ? 'Lead' : 'User'}`}</h3>
+        <DashboardButton ref={closeRef} type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
       </div>
+      <p id={descriptionId} className="sr-only">Use this dialog to edit user profile, segment, and role scope details.</p>
       <form className="dashboard-filter-grid" onSubmit={submit}>
         <DashboardField label="Full name" required><DashboardInput value={form.fullName} onChange={(event) => setForm((prev) => ({ ...prev, fullName: event.target.value }))} required /></DashboardField>
         <DashboardField label="Email" required><DashboardInput type="email" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} required /></DashboardField>

@@ -35,21 +35,21 @@ export function UsersTable({ users, canManage, canDelete, onView, onEdit, onTogg
         <DataTableColumnVisibility columns={columns} visibleColumnIds={visibleColumnIds} onToggle={toggleColumn} onReset={resetColumns} />
       </div>
       <div className="dashboard-table-wrap dashboard-table-wrap--sticky">
-        <table className="dashboard-table">
+        <table className="dashboard-table" aria-label="Users data table">
           <thead className="dashboard-table__thead--sticky">
             <tr>
-              {columns.filter((column) => isVisible(column.id)).map((column) => <th key={column.id}>{column.label}</th>)}
+              {columns.filter((column) => isVisible(column.id)).map((column) => <th key={column.id} scope="col">{column.label}</th>)}
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
                 {isVisible('user') ? (
-                  <td>
+                  <th scope="row">
                     <strong>{user.fullName}</strong>
                     <small>{user.email}</small>
                     <small>{user.phone}</small>
-                  </td>
+                  </th>
                 ) : null}
                 {isVisible('segment') ? <td><span className={`dashboard-chip dashboard-chip--${user.segment.toLowerCase()}`}>{user.segment}</span></td> : null}
                 {isVisible('purchase') ? <td><span className={`dashboard-chip dashboard-chip--${user.purchased ? 'purchased' : 'abandoned'}`}>{user.purchased ? 'Purchased' : 'Abandoned'}</span></td> : null}

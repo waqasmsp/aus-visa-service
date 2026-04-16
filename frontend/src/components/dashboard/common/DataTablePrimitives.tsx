@@ -25,9 +25,18 @@ export function DataTableHeader({
           const isActive = sort?.field === column.id;
           const nextDirection = isActive && sort?.direction === 'asc' ? 'desc' : 'asc';
           return (
-            <th key={column.id}>
+            <th
+              key={column.id}
+              scope="col"
+              aria-sort={column.sortable && isActive ? (sort?.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+            >
               {column.sortable && onSort ? (
-                <button type="button" className="dashboard-table-sort" onClick={() => onSort({ field: column.id, direction: nextDirection })}>
+                <button
+                  type="button"
+                  className="dashboard-table-sort"
+                  aria-label={`Sort by ${column.label}`}
+                  onClick={() => onSort({ field: column.id, direction: nextDirection })}
+                >
                   {column.label}
                   <span>{isActive ? (sort?.direction === 'asc' ? '↑' : '↓') : '↕'}</span>
                 </button>
