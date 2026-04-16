@@ -8,6 +8,7 @@ import { BlogPerformanceWidgets } from '../../components/dashboard/blogs/BlogPer
 import { DashboardTopNavProfileMenu } from '../../components/dashboard/navigation/DashboardTopNavProfileMenu';
 import { VisaApplicationsPanel } from '../../components/dashboard/applications/VisaApplicationsPanel';
 import { UsersPanel } from '../../components/dashboard/users/UsersPanel';
+import { UserChatsPanel } from '../../components/dashboard/chats/UserChatsPanel';
 import { PagesPanel } from '../../components/dashboard/pages/PagesPanel';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../../components/dashboard/common/asyncUi';
 import { DashboardNotificationsProvider, useDashboardNotifications } from '../../components/dashboard/common/DashboardNotificationsProvider';
@@ -31,8 +32,8 @@ type AuthSession = {
   email: string;
   loginAt: string;
 };
-type DashboardSection = 'overview' | 'pages' | 'blogs' | 'users' | 'visa-applications' | 'documents' | 'payments' | 'contact-entries' | 'settings';
-type ManagerSection = 'overview' | 'team' | 'applications' | 'blogs' | 'documents' | 'payments' | 'contact-entries' | 'settings';
+type DashboardSection = 'overview' | 'pages' | 'blogs' | 'users' | 'visa-applications' | 'user-chats' | 'documents' | 'payments' | 'contact-entries' | 'settings';
+type ManagerSection = 'overview' | 'team' | 'applications' | 'blogs' | 'user-chats' | 'documents' | 'payments' | 'contact-entries' | 'settings';
 type UserSection = 'overview' | 'applications' | 'documents' | 'payments' | 'messages' | 'profile';
 type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
 type BlogWorkflowStatus = 'Draft' | 'In Review' | 'Scheduled' | 'Published' | 'Archived';
@@ -62,8 +63,8 @@ const AUTH_SESSION_KEY = 'aus-visa-auth-session';
 const DASHBOARD_ACCESS_NOTICE_KEY = 'aus-visa-dashboard-access-notice';
 
 const roleScope: Record<DashboardRole, DashboardSection[]> = {
-  admin: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
-  manager: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'documents', 'payments', 'contact-entries', 'settings'],
+  admin: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'user-chats', 'documents', 'payments', 'contact-entries', 'settings'],
+  manager: ['overview', 'pages', 'blogs', 'users', 'visa-applications', 'user-chats', 'documents', 'payments', 'contact-entries', 'settings'],
   user: ['overview', 'visa-applications', 'documents', 'settings']
 };
 
@@ -79,6 +80,7 @@ const sidebarItems: Array<{ section: DashboardSection; label: string; href: stri
   { section: 'blogs', label: 'Blogs', href: '/dashboard/blogs', badge: 'SEO' },
   { section: 'users', label: 'Users', href: '/dashboard/users', badge: 'CRM' },
   { section: 'visa-applications', label: 'Visa Applications', href: '/dashboard/visa-applications', badge: 'Core' },
+  { section: 'user-chats', label: 'User Chats', href: '/dashboard/user-chats', badge: 'Inbox' },
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
   { section: 'contact-entries', label: 'Contact Entries', href: '/dashboard/contact-entries', badge: 'Inbox' },
@@ -90,6 +92,7 @@ const managerSidebarItems: Array<{ section: ManagerSection; label: string; href:
   { section: 'team', label: 'Team Queue', href: '/dashboard/team', badge: 'Ops' },
   { section: 'applications', label: 'Applications', href: '/dashboard/applications', badge: 'Core' },
   { section: 'blogs', label: 'Blogs', href: '/dashboard/blogs', badge: 'SEO' },
+  { section: 'user-chats', label: 'User Chats', href: '/dashboard/user-chats', badge: 'Inbox' },
   { section: 'documents', label: 'Documents', href: '/dashboard/documents' },
   { section: 'payments', label: 'Payments', href: '/dashboard/payments' },
   { section: 'contact-entries', label: 'Contact Entries', href: '/dashboard/contact-entries', badge: 'Inbox' },
@@ -140,6 +143,8 @@ const getDashboardSectionFromPath = (pathname: string): DashboardSection => {
       return 'users';
     case 'visa-applications':
       return 'visa-applications';
+    case 'user-chats':
+      return 'user-chats';
     case 'documents':
       return 'documents';
     case 'payments':
@@ -165,6 +170,8 @@ const getManagerSectionFromPath = (pathname: string): ManagerSection => {
       return 'applications';
     case 'blogs':
       return 'blogs';
+    case 'user-chats':
+      return 'user-chats';
     case 'documents':
       return 'documents';
     case 'payments':
@@ -208,6 +215,7 @@ const sectionFlagMap: Partial<Record<DashboardSection, 'applications' | 'users' 
   blogs: 'blogs',
   users: 'users',
   'visa-applications': 'applications',
+  'user-chats': 'users',
   settings: 'settings'
 };
 
@@ -381,6 +389,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
     blogs: 'Blog Management',
     users: 'User Intelligence',
     'visa-applications': 'Visa Applications',
+    'user-chats': 'User Conversations',
     documents: 'Document Center',
     payments: 'Payments and Billing',
     'contact-entries': 'Contact Form Inbox',
@@ -463,6 +472,7 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'users' ? <UsersPanel role={session.role} basePath="/dashboard/users" /> : null}
           {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel role={session.role} basePath="/dashboard/visa-applications" /> : null}
+          {!profileRoute && activeSection === 'user-chats' ? <UserChatsPanel role={session.role} basePath="/dashboard/user-chats" /> : null}
           {!profileRoute && activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
@@ -991,6 +1001,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
     team: 'Team Queue',
     applications: 'Application Pipeline',
     blogs: 'Blog Editorial',
+    'user-chats': 'User Conversations',
     documents: 'Document Review',
     payments: 'Payment Oversight',
     'contact-entries': 'Contact Form Inbox',
@@ -1070,6 +1081,7 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
           {!profileRoute && activeSection === 'team' ? <ManagerTeamPanel /> : null}
           {!profileRoute && activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role="manager" /> : null}
+          {!profileRoute && activeSection === 'user-chats' ? <UserChatsPanel role="manager" basePath="/dashboard/user-chats" /> : null}
           {!profileRoute && activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
           {!profileRoute && activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
           {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="manager" /> : null}
