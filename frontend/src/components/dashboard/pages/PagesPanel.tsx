@@ -24,8 +24,9 @@ import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
 import { DashboardTextarea } from '../common/DashboardTextarea';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
-import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton, DashboardNoResultsState } from '../common/asyncUi';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
+import { DataTablePaginationFooter, DataTableRowActions } from '../common/DataTablePrimitives';
 
 const defaultForm = (): CreatePageRequestDto => ({
   title: '',
@@ -172,6 +173,7 @@ function PageEditorModal({
 
 export function PagesPanel({ role }: { role: DashboardUserRole }) {
   const [pages, setPages] = useState<CmsPage[]>([]);
+  const [totalPagesCount, setTotalPagesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editorOpen, setEditorOpen] = useState(false);
@@ -224,6 +226,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
         updated_at_to: table.state.filters.updatedAtTo
       });
       setPages(response.items);
+      setTotalPagesCount(response.meta.total);
       setSelectedPageIds((prev) => prev.filter((id) => response.items.some((item) => item.id === id)));
     } catch (loadError) {
       setError(extractApiErrorMessage(loadError));
@@ -474,9 +477,17 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
           ) : null}
 
           {pages.length === 0 ? (
-            <DashboardEmptyState title="No pages found" description="Try changing filters or add a new page." />
+            table.state.search || Object.values(table.state.filters).some((value) => value && value !== 'All') ? (
+              <DashboardNoResultsState
+                description="No pages match the current filters."
+                onReset={() => table.setState((prev) => ({ ...prev, search: '', filters: { status: 'All', locale: 'All', template: 'All', updatedBy: '', updatedAtFrom: '', updatedAtTo: '' }, pagination: { ...prev.pagination, page: 1 } }))}
+              />
+            ) : (
+              <DashboardEmptyState title="No pages found" description="Try changing filters or add a new page." />
+            )
           ) : (
-            <div className="dashboard-table-wrap">
+            <>
+            <div className="dashboard-table-wrap dashboard-table-wrap--sticky">
               <table className="dashboard-table">
                 <thead>
                   <tr>
@@ -522,7 +533,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
                         <td>{page.updatedAt}</td>
                         <td>{page.views.toLocaleString()}</td>
                         <td>
-                          <div className="dashboard-actions-inline">
+                          <DataTableRowActions>
                             <DashboardButton type="button" variant="secondary" size="sm" onClick={() => openEdit(page)} disabled={!canPerform(role, 'pages', 'edit')}>
                               Edit
                             </DashboardButton>
@@ -535,7 +546,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
                             <DashboardButton type="button" variant="danger" size="sm" onClick={() => setDeleteTarget(page)} disabled={!canPerform(role, 'pages', 'delete')}>
                               Remove
                             </DashboardButton>
-                          </div>
+                          </DataTableRowActions>
                         </td>
                       </tr>
                     );
@@ -543,6 +554,14 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
                 </tbody>
               </table>
             </div>
+            <DataTablePaginationFooter
+              page={table.state.pagination.page}
+              pageSize={table.state.pagination.pageSize}
+              total={totalPagesCount}
+              onPageChange={table.setPage}
+              onPageSizeChange={table.setPageSize}
+            />
+            </>
           )}
         </article>
       ) : null}

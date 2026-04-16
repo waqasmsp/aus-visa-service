@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton, DashboardNoResultsState } from '../common/asyncUi';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
@@ -12,6 +12,7 @@ import { extractApiErrorMessage } from '../../../services/dashboard/async';
 import { UserChatsFilterBar } from './UserChatsFilterBar';
 import { UserChatsTable } from './UserChatsTable';
 import { ChatThreadDrawer } from './ChatThreadDrawer';
+import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
 
 type Props = {
   role: DashboardUserRole;
@@ -30,6 +31,7 @@ const defaultFilters: UserChatsFilters = {
 
 export function UserChatsPanel({ role, basePath }: Props) {
   const [items, setItems] = useState<UserChatConversation[]>([]);
+  const [totalConversationsCount, setTotalConversationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedThread, setSelectedThread] = useState<UserChatConversation | null>(null);
@@ -61,6 +63,7 @@ export function UserChatsPanel({ role, basePath }: Props) {
         filters: table.state.filters
       });
       setItems(response.items);
+      setTotalConversationsCount(response.meta.total);
     } catch (loadError) {
       setError(extractApiErrorMessage(loadError));
     } finally {
@@ -147,7 +150,13 @@ export function UserChatsPanel({ role, basePath }: Props) {
               onFilterChange={table.setFilter}
             />
 
-            {items.length === 0 ? <DashboardEmptyState title="No conversations found" description="Try broader filters or date range." /> : (
+            {items.length === 0 ? (
+              table.state.search || Object.values(table.state.filters).some((value) => value && value !== 'All' && value !== 'false') ? (
+                <DashboardNoResultsState description="No conversations match your filters." onReset={() => table.setState((prev) => ({ ...prev, search: '', filters: defaultFilters, pagination: { ...prev.pagination, page: 1 } }))} />
+              ) : (
+                <DashboardEmptyState title="No conversations found" description="Try broader filters or date range." />
+              )
+            ) : (
               <UserChatsTable
                 conversations={items}
                 canManage={canManage}
@@ -161,6 +170,7 @@ export function UserChatsPanel({ role, basePath }: Props) {
                 }}
               />
             )}
+            <DataTablePaginationFooter page={table.state.pagination.page} pageSize={table.state.pagination.pageSize} total={totalConversationsCount} onPageChange={table.setPage} onPageSizeChange={table.setPageSize} />
           </article>
 
           {selectedThread ? <ChatThreadDrawer conversation={selectedThread} onClose={() => setSelectedThread(null)} /> : null}
