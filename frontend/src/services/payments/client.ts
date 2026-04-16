@@ -15,7 +15,8 @@ import {
   PaymentsService,
   PaymentServiceResult,
   RefundPaymentInput,
-  RequestMeta
+  RequestMeta,
+  CancelSubscriptionInput
 } from './interfaces';
 
 const withRequiredHeaders = (meta: RequestMeta, requireIdempotency = false): HeadersInit => {
@@ -38,7 +39,8 @@ const withRequiredHeaders = (meta: RequestMeta, requireIdempotency = false): Hea
   return {
     'Content-Type': 'application/json',
     'x-correlation-id': meta.correlationId,
-    ...(meta.idempotencyKey ? { 'Idempotency-Key': meta.idempotencyKey } : {})
+    ...(meta.idempotencyKey ? { 'Idempotency-Key': meta.idempotencyKey } : {}),
+    ...(meta.permissions?.length ? { 'x-permissions': meta.permissions.join(',') } : {})
   };
 };
 
@@ -104,6 +106,17 @@ export class ApiPaymentsService implements PaymentsService {
     });
 
     return toResult<Subscription>(response);
+  }
+
+
+  async cancelSubscription(input: CancelSubscriptionInput, meta: RequestMeta): Promise<PaymentServiceResult<{ ok: true }>> {
+    const response = await fetch(`${this.baseUrl}/subscriptions/${input.subscriptionId}/cancel`, {
+      method: 'POST',
+      headers: withRequiredHeaders(meta),
+      body: JSON.stringify(input)
+    });
+
+    return toResult<{ ok: true }>(response);
   }
 
   async listDisputes(meta: RequestMeta): Promise<PaymentServiceResult<DisputeSummary[]>> {

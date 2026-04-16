@@ -7,11 +7,12 @@ export type LedgerEventType =
   | 'receipt.resent'
   | 'transaction.annotated'
   | 'dispute.escalated'
+  | 'subscription.canceled'
   | 'reconciliation.mismatch';
 
-export type TransactionKind = 'charge' | 'refund' | 'invoice' | 'dispute';
+export type TransactionKind = 'charge' | 'refund' | 'invoice' | 'dispute' | 'subscription';
 
-export type TransactionPermissionAction = 'issue_refund' | 'escalate_dispute' | 'resend_receipt_invoice';
+export type TransactionPermissionAction = 'issue_refund' | 'escalate_dispute' | 'resend_receipt_invoice' | 'cancel_subscription';
 
 export type TransactionCenterRole = 'admin' | 'manager' | 'user';
 

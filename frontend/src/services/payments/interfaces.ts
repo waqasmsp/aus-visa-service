@@ -10,6 +10,7 @@ import {
 export type RequestMeta = {
   correlationId: string;
   idempotencyKey?: string;
+  permissions?: string[];
 };
 
 export type CreatePaymentIntentInput = {
@@ -28,13 +29,20 @@ export type CapturePaymentInput = {
 export type RefundPaymentInput = {
   chargeId: string;
   amount?: number;
-  reason?: string;
+  reason: string;
+  stepUpToken: string;
 };
 
 export type CreateSubscriptionInput = {
   customerId: string;
   planId: string;
   trialEnd?: string;
+};
+
+export type CancelSubscriptionInput = {
+  subscriptionId: string;
+  reason: string;
+  stepUpToken: string;
 };
 
 export type DisputeSummary = {
@@ -53,6 +61,7 @@ export interface PaymentsService {
   captureIntent(input: CapturePaymentInput, meta: RequestMeta): Promise<PaymentServiceResult<Charge>>;
   createRefund(input: RefundPaymentInput, meta: RequestMeta): Promise<PaymentServiceResult<Refund>>;
   createSubscription(input: CreateSubscriptionInput, meta: RequestMeta): Promise<PaymentServiceResult<Subscription>>;
+  cancelSubscription(input: CancelSubscriptionInput, meta: RequestMeta): Promise<PaymentServiceResult<{ ok: true }>>;
   listDisputes(meta: RequestMeta): Promise<PaymentServiceResult<DisputeSummary[]>>;
   mapWebhookToEvent(payload: unknown, provider: string, meta: RequestMeta): PaymentServiceResult<WebhookEvent>;
 }

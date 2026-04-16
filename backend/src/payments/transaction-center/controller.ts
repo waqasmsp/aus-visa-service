@@ -1,5 +1,6 @@
 import {
   AnnotateTransactionDto,
+  CancelSubscriptionDto,
   EscalateDisputeDto,
   ExportTransactionsDto,
   IssueRefundDto,
@@ -13,7 +14,7 @@ import { TransactionCenterService } from './service';
 export class TransactionCenterController {
   constructor(private readonly service: TransactionCenterService) {}
 
-  async list(req: { query: TransactionQueryDto; context?: Pick<TransactionActionContext, 'role'> }) {
+  async list(req: { query: TransactionQueryDto; context: Pick<TransactionActionContext, 'role' | 'permissions'> }) {
     return this.service.searchTransactions(req.query, req.context);
   }
 
@@ -41,11 +42,16 @@ export class TransactionCenterController {
     return this.service.reconcile(req.body, req.context);
   }
 
-  async exportAccountingCsv(req: { query: Omit<ExportTransactionsDto, 'audience'> }) {
-    return this.service.exportCsv({ ...req.query, audience: 'accounting' });
+  async cancelSubscription(req: { body: CancelSubscriptionDto; context: TransactionActionContext }) {
+    await this.service.cancelSubscription(req.body, req.context);
+    return { ok: true };
   }
 
-  async exportFinanceCsv(req: { query: Omit<ExportTransactionsDto, 'audience'> }) {
-    return this.service.exportCsv({ ...req.query, audience: 'finance' });
+  async exportAccountingCsv(req: { query: Omit<ExportTransactionsDto, 'audience'>; context: Pick<TransactionActionContext, 'role' | 'permissions'> }) {
+    return this.service.exportCsv({ ...req.query, audience: 'accounting' }, req.context);
+  }
+
+  async exportFinanceCsv(req: { query: Omit<ExportTransactionsDto, 'audience'>; context: Pick<TransactionActionContext, 'role' | 'permissions'> }) {
+    return this.service.exportCsv({ ...req.query, audience: 'finance' }, req.context);
   }
 }
