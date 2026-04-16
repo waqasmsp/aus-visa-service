@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, ReactNode, forwardRef } from 'react';
 
 type DashboardButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type DashboardButtonSize = 'sm' | 'md' | 'lg';
@@ -13,16 +13,19 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const joinClasses = (...values: Array<string | undefined | false>): string => values.filter(Boolean).join(' ');
 
-export function DashboardButton({
-  variant = 'secondary',
-  size = 'md',
-  loading = false,
-  loadingLabel = 'Loading…',
-  className,
-  disabled,
-  children,
-  ...props
-}: Props) {
+export const DashboardButton = forwardRef<HTMLButtonElement, Props>(function DashboardButton(
+  {
+    variant = 'secondary',
+    size = 'md',
+    loading = false,
+    loadingLabel = 'Loading…',
+    className,
+    disabled,
+    children,
+    ...props
+  },
+  ref
+) {
   const classes = joinClasses(
     'dashboard-button',
     `dashboard-button--${variant}`,
@@ -33,8 +36,8 @@ export function DashboardButton({
   );
 
   return (
-    <button {...props} className={classes} disabled={disabled || loading} aria-busy={loading || undefined}>
+    <button ref={ref} {...props} className={classes} disabled={disabled || loading} aria-busy={loading || undefined}>
       {loading ? loadingLabel : children}
     </button>
   );
-}
+});

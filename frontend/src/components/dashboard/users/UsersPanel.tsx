@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
 import { useDashboardTableState } from '../common/useDashboardTableState';
+import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import { DashboardQueryState } from '../../../types/dashboard/query';
 import { DashboardUserRole } from '../../../types/dashboard/applications';
 import { PortalUser, UserImportReport, UserImportRow, UsersFilters } from '../../../types/dashboard/users';
 import { usersService } from '../../../services/dashboard/users.service';
 import { extractApiErrorMessage } from '../../../services/dashboard/async';
-import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
+import { canPerform } from '../../../services/dashboard/authPolicy';
 import { UsersFilterBar } from './UsersFilterBar';
 import { UsersTable } from './UsersTable';
 import { UserDetailDrawer } from './UserDetailDrawer';
@@ -57,6 +58,8 @@ export function UsersPanel({ role, basePath }: Props) {
   const [showImportPanel, setShowImportPanel] = useState(false);
   const [importCsv, setImportCsv] = useState('full_name,email,phone,segment,purchased,source,country,role_scope');
   const [importReport, setImportReport] = useState<UserImportReport | null>(null);
+  const [toggleTarget, setToggleTarget] = useState<{ user: PortalUser; nextActive: boolean } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PortalUser | null>(null);
 
   const table = useDashboardTableState<UsersFilters>({
     basePath,
@@ -143,8 +146,6 @@ export function UsersPanel({ role, basePath }: Props) {
   };
 
   const toggleActive = async (user: PortalUser, active: boolean) => {
-    const confirmed = window.confirm(`${active ? 'Reactivate' : 'Deactivate'} ${user.fullName}? This action will be recorded.`);
-    if (!confirmed) return;
     try {
       await usersService.setActive(user.id, active, role);
       await loadUsers();
@@ -154,10 +155,11 @@ export function UsersPanel({ role, basePath }: Props) {
   };
 
   const softDelete = async (user: PortalUser) => {
-    const approval = collectDestructiveApproval('users', 'delete', user.fullName);
-    if (!approval) return;
     try {
-      await usersService.softDelete(user.id, role, approval);
+      await usersService.softDelete(user.id, role, {
+        reason: `Deleted from dashboard by ${role}`,
+        secondApprover: 'compliance@ausvisaservice.com'
+      });
       await loadUsers();
     } catch (mutationError) {
       setError(extractApiErrorMessage(mutationError));
@@ -259,8 +261,8 @@ export function UsersPanel({ role, basePath }: Props) {
                   setEditingUser(user);
                   setShowEditor(true);
                 }}
-                onToggleActive={(user, active) => void toggleActive(user, active)}
-                onDelete={(user) => void softDelete(user)}
+                onToggleActive={(user, active) => setToggleTarget({ user, nextActive: active })}
+                onDelete={(user) => setDeleteTarget(user)}
               />
             )}
           </article>
@@ -278,6 +280,38 @@ export function UsersPanel({ role, basePath }: Props) {
             />
           ) : null}
           {selectedUser ? <UserDetailDrawer user={selectedUser} onClose={() => setSelectedUser(null)} /> : null}
+          <ConfirmActionModal
+            open={Boolean(toggleTarget)}
+            variant={toggleTarget?.nextActive ? 'info' : 'warning'}
+            title={toggleTarget?.nextActive ? 'Reactivate user account?' : 'Deactivate user account?'}
+            description={toggleTarget?.nextActive ? 'This user will regain access to dashboard features.' : 'The user will lose dashboard access until reactivated.'}
+            entityName={toggleTarget?.user.fullName ?? 'Unknown user'}
+            irreversibleWarning={toggleTarget?.nextActive ? 'This action is auditable and will be logged.' : 'Warning: this may interrupt active internal workflows.'}
+            confirmLabel={toggleTarget?.nextActive ? 'Reactivate user' : 'Deactivate user'}
+            onCancel={() => setToggleTarget(null)}
+            onConfirm={async () => {
+              if (!toggleTarget) return;
+              await toggleActive(toggleTarget.user, toggleTarget.nextActive);
+              setToggleTarget(null);
+            }}
+            preventCloseWhilePending={!toggleTarget?.nextActive}
+          />
+          <ConfirmActionModal
+            open={Boolean(deleteTarget)}
+            variant="danger"
+            title="Delete user record permanently?"
+            description="This will remove the user from active records and enforce policy audit annotations."
+            entityName={deleteTarget?.fullName ?? 'Unknown user'}
+            irreversibleWarning="This action is irreversible from this dashboard view. Continue only if you are certain."
+            confirmLabel="Delete user"
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={async () => {
+              if (!deleteTarget) return;
+              await softDelete(deleteTarget);
+              setDeleteTarget(null);
+            }}
+            preventCloseWhilePending
+          />
         </>
       ) : null}
     </section>

@@ -13,7 +13,7 @@ import {
 import { DashboardQueryState } from '../../../types/dashboard/query';
 import { pagesService } from '../../../services/dashboard/pages.service';
 import { extractApiErrorMessage, runOptimisticMutation } from '../../../services/dashboard/async';
-import { canPerform, collectDestructiveApproval } from '../../../services/dashboard/authPolicy';
+import { canPerform } from '../../../services/dashboard/authPolicy';
 import { DashboardUserRole } from '../../../types/dashboard/applications';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import { DashboardButton } from '../common/DashboardButton';
@@ -23,6 +23,7 @@ import { DashboardField } from '../common/DashboardField';
 import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
 import { DashboardTextarea } from '../common/DashboardTextarea';
+import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import {
   DashboardEmptyState,
   DashboardErrorState,
@@ -170,40 +171,6 @@ function PageEditorModal({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ConfirmModal({
-  open,
-  title,
-  message,
-  confirmLabel,
-  onCancel,
-  onConfirm
-}: {
-  open: boolean;
-  title: string;
-  message: string;
-  confirmLabel: string;
-  onCancel: () => void;
-  onConfirm: () => Promise<void>;
-}) {
-  if (!open) return null;
-  return (
-    <div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
-      <article className="dashboard-modal-card">
-        <h3>{title}</h3>
-        <p>{message}</p>
-        <div className="dashboard-actions-inline">
-          <DashboardButton type="button" variant="primary" onClick={() => void onConfirm()}>
-            {confirmLabel}
-          </DashboardButton>
-          <DashboardButton type="button" variant="secondary" onClick={onCancel}>
-            Cancel
-          </DashboardButton>
-        </div>
-      </article>
     </div>
   );
 }
@@ -356,11 +323,9 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
         () => setPages((prev) => prev.filter((page) => page.id !== deleteTarget.id)),
         () => setPages(previous),
         async () => {
-          const approval = collectDestructiveApproval('pages', 'delete', deleteTarget.title);
-          if (!approval) {
-            throw new Error('Delete canceled.');
-          }
-          await pagesService.remove(deleteTarget.id, role, approval);
+          await pagesService.remove(deleteTarget.id, role, {
+            reason: `Page deletion requested by ${role}`
+          });
           notifySuccess('Page removed.');
         }
       );
@@ -379,10 +344,9 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
   const runBatch = async () => {
     if (!batchAction) return;
     try {
-      const destructiveApproval = batchAction === 'publish' ? collectDestructiveApproval('pages', 'publish', `${selectedPageIds.length} pages`) : null;
-      if (batchAction === 'publish' && !destructiveApproval) {
-        return;
-      }
+      const destructiveApproval = batchAction === 'publish'
+        ? { reason: `Bulk publish confirmed by ${role}` }
+        : null;
       const response = await pagesService.batchTransition({ ids: selectedPageIds, action: batchAction }, role, destructiveApproval ?? undefined);
       response.warnings.forEach((warning) => notifyError(warning));
       if (response.updated.length > 0) {
@@ -599,19 +563,26 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
         onSubmit={savePage}
       />
 
-      <ConfirmModal
+      <ConfirmActionModal
         open={Boolean(deleteTarget)}
+        variant="danger"
         title="Delete page"
-        message="This action removes the page and cannot be undone from this table view."
+        description="This action removes the page from this table and requires rollback tooling for recovery."
+        entityName={deleteTarget?.title ?? 'Unknown page'}
+        irreversibleWarning="This action is irreversible from this table view. Continue only if removal is intended."
         confirmLabel="Delete page"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={deletePage}
+        preventCloseWhilePending
       />
 
-      <ConfirmModal
+      <ConfirmActionModal
         open={Boolean(batchAction)}
+        variant="warning"
         title={`Batch ${batchAction ?? ''}`}
-        message={`Preflight checks will run before ${batchAction ?? ''}. Pages failing guardrails are skipped with warnings.`}
+        description={`Preflight checks will run before ${batchAction ?? ''}. Pages failing guardrails are skipped with warnings.`}
+        entityName={`${selectedPageIds.length} selected page(s)`}
+        irreversibleWarning="Bulk transitions can trigger irreversible publish/archive side effects for qualifying pages."
         confirmLabel={`Continue ${batchAction ?? ''}`}
         onCancel={() => setBatchAction(null)}
         onConfirm={runBatch}
