@@ -28,6 +28,7 @@ type DashboardExperienceProps = {
 };
 
 type DashboardRole = 'admin' | 'manager' | 'user';
+type PaymentsWorkspaceView = 'billing' | 'transactions';
 type AuthSession = {
   role: DashboardRole;
   email: string;
@@ -667,10 +668,85 @@ function DocumentsPanel({ role }: { role: DashboardRole }) {
 }
 
 function PaymentsPanel({ role }: { role: DashboardRole }) {
+  return <PaymentsWorkspaceTabs role={role} />;
+}
+
+function PaymentsWorkspaceTabs({ role }: { role: DashboardRole }) {
+  const [activeView, setActiveView] = useState<PaymentsWorkspaceView>('billing');
+  const tabRootId = `payments-workspace-${role}`;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const workspace = new URLSearchParams(window.location.search).get('workspace');
+    if (workspace === 'transactions') {
+      setActiveView('transactions');
+      return;
+    }
+    setActiveView('billing');
+  }, []);
+
+  const handleTabChange = (nextView: PaymentsWorkspaceView) => {
+    setActiveView(nextView);
+    if (typeof window === 'undefined') return;
+
+    const url = new URL(window.location.href);
+    if (nextView === 'billing') {
+      url.searchParams.delete('workspace');
+    } else {
+      url.searchParams.set('workspace', nextView);
+    }
+    window.history.replaceState({}, '', url.toString());
+  };
+
   return (
     <section className="dashboard-stack">
-      <BillingWorkspace role={role} />
-      <TransactionCenterPanel role={role} />
+      <article className="dashboard-panel">
+        <div className="dashboard-panel__header">
+          <h2>Payments Workspace</h2>
+          <small>Use tabs to switch between subscription billing and transaction operations.</small>
+        </div>
+        <div className="dashboard-settings-tablist dashboard-payments-tablist" role="tablist" aria-label="Payments workspace sections">
+          <button
+            id={`${tabRootId}-billing`}
+            type="button"
+            role="tab"
+            className={`dashboard-settings-tab ${activeView === 'billing' ? 'is-active' : ''}`}
+            aria-selected={activeView === 'billing'}
+            aria-controls={`${tabRootId}-billing-panel`}
+            onClick={() => handleTabChange('billing')}
+          >
+            Billing & Plans
+          </button>
+          <button
+            id={`${tabRootId}-transactions`}
+            type="button"
+            role="tab"
+            className={`dashboard-settings-tab ${activeView === 'transactions' ? 'is-active' : ''}`}
+            aria-selected={activeView === 'transactions'}
+            aria-controls={`${tabRootId}-transactions-panel`}
+            onClick={() => handleTabChange('transactions')}
+          >
+            Transactions & Reconciliation
+          </button>
+        </div>
+      </article>
+
+      <div
+        id={`${tabRootId}-billing-panel`}
+        role="tabpanel"
+        aria-labelledby={`${tabRootId}-billing`}
+        hidden={activeView !== 'billing'}
+      >
+        {activeView === 'billing' ? <BillingWorkspace role={role} /> : null}
+      </div>
+      <div
+        id={`${tabRootId}-transactions-panel`}
+        role="tabpanel"
+        aria-labelledby={`${tabRootId}-transactions`}
+        hidden={activeView !== 'transactions'}
+      >
+        {activeView === 'transactions' ? <TransactionCenterPanel role={role} /> : null}
+      </div>
     </section>
   );
 }
@@ -1256,12 +1332,7 @@ function ManagerDocumentsPanel() {
 }
 
 function ManagerPaymentsPanel() {
-  return (
-    <section className="dashboard-stack">
-      <BillingWorkspace role="manager" />
-      <TransactionCenterPanel role="manager" />
-    </section>
-  );
+  return <PaymentsWorkspaceTabs role="manager" />;
 }
 
 function ManagerSettingsPanel() {
