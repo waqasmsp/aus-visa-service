@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Card } from '../../primitives/Card';
 import { PrimaryButton } from '../../primitives/PrimaryButton';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
+import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 
 type DashboardRole = 'admin' | 'manager' | 'user';
 type BlogAction = 'create' | 'edit' | 'submit-review' | 'approve-review' | 'publish' | 'archive' | 'delete' | 'settings' | 'override';
@@ -70,9 +71,9 @@ export function BlogsPanel({
   const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<BulkActionType>('publish');
   const [bulkValue, setBulkValue] = useState('');
-  const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
   const [trashLog, setTrashLog] = useState<Record<string, string>>({});
   const [deleteTarget, setDeleteTarget] = useState<BlogRow | null>(null);
+  const { notifyError, notifyInfo, formatNotificationMessage } = useDashboardNotifications();
 
   const allSelected = useMemo(
     () => posts.length > 0 && posts.every((post) => selectedPostIds.includes(post.id)),
@@ -98,18 +99,18 @@ export function BlogsPanel({
       postIds: selectedPostIds,
       value: bulkValue.trim() ? bulkValue.trim() : undefined
     });
-    setWorkflowMessage(outcome ?? `Bulk action "${bulkAction}" applied to ${selectedPostIds.length} post(s).`);
+    notifyInfo(formatNotificationMessage({ entity: 'blog', action: bulkAction === 'publish' || bulkAction === 'archive' || bulkAction === 'schedule' ? 'status_change' : 'edit', result: 'success' }, outcome ?? `Bulk action "${bulkAction}" applied to ${selectedPostIds.length} post(s).`));
   };
 
   const runDeleteWorkflow = async (post: BlogRow) => {
     const dependencyCount = post.status === 'Published' || post.status === 'In Review' ? 1 : 0;
     if (dependencyCount > 0) {
-      setWorkflowMessage(`Delete blocked: ${post.title} has ${dependencyCount} active dependency. Unpublish/review-close before delete.`);
+      notifyError(formatNotificationMessage({ entity: 'blog', action: 'delete', result: 'error', id: post.id }, `Delete blocked: ${post.title} has ${dependencyCount} active dependency. Unpublish/review-close before delete.`));
       return;
     }
 
     if (post.status !== 'Archived') {
-      setWorkflowMessage(`Archive-first policy: ${post.title} must be archived before moving to trash.`);
+      notifyInfo(formatNotificationMessage({ entity: 'blog', action: 'status_change', result: 'info', id: post.id }, `Archive-first policy: ${post.title} must be archived before moving to trash.`));
       if (onArchive) {
         onArchive(post.id);
       }
@@ -119,7 +120,7 @@ export function BlogsPanel({
     const recoveryUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
     setTrashLog((current) => ({ ...current, [post.id]: recoveryUntil }));
     const outcome = onDelete ? await onDelete(post.id) : undefined;
-    setWorkflowMessage(outcome ?? `${post.title} moved to trash. Recoverable until ${new Date(recoveryUntil).toLocaleDateString('en-US')}.`);
+    notifyInfo(formatNotificationMessage({ entity: 'blog', action: 'delete', result: 'success', id: post.id }, outcome ?? `${post.title} moved to trash. Recoverable until ${new Date(recoveryUntil).toLocaleDateString('en-US')}.`));
   };
 
   return (
@@ -154,7 +155,6 @@ export function BlogsPanel({
         </button>
       </div>
 
-      {workflowMessage ? <p className="dashboard-auth__message is-warning">{workflowMessage}</p> : null}
       {loading ? <p className="dashboard-panel__note">Loading dashboard posts...</p> : null}
       {error ? <p className="dashboard-auth__message is-error">{error}</p> : null}
 

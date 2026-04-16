@@ -9,13 +9,8 @@ import { DashboardTopNavProfileMenu } from '../../components/dashboard/navigatio
 import { VisaApplicationsPanel } from '../../components/dashboard/applications/VisaApplicationsPanel';
 import { UsersPanel } from '../../components/dashboard/users/UsersPanel';
 import { PagesPanel } from '../../components/dashboard/pages/PagesPanel';
-import {
-  DashboardEmptyState,
-  DashboardErrorState,
-  DashboardLoadingSkeleton,
-  MutationToastRegion,
-  useMutationToasts
-} from '../../components/dashboard/common/asyncUi';
+import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../../components/dashboard/common/asyncUi';
+import { DashboardNotificationsProvider, useDashboardNotifications } from '../../components/dashboard/common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../../components/dashboard/common/useDashboardTableState';
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
@@ -336,14 +331,26 @@ export function DashboardExperience({ pathname }: DashboardExperienceProps) {
   }
 
   if (session.role === 'manager') {
-    return <ManagerDashboardWorkspace pathname={normalizedPath} session={session} />;
+    return (
+      <DashboardNotificationsProvider>
+        <ManagerDashboardWorkspace pathname={normalizedPath} session={session} />
+      </DashboardNotificationsProvider>
+    );
   }
 
   if (session.role === 'user') {
-    return <UserDashboardWorkspace pathname={normalizedPath} session={session} />;
+    return (
+      <DashboardNotificationsProvider>
+        <UserDashboardWorkspace pathname={normalizedPath} session={session} />
+      </DashboardNotificationsProvider>
+    );
   }
 
-  return <DashboardWorkspace pathname={normalizedPath} role={session.role} session={session} />;
+  return (
+    <DashboardNotificationsProvider>
+      <DashboardWorkspace pathname={normalizedPath} role={session.role} session={session} />
+    </DashboardNotificationsProvider>
+  );
 }
 
 function DashboardWorkspace({ pathname, role, session }: { pathname: string; role: DashboardRole; session: AuthSession }) {
@@ -737,6 +744,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   ]);
 
   const actorName = role === 'admin' ? 'Admin Team' : role === 'manager' ? 'Manager Reviewer' : 'Editor';
+  const { notifyInfo, formatNotificationMessage } = useDashboardNotifications();
 
   const staleThresholdDays = 45;
   const performanceSnapshot = useMemo(
@@ -784,6 +792,7 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
       { id: `evt-${current.length + 1}`, actor: actorName, action: event.action.toLowerCase().includes('publish') ? 'publish' : `status change → ${event.status}`, timestamp: '2026-04-14 12:00 UTC' },
       ...current
     ]);
+    notifyInfo(formatNotificationMessage({ entity: 'blog', action: event.status === 'Published' || event.status === 'Scheduled' || event.status === 'Archived' ? 'status_change' : 'edit', result: 'success', id: firstPost?.id }, `${event.action} completed.`));
     setRevisions((current) => [
       { id: `rev-${current.length + 19}`, version: `v1.${current.length + 9}`, editor: actorName, timestamp: '2026-04-14 12:00 UTC', fromStatus: current[0]?.toStatus ?? 'Draft', toStatus: event.status },
       ...current

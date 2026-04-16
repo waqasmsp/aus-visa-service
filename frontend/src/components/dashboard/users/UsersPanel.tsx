@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../common/asyncUi';
+import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../common/useDashboardTableState';
 import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import { DashboardQueryState } from '../../../types/dashboard/query';
@@ -60,6 +61,7 @@ export function UsersPanel({ role, basePath }: Props) {
   const [importReport, setImportReport] = useState<UserImportReport | null>(null);
   const [toggleTarget, setToggleTarget] = useState<{ user: PortalUser; nextActive: boolean } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PortalUser | null>(null);
+  const { notifyError, notifyInfo, notifySuccess, formatNotificationMessage } = useDashboardNotifications();
 
   const table = useDashboardTableState<UsersFilters>({
     basePath,
@@ -137,20 +139,26 @@ export function UsersPanel({ role, basePath }: Props) {
           role
         );
       }
+      notifySuccess(formatNotificationMessage({ entity: 'user', action: editingUser ? 'edit' : 'create', result: 'success', id: editingUser?.id }, editingUser ? 'User updated.' : 'User created.'));
       setShowEditor(false);
       setEditingUser(null);
       await loadUsers();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'user', action: editingUser ? 'edit' : 'create', result: 'error', id: editingUser?.id }, message));
     }
   };
 
   const toggleActive = async (user: PortalUser, active: boolean) => {
     try {
       await usersService.setActive(user.id, active, role);
+      notifyInfo(formatNotificationMessage({ entity: 'user', action: 'status_change', result: 'success', id: user.id }, active ? 'User reactivated.' : 'User deactivated.'));
       await loadUsers();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'user', action: 'status_change', result: 'error', id: user.id }, message));
     }
   };
 
@@ -160,9 +168,12 @@ export function UsersPanel({ role, basePath }: Props) {
         reason: `Deleted from dashboard by ${role}`,
         secondApprover: 'compliance@ausvisaservice.com'
       });
+      notifySuccess(formatNotificationMessage({ entity: 'user', action: 'delete', result: 'success', id: user.id }, 'User deleted.'));
       await loadUsers();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'user', action: 'delete', result: 'error', id: user.id }, message));
     }
   };
 
@@ -176,8 +187,11 @@ export function UsersPanel({ role, basePath }: Props) {
       link.download = `users-export-${new Date().toISOString().slice(0, 10)}.csv`;
       link.click();
       URL.revokeObjectURL(url);
+      notifyInfo(formatNotificationMessage({ entity: 'user', action: 'export', result: 'success' }, 'Users CSV export started.'));
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'user', action: 'export', result: 'error' }, message));
     }
   };
 
@@ -186,9 +200,12 @@ export function UsersPanel({ role, basePath }: Props) {
       const rows = parseCsvRows(importCsv);
       const report = await usersService.importRows(rows, role);
       setImportReport(report);
+      notifyInfo(formatNotificationMessage({ entity: 'user', action: 'import', result: 'success' }, `Imported ${report.importedCount} row(s), rejected ${report.rejectedCount}.`));
       await loadUsers();
     } catch (mutationError) {
-      setError(extractApiErrorMessage(mutationError));
+      const message = extractApiErrorMessage(mutationError);
+      setError(message);
+      notifyError(formatNotificationMessage({ entity: 'user', action: 'import', result: 'error' }, message));
     }
   };
 
