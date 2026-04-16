@@ -21,6 +21,7 @@ import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 import { SettingsPanel } from '../../components/dashboard/settings/SettingsPanel';
 import { TransactionCenterPanel } from '../../components/dashboard/payments/TransactionCenterPanel';
+import { BillingWorkspace } from '../../components/dashboard/payments/BillingWorkspace';
 import { canPerform, collectDestructiveApproval } from '../../services/dashboard/authPolicy';
 import { writeAuditEvent } from '../../services/dashboard/audit.service';
 import { isModuleEnabled, listModuleFlags } from '../../services/dashboard/featureFlags.service';
@@ -620,7 +621,12 @@ function DocumentsPanel({ role }: { role: DashboardRole }) {
 }
 
 function PaymentsPanel({ role }: { role: DashboardRole }) {
-  return <TransactionCenterPanel role={role} />;
+  return (
+    <section className="dashboard-stack">
+      <BillingWorkspace role={role} />
+      <TransactionCenterPanel role={role} />
+    </section>
+  );
 }
 
 function ContactEntriesPanel({ audience }: { audience: 'admin' | 'manager' }) {
@@ -1180,7 +1186,12 @@ function ManagerDocumentsPanel() {
 }
 
 function ManagerPaymentsPanel() {
-  return <TransactionCenterPanel role="manager" />;
+  return (
+    <section className="dashboard-stack">
+      <BillingWorkspace role="manager" />
+      <TransactionCenterPanel role="manager" />
+    </section>
+  );
 }
 
 function ManagerSettingsPanel() {
@@ -1404,46 +1415,7 @@ function UserDocumentsPanel() {
 }
 
 function UserPaymentsPanel() {
-  const payments = [
-    { invoice: 'INV-1201', package: 'Business Visa Filing', amount: '$149', status: 'Paid', date: '2026-04-10' },
-    { invoice: 'INV-1204', package: 'Priority Review Add-on', amount: '$49', status: 'Pending', date: '2026-04-12' }
-  ];
-
-  return (
-    <section className="dashboard-stack">
-      <article className="dashboard-panel">
-        <div className="dashboard-panel__header">
-          <h2>Payments and Receipts</h2>
-        </div>
-        <div className="dashboard-table-wrap">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>Invoice</th>
-                <th>Package</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((payment) => (
-                <tr key={payment.invoice}>
-                  <td>{payment.invoice}</td>
-                  <td>{payment.package}</td>
-                  <td>{payment.amount}</td>
-                  <td>
-                    <span className={`dashboard-chip dashboard-chip--${toClassToken(payment.status)}`}>{payment.status}</span>
-                  </td>
-                  <td>{payment.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
-    </section>
-  );
+  return <BillingWorkspace role="user" />;
 }
 
 function UserMessagesPanel() {
