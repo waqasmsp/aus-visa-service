@@ -92,6 +92,24 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
     void loadApplications();
   }, [loadApplications]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const slaRisk = params.get('slaRisk');
+    const priority = params.get('priority');
+
+    if (status && ['Submitted', 'In Review', 'Documents Needed', 'Approved', 'Completed', 'Rejected'].includes(status)) {
+      table.setFilter('status', status as ApplicationFilters['status']);
+    }
+    if (slaRisk && ['Low', 'Medium', 'High', 'Critical'].includes(slaRisk)) {
+      table.setFilter('slaRisk', slaRisk as ApplicationFilters['slaRisk']);
+    }
+    if (priority && ['Low', 'Medium', 'High'].includes(priority)) {
+      table.setFilter('priority', priority as ApplicationFilters['priority']);
+    }
+  }, []);
+
   const applyPreset = (preset: string) => {
     setActivePreset(preset);
     if (typeof window !== 'undefined') {
