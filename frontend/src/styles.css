@@ -7423,6 +7423,14 @@ body.body--menu-open {
   margin-bottom: 1rem;
 }
 
+.dashboard-payments-tablist {
+  margin-top: 0.75rem;
+}
+
+.dashboard-payments-tablist .dashboard-settings-tab {
+  padding-inline: 1rem;
+}
+
 .dashboard-transaction-row-actions {
   display: flex;
   flex-wrap: wrap;
