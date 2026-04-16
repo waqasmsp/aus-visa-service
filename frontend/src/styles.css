@@ -6974,3 +6974,28 @@ body.body--menu-open {
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard-transaction-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.dashboard-transaction-toolbar {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-transaction-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.dashboard-transaction-row-actions + small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--color-text-muted);
+}
