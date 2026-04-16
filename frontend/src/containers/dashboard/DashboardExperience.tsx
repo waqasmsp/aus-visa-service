@@ -13,6 +13,7 @@ import { PagesPanel } from '../../components/dashboard/pages/PagesPanel';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton } from '../../components/dashboard/common/asyncUi';
 import { DashboardNotificationsProvider, useDashboardNotifications } from '../../components/dashboard/common/DashboardNotificationsProvider';
 import { useDashboardTableState } from '../../components/dashboard/common/useDashboardTableState';
+import { KpiCardV2 } from '../../components/dashboard/common/KpiCardV2';
 import { useBlogAdminTable } from '../../hooks/useBlogAdminTable';
 import { getBlogPerformanceSnapshot } from '../../services/blogAnalyticsService';
 import { SettingsPanel } from '../../components/dashboard/settings/SettingsPanel';
@@ -486,10 +487,42 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
 function OverviewPanel({ role }: { role: DashboardRole }) {
   const cards = useMemo(
     () => [
-      { label: 'Total Users', value: '24,381', trend: '+9.4%' },
-      { label: 'Active Visa Cases', value: '1,248', trend: '+6.1%' },
-      { label: 'Conversion Rate', value: '31.2%', trend: '+2.3%' },
-      { label: 'Revenue (30d)', value: '$184,200', trend: '+14.8%' }
+      {
+        title: 'Revenue risk',
+        value: '$42k',
+        delta: '+11% at-risk pipeline',
+        trendDirection: 'up' as const,
+        severity: 'warning' as const,
+        sparklineData: [28, 31, 30, 34, 35, 37, 39],
+        href: '/dashboard/payments?tab=charge&search=risk'
+      },
+      {
+        title: 'SLA breaches',
+        value: '7',
+        delta: '+2 in 24h',
+        trendDirection: 'up' as const,
+        severity: 'danger' as const,
+        sparklineData: [2, 3, 4, 4, 5, 6, 7],
+        href: '/dashboard/visa-applications?slaRisk=High'
+      },
+      {
+        title: 'Failed payments',
+        value: '14',
+        delta: '-3 vs yesterday',
+        trendDirection: 'down' as const,
+        severity: 'warning' as const,
+        sparklineData: [21, 20, 18, 17, 16, 15, 14],
+        href: '/dashboard/payments?tab=dispute'
+      },
+      {
+        title: 'Content backlog',
+        value: '19',
+        delta: '+4 awaiting review',
+        trendDirection: 'up' as const,
+        severity: 'neutral' as const,
+        sparklineData: [9, 11, 12, 13, 16, 17, 19],
+        href: '/dashboard/blogs?status=in_review'
+      }
     ],
     []
   );
@@ -498,11 +531,7 @@ function OverviewPanel({ role }: { role: DashboardRole }) {
     <section className="dashboard-stack">
       <div className="dashboard-kpi-grid">
         {cards.map((card) => (
-          <article key={card.label} className="dashboard-kpi-card">
-            <p>{card.label}</p>
-            <strong>{card.value}</strong>
-            <span>{card.trend} vs previous month</span>
-          </article>
+          <KpiCardV2 key={card.title} {...card} />
         ))}
       </div>
 
@@ -738,6 +767,13 @@ function RoleBasedBlogsPanel({ role }: { role: DashboardRole }) {
   const canSubmitReview = actions.includes('submit-review');
   const canRestoreRevision = role === 'admin';
   const { filters, setFilters, posts: adminPosts, loading, error, onPublish, onSchedule, onArchive, onBatchUpdate, getSeoScore, filterOptions } = useBlogAdminTable(role);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const statusFilter = new URLSearchParams(window.location.search).get('status');
+    if (!statusFilter) return;
+    setFilters((current) => ({ ...current, status: statusFilter as typeof current.status }));
+  }, [setFilters]);
   const [revisions, setRevisions] = useState<BlogRevision[]>([
     { id: 'rev-18', version: 'v1.8', editor: 'Noah Farooq', timestamp: '2026-04-13 11:10 UTC', fromStatus: 'In Review' as const, toStatus: 'In Review' as const },
     { id: 'rev-17', version: 'v1.7', editor: 'Olivia Brown', timestamp: '2026-04-12 09:42 UTC', fromStatus: 'Draft' as const, toStatus: 'In Review' as const },
@@ -1093,29 +1129,42 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
 }
 
 function ManagerOverviewPanel() {
+  const cards = [
+    {
+      title: 'Team throughput',
+      value: '46',
+      delta: '+8 closed today',
+      trendDirection: 'up' as const,
+      severity: 'success' as const,
+      sparklineData: [29, 31, 33, 34, 39, 42, 46],
+      href: '/dashboard/team?sort=throughput'
+    },
+    {
+      title: 'Pending approvals',
+      value: '19',
+      delta: '+3 awaiting manager signoff',
+      trendDirection: 'up' as const,
+      severity: 'warning' as const,
+      sparklineData: [9, 10, 12, 13, 14, 17, 19],
+      href: '/dashboard/applications?status=In+Review'
+    },
+    {
+      title: 'Overdue cases',
+      value: '6',
+      delta: '-1 after rebalancing',
+      trendDirection: 'down' as const,
+      severity: 'danger' as const,
+      sparklineData: [10, 10, 9, 8, 8, 7, 6],
+      href: '/dashboard/applications?slaRisk=High'
+    }
+  ];
+
   return (
     <section className="dashboard-stack">
-      <div className="dashboard-kpi-grid">
-        <article className="dashboard-kpi-card">
-          <p>Cases Assigned Today</p>
-          <strong>46</strong>
-          <span>+8 vs yesterday</span>
-        </article>
-        <article className="dashboard-kpi-card">
-          <p>Pending Reviews</p>
-          <strong>19</strong>
-          <span>Documents + compliance</span>
-        </article>
-        <article className="dashboard-kpi-card">
-          <p>Team SLA Breaches</p>
-          <strong>3</strong>
-          <span>Immediate escalation</span>
-        </article>
-        <article className="dashboard-kpi-card">
-          <p>Avg Turnaround</p>
-          <strong>31h</strong>
-          <span>Target: under 36h</span>
-        </article>
+      <div className="dashboard-kpi-grid dashboard-kpi-grid--manager">
+        {cards.map((card) => (
+          <KpiCardV2 key={card.title} {...card} />
+        ))}
       </div>
       <div className="dashboard-grid dashboard-grid--2">
         <article className="dashboard-panel">
@@ -1361,19 +1410,42 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
 }
 
 function UserOverviewPanel() {
+  const cards = [
+    {
+      title: 'Application stage',
+      value: 'In Review',
+      delta: 'Stage 3 of 5',
+      trendDirection: 'up' as const,
+      severity: 'neutral' as const,
+      sparklineData: [1, 1, 2, 2, 3, 3, 3],
+      href: '/dashboard/applications?status=In+Review'
+    },
+    {
+      title: 'Document completeness',
+      value: '82%',
+      delta: '+12% this week',
+      trendDirection: 'up' as const,
+      severity: 'success' as const,
+      sparklineData: [45, 48, 54, 59, 68, 75, 82],
+      href: '/dashboard/documents?status=Pending+Review'
+    },
+    {
+      title: 'Payment status',
+      value: '1 Pending',
+      delta: 'Invoice due in 2 days',
+      trendDirection: 'flat' as const,
+      severity: 'warning' as const,
+      sparklineData: [2, 2, 1, 1, 1, 1, 1],
+      href: '/dashboard/payments?tab=invoice'
+    }
+  ];
+
   return (
     <section className="dashboard-stack">
       <div className="dashboard-kpi-grid dashboard-kpi-grid--short">
-        <article className="dashboard-kpi-card">
-          <p>Applications In Progress</p>
-          <strong>2</strong>
-          <span>1 waiting for documents</span>
-        </article>
-        <article className="dashboard-kpi-card">
-          <p>Completed Applications</p>
-          <strong>1</strong>
-          <span>Ready for travel</span>
-        </article>
+        {cards.map((card) => (
+          <KpiCardV2 key={card.title} {...card} />
+        ))}
       </div>
 
       <article className="dashboard-panel">

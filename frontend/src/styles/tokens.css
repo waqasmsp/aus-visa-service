@@ -171,4 +171,13 @@
   --dashboard-control-disabled-text: rgb(100 116 139 / 0.95);
   --dashboard-control-invalid-border: rgb(185 28 28 / 0.6);
   --dashboard-control-invalid-ring: 0 0 0 3px rgb(239 68 68 / 0.15);
+
+  --dashboard-semantic-success-fg: var(--color-success);
+  --dashboard-semantic-success-bg: rgb(22 163 74 / 0.12);
+  --dashboard-semantic-warning-fg: var(--color-warning);
+  --dashboard-semantic-warning-bg: rgb(217 119 6 / 0.12);
+  --dashboard-semantic-danger-fg: #dc2626;
+  --dashboard-semantic-danger-bg: rgb(220 38 38 / 0.12);
+  --dashboard-semantic-neutral-fg: var(--color-neutral-700);
+  --dashboard-semantic-neutral-bg: rgb(100 116 139 / 0.12);
 }

@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   assertPaymentPermission,
   collectStepUpApproval,
@@ -72,6 +72,20 @@ export function TransactionCenterPanel({ role }: { role: DashboardRole }) {
   const [auditAmountMax, setAuditAmountMax] = useState('');
   const [auditDateFrom, setAuditDateFrom] = useState('');
   const [auditDateTo, setAuditDateTo] = useState('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const query = params.get('search');
+
+    if (tab && ['charge', 'refund', 'invoice', 'dispute', 'subscription'].includes(tab)) {
+      setActiveTab(tab as TransactionKind);
+    }
+    if (query) {
+      setSearch(query);
+    }
+  }, []);
 
   const canView = hasPaymentPermission(role, PAYMENT_PERMISSIONS.view);
 
