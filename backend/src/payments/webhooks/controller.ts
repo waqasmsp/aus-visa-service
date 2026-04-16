@@ -1,3 +1,4 @@
+import { assertPaymentPermission, PAYMENT_PERMISSIONS } from "../permissions";
 import { EnqueueWebhookRequest, ReplayDeadLetterDto, WebhookHttpRequest } from './dtos';
 import { WebhookIngestionService, WebhookReplayService } from './service';
 
@@ -43,7 +44,8 @@ export class PaymentsWebhookController {
     });
   }
 
-  async replayDeadLetters(req: { body: ReplayDeadLetterDto }) {
+  async replayDeadLetters(req: { body: ReplayDeadLetterDto; context: { role?: 'admin' | 'manager' | 'user'; permissions?: string[] } }) {
+    assertPaymentPermission(req.context, PAYMENT_PERMISSIONS.settingsManage, 'replay payment dead-letter webhook events');
     return this.replay.replay(req.body);
   }
 
