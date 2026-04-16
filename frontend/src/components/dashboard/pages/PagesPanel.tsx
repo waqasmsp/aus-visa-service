@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   BatchTransitionRequestDto,
   CmsPage,
@@ -27,6 +27,7 @@ import { ConfirmActionModal } from '../common/ConfirmActionModal';
 import { DashboardEmptyState, DashboardErrorState, DashboardLoadingSkeleton, DashboardNoResultsState } from '../common/asyncUi';
 import { useDashboardNotifications } from '../common/DashboardNotificationsProvider';
 import { DataTablePaginationFooter, DataTableRowActions } from '../common/DataTablePrimitives';
+import { useFocusTrap } from '../common/useFocusTrap';
 
 const defaultForm = (): CreatePageRequestDto => ({
   title: '',
@@ -75,22 +76,28 @@ function PageEditorModal({
   onSubmit: (payload: CreatePageRequestDto) => Promise<void>;
 }) {
   const [form, setForm] = useState<CreatePageRequestDto>(initial);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     setForm(initial);
   }, [initial]);
+  useFocusTrap({ active: open, containerRef: panelRef, initialFocusRef: closeRef, onClose });
 
   if (!open) return null;
 
   return (
-    <div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
-      <div className="dashboard-sidepanel">
+    <div className="dashboard-modal-backdrop" onMouseDown={(event) => (event.target === event.currentTarget ? onClose() : undefined)}>
+      <div ref={panelRef} className="dashboard-sidepanel" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
         <div className="dashboard-panel__header dashboard-panel__header--spread">
-          <h3>{mode === 'create' ? 'Create page' : 'Edit page'}</h3>
-          <DashboardButton type="button" variant="ghost" size="sm" onClick={onClose}>
+          <h3 id={titleId}>{mode === 'create' ? 'Create page' : 'Edit page'}</h3>
+          <DashboardButton ref={closeRef} type="button" variant="ghost" size="sm" onClick={onClose}>
             Close
           </DashboardButton>
         </div>
+        <p id={descriptionId} className="sr-only">Manage page metadata, publishing schedule, locale, and SEO fields.</p>
         <div className="dashboard-stack">
           <DashboardField label="Title" required error={errors.title}>
             <DashboardInput value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
@@ -192,6 +199,10 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
   const [compareResult, setCompareResult] = useState<CompareSnapshotResponse | null>(null);
   const [compareFrom, setCompareFrom] = useState<number | null>(null);
   const [compareTo, setCompareTo] = useState<number | null>(null);
+  const versionDialogRef = useRef<HTMLElement | null>(null);
+  const versionCloseRef = useRef<HTMLButtonElement | null>(null);
+  const versionTitleId = useId();
+  const versionDescriptionId = useId();
 
   const { notifyError, notifySuccess, notifyInfo, formatNotificationMessage } = useDashboardNotifications();
   const table = useDashboardTableState<TableFilters>({
@@ -238,6 +249,7 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
   useEffect(() => {
     void loadPages();
   }, [loadPages]);
+  useFocusTrap({ active: Boolean(versionPage), containerRef: versionDialogRef, initialFocusRef: versionCloseRef, onClose: () => setVersionPage(null) });
 
   const openCreate = () => {
     setEditorMode('create');
@@ -602,14 +614,22 @@ export function PagesPanel({ role }: { role: DashboardUserRole }) {
       />
 
       {versionPage ? (
-        <div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
-          <article className="dashboard-modal-card dashboard-modal-card--wide">
+        <div className="dashboard-modal-backdrop" onMouseDown={(event) => (event.target === event.currentTarget ? setVersionPage(null) : undefined)}>
+          <article
+            ref={versionDialogRef}
+            className="dashboard-modal-card dashboard-modal-card--wide"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={versionTitleId}
+            aria-describedby={versionDescriptionId}
+          >
             <div className="dashboard-panel__header dashboard-panel__header--spread">
-              <h3>Version history — {versionPage.title}</h3>
-              <DashboardButton type="button" variant="ghost" size="sm" onClick={() => setVersionPage(null)}>
+              <h3 id={versionTitleId}>Version history — {versionPage.title}</h3>
+              <DashboardButton ref={versionCloseRef} type="button" variant="ghost" size="sm" onClick={() => setVersionPage(null)}>
                 Close
               </DashboardButton>
             </div>
+            <p id={versionDescriptionId} className="sr-only">Review version snapshots, compare revisions, and rollback page changes.</p>
             <div className="dashboard-version-grid">
               <div>
                 <h4>Snapshots</h4>

@@ -166,6 +166,7 @@
 
   /* Dashboard control state tokens */
   --dashboard-control-focus-ring: 0 0 0 3px rgb(37 99 235 / 0.2);
+  --dashboard-interactive-focus-ring: var(--dashboard-control-focus-ring);
   --dashboard-control-hover-border: rgb(37 99 235 / 0.45);
   --dashboard-control-disabled-bg: rgb(241 245 249 / 0.78);
   --dashboard-control-disabled-text: rgb(100 116 139 / 0.95);

@@ -4490,9 +4490,9 @@ body.body--menu-open {
 .dashboard-shell {
   --dashboard-bg: #f0f4fb;
   --dashboard-surface: var(--color-surface);
-  --dashboard-border: #dbe5f3;
+  --dashboard-border: #94a3b8;
   --dashboard-ink: #0f223d;
-  --dashboard-muted: #53657f;
+  --dashboard-muted: #475569;
   --dashboard-accent: var(--color-brand-blue-500);
   --dashboard-accent-strong: var(--color-primary);
   --dashboard-success: #15803d;
@@ -4508,6 +4508,11 @@ body.body--menu-open {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   font-family: var(--dashboard-font);
+}
+
+.dashboard-shell :where(button, a, input, select, textarea, summary, [role='button'], [role='tab'], [role='menuitem'], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--dashboard-interactive-focus-ring, var(--dashboard-control-focus-ring));
 }
 
 .dashboard-backdrop {

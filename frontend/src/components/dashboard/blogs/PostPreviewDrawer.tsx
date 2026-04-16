@@ -1,3 +1,6 @@
+import { useId, useRef } from 'react';
+import { useFocusTrap } from '../common/useFocusTrap';
+
 type PostPreviewDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -19,14 +22,29 @@ export function PostPreviewDrawer({
   content,
   mode
 }: PostPreviewDrawerProps) {
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+  useFocusTrap({ active: isOpen, containerRef: drawerRef, initialFocusRef: closeRef, onClose });
+
   return (
-    <aside className={`dashboard-blog-preview-drawer ${isOpen ? 'is-open' : ''}`} aria-hidden={!isOpen}>
+    <aside
+      ref={drawerRef}
+      className={`dashboard-blog-preview-drawer ${isOpen ? 'is-open' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-hidden={!isOpen}
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+    >
       <div className="dashboard-panel__header dashboard-panel__header--spread">
-        <h2>Preview</h2>
-        <button type="button" className="dashboard-ghost-button" onClick={onClose}>
+        <h2 id={titleId}>Preview</h2>
+        <button ref={closeRef} type="button" className="dashboard-ghost-button" onClick={onClose}>
           Close
         </button>
       </div>
+      <p id={descriptionId} className="sr-only">Preview the current blog content in editor and public shell mode.</p>
 
       {mode === 'editor' ? (
         <article className="dashboard-blog-preview-body">

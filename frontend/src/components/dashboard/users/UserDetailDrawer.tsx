@@ -1,4 +1,7 @@
+import { useId, useRef } from 'react';
+import { DashboardButton } from '../common/DashboardButton';
 import { PortalUser } from '../../../types/dashboard/users';
+import { useFocusTrap } from '../common/useFocusTrap';
 
 type Props = {
   user: PortalUser;
@@ -6,6 +9,11 @@ type Props = {
 };
 
 export function UserDetailDrawer({ user, onClose }: Props) {
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+  useFocusTrap({ active: true, containerRef: drawerRef, initialFocusRef: closeRef, onClose });
   const grouped = {
     activity: user.timeline.filter((event) => event.type === 'activity'),
     applications: user.timeline.filter((event) => event.type === 'application'),
@@ -14,11 +22,12 @@ export function UserDetailDrawer({ user, onClose }: Props) {
   };
 
   return (
-    <aside className="dashboard-panel" aria-label={`${user.fullName} timeline`}>
+    <aside ref={drawerRef} className="dashboard-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
       <div className="dashboard-panel__header dashboard-panel__header--spread">
-        <h3>{user.fullName} timeline</h3>
-        <button type="button" onClick={onClose}>Close</button>
+        <h3 id={titleId}>{user.fullName} timeline</h3>
+        <DashboardButton ref={closeRef} type="button" variant="ghost" size="sm" onClick={onClose}>Close</DashboardButton>
       </div>
+      <p id={descriptionId} className="sr-only">Timeline of activity, applications, payments, and support events for this user.</p>
       <div className="dashboard-grid dashboard-grid--2">
         <article>
           <h4>Activity</h4>

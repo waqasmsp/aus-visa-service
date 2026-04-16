@@ -1,10 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { DashboardButton } from './DashboardButton';
+import { useFocusTrap } from './useFocusTrap';
 
 type ConfirmActionVariant = 'danger' | 'warning' | 'info';
 type ConfirmActionStatus = 'idle' | 'pending' | 'success' | 'error';
-
-const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export function ConfirmActionModal({
   open,
@@ -33,7 +32,6 @@ export function ConfirmActionModal({
   const [errorMessage, setErrorMessage] = useState('');
   const dialogRef = useRef<HTMLElement | null>(null);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
-  const confirmRef = useRef<HTMLButtonElement | null>(null);
   const titleId = useId();
   const descriptionId = useId();
 
@@ -47,44 +45,12 @@ export function ConfirmActionModal({
     return () => window.clearTimeout(timer);
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (!closeDisabled) {
-          onCancel();
-        }
-        return;
-      }
-
-      if (event.key !== 'Tab') return;
-      const container = dialogRef.current;
-      if (!container) return;
-
-      const focusables = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-        (element) => !element.hasAttribute('disabled')
-      );
-      if (!focusables.length) return;
-
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const activeElement = document.activeElement as HTMLElement | null;
-
-      if (event.shiftKey && activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      }
-
-      if (!event.shiftKey && activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [closeDisabled, onCancel, open]);
+  useFocusTrap({
+    active: open,
+    containerRef: dialogRef,
+    initialFocusRef: cancelRef,
+    onClose: closeDisabled ? undefined : onCancel
+  });
 
   if (!open) return null;
 
@@ -103,8 +69,15 @@ export function ConfirmActionModal({
   };
 
   return (
-    <div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
-      <article ref={dialogRef} className={`dashboard-modal-card dashboard-confirm-action dashboard-confirm-action--${variant}`}>
+    <div className="dashboard-modal-backdrop" onMouseDown={(event) => (event.target === event.currentTarget && !closeDisabled ? onCancel() : undefined)}>
+      <article
+        ref={dialogRef}
+        className={`dashboard-modal-card dashboard-confirm-action dashboard-confirm-action--${variant}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+      >
         <h3 id={titleId}>{title}</h3>
         <p id={descriptionId}>{description}</p>
         <p>
@@ -125,7 +98,6 @@ export function ConfirmActionModal({
             Cancel
           </DashboardButton>
           <DashboardButton
-            ref={confirmRef}
             type="button"
             variant={variant === 'danger' ? 'danger' : 'primary'}
             loading={status === 'pending'}

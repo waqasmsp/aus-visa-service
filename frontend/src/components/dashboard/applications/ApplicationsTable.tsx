@@ -41,14 +41,18 @@ export function ApplicationsTable({ applications, selectedIds, sort, canEdit, ca
         <DataTableColumnVisibility columns={columns} visibleColumnIds={visibleColumnIds} onToggle={toggleColumn} onReset={resetColumns} />
       </div>
       <div className="dashboard-table-wrap dashboard-table-wrap--sticky">
-        <table className="dashboard-table">
+        <table className="dashboard-table" aria-label="Visa applications data table">
           <thead className="dashboard-table__thead--sticky">
             <tr>
-              <th><input type="checkbox" checked={allSelected} onChange={(event) => onToggleSelectAll(event.target.checked)} /></th>
+              <th scope="col"><input type="checkbox" checked={allSelected} onChange={(event) => onToggleSelectAll(event.target.checked)} aria-label="Select all applications" /></th>
               {columns.filter((column) => isVisible(column.id)).map((column) => (
-                <th key={column.id}>
+                <th
+                  key={column.id}
+                  scope="col"
+                  aria-sort={column.sortable && sort?.field === column.id ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
                   {column.sortable ? (
-                    <button type="button" className="dashboard-table-sort" onClick={() => onSort({ field: column.id, direction: sort?.field === column.id && sort.direction === 'asc' ? 'desc' : 'asc' })}>
+                    <button type="button" className="dashboard-table-sort" aria-label={`Sort applications by ${column.label}`} onClick={() => onSort({ field: column.id, direction: sort?.field === column.id && sort.direction === 'asc' ? 'desc' : 'asc' })}>
                       {column.label}
                       <span>{sort?.field === column.id ? (sort.direction === 'asc' ? '↑' : '↓') : '↕'}</span>
                     </button>
@@ -67,7 +71,7 @@ export function ApplicationsTable({ applications, selectedIds, sort, canEdit, ca
                     onChange={(event) => onSelect(application.id, event.target.checked)}
                   />
                 </td>
-                {isVisible('id') ? <td>{application.id}</td> : null}
+                {isVisible('id') ? <th scope="row">{application.id}</th> : null}
                 {isVisible('applicant') ? (
                   <td>
                     <strong>{application.applicant}</strong>

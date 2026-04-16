@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useId, useMemo, useState } from 'react';
 import {
   assertPaymentPermission,
   collectStepUpApproval,
@@ -56,6 +56,7 @@ const toCsv = (rows: TransactionRecord[]): string => {
 };
 
 export function TransactionCenterPanel({ role }: { role: DashboardRole }) {
+  const transactionTablistId = useId();
   const [transactions, setTransactions] = useState(baseTransactions);
   const [activeTab, setActiveTab] = useState<TransactionKind>('charge');
   const [search, setSearch] = useState('');
@@ -237,20 +238,32 @@ export function TransactionCenterPanel({ role }: { role: DashboardRole }) {
 
         <div className="dashboard-transaction-toolbar">
           <input className="dashboard-auth__input" placeholder="Search by transaction, provider ref, order, application, customer" value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Search transactions" />
-          <div className="dashboard-settings-tablist" role="tablist" aria-label="Transaction categories">
+          <div className="dashboard-settings-tablist" role="tablist" id={transactionTablistId} aria-label="Transaction categories">
             {tabLabels.map((tab) => (
-              <button key={tab.key} type="button" className={`dashboard-settings-tab ${activeTab === tab.key ? 'is-active' : ''}`} onClick={() => setActiveTab(tab.key)} role="tab" aria-selected={activeTab === tab.key}>{tab.label}</button>
+              <button
+                key={tab.key}
+                id={`${transactionTablistId}-${tab.key}`}
+                type="button"
+                className={`dashboard-settings-tab ${activeTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setActiveTab(tab.key)}
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls={`${transactionTablistId}-${tab.key}-panel`}
+                tabIndex={activeTab === tab.key ? 0 : -1}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="dashboard-table-wrap">
-          <table className="dashboard-table">
-            <thead><tr><th>ID</th><th>Provider Ref</th><th>Order / App</th><th>Customer</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+        <div className="dashboard-table-wrap" role="tabpanel" id={`${transactionTablistId}-${activeTab}-panel`} aria-labelledby={`${transactionTablistId}-${activeTab}`}>
+          <table className="dashboard-table" aria-label={`Transactions table for ${activeTab}`}>
+            <thead><tr><th scope="col">ID</th><th scope="col">Provider Ref</th><th scope="col">Order / App</th><th scope="col">Customer</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
             <tbody>
               {visibleRows.map((row) => (
                 <tr key={row.id}>
-                  <td><strong>{row.id}</strong><small>{new Date(row.createdAt).toLocaleString()}</small></td>
+                  <th scope="row"><strong>{row.id}</strong><small>{new Date(row.createdAt).toLocaleString()}</small></th>
                   <td><strong>{row.providerReference}</strong><small>{row.provider.toUpperCase()}</small></td>
                   <td><strong>{row.orderReference}</strong><small>{row.applicationReference}</small></td>
                   <td>{row.customer}</td>
