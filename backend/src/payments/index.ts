@@ -31,3 +31,5 @@ export * from './security';
 
 export * from './permissions';
 export * from './audit';
+
+export * from '../billing';
