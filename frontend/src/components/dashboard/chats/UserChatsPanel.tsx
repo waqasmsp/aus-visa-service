@@ -10,8 +10,6 @@ import { chatsService } from '../../../services/dashboard/chats.service';
 import { canPerform } from '../../../services/dashboard/authPolicy';
 import { extractApiErrorMessage } from '../../../services/dashboard/async';
 import { UserChatsFilterBar } from './UserChatsFilterBar';
-import { UserChatsTable } from './UserChatsTable';
-import { ChatThreadDrawer } from './ChatThreadDrawer';
 import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
 
 type Props = {
@@ -80,6 +78,18 @@ export function UserChatsPanel({ role, basePath }: Props) {
     pending: items.filter((item) => item.status === 'Pending').length,
     unread: items.reduce((acc, item) => acc + item.unreadCount, 0)
   }), [items]);
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setSelectedThread(null);
+      return;
+    }
+
+    setSelectedThread((current) => {
+      if (!current) return items[0];
+      return items.find((item) => item.id === current.id) ?? items[0];
+    });
+  }, [items]);
 
   const exportThread = async (conversation: UserChatConversation) => {
     try {
@@ -157,23 +167,79 @@ export function UserChatsPanel({ role, basePath }: Props) {
                 <DashboardEmptyState title="No conversations found" description="Try broader filters or date range." />
               )
             ) : (
-              <UserChatsTable
-                conversations={items}
-                canManage={canManage}
-                onViewThread={setSelectedThread}
-                onSoftDelete={setDeleteTarget}
-                onExportThread={(conversation) => void exportThread(conversation)}
-                onAssignOwner={(conversation) => {
-                  setAssignTarget(conversation);
-                  setOwnerName(conversation.assignedAgent);
-                  setOwnerEmail(conversation.assignedOwnerEmail);
-                }}
-              />
+              <div className="dashboard-chat-layout">
+                <aside className="dashboard-chat-sidebar" aria-label="Conversation list">
+                  <ul className="dashboard-chat-list">
+                    {items.map((conversation) => {
+                      const isActive = selectedThread?.id === conversation.id;
+                      return (
+                        <li key={conversation.id}>
+                          <button
+                            type="button"
+                            className={`dashboard-chat-list__item${isActive ? ' is-active' : ''}`}
+                            onClick={() => setSelectedThread(conversation)}
+                          >
+                            <div className="dashboard-chat-list__row">
+                              <strong>{conversation.userName}</strong>
+                              <span>{new Date(conversation.lastActivity).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <p>{conversation.lastMessage}</p>
+                            <div className="dashboard-chat-list__meta">
+                              <small>{conversation.channel}</small>
+                              {conversation.unreadCount > 0 ? <span className="dashboard-chip dashboard-chip--warning">{conversation.unreadCount}</span> : null}
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </aside>
+
+                <section className="dashboard-chat-thread" aria-live="polite">
+                  {selectedThread ? (
+                    <>
+                      <header className="dashboard-chat-thread__header">
+                        <div>
+                          <h3>{selectedThread.userName}</h3>
+                          <p>{selectedThread.userEmail} · Assigned to {selectedThread.assignedAgent}</p>
+                        </div>
+                        <div className="dashboard-chat-thread__chips">
+                          <span className={`dashboard-chip dashboard-chip--${selectedThread.status.toLowerCase()}`}>{selectedThread.status}</span>
+                          <span className={`dashboard-chip dashboard-chip--${selectedThread.priority.toLowerCase()}`}>{selectedThread.priority}</span>
+                        </div>
+                      </header>
+
+                      <ul className="dashboard-chat-bubbles">
+                        {selectedThread.transcript.map((message) => (
+                          <li key={message.id} className={`dashboard-chat-bubbles__message dashboard-chat-bubbles__message--${message.direction}`}>
+                            <small>{message.senderName} · {new Date(message.sentAt).toLocaleString()}</small>
+                            <p>{message.message}</p>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="dashboard-chat-thread__actions">
+                        <button type="button" onClick={() => void exportThread(selectedThread)}>Export transcript</button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignTarget(selectedThread);
+                            setOwnerName(selectedThread.assignedAgent);
+                            setOwnerEmail(selectedThread.assignedOwnerEmail);
+                          }}
+                          disabled={!canManage}
+                        >
+                          Assign owner
+                        </button>
+                        <button type="button" className="danger" onClick={() => setDeleteTarget(selectedThread)} disabled={!canManage || !!selectedThread.deletedAt}>Soft-delete</button>
+                      </div>
+                    </>
+                  ) : null}
+                </section>
+              </div>
             )}
             <DataTablePaginationFooter page={table.state.pagination.page} pageSize={table.state.pagination.pageSize} total={totalConversationsCount} onPageChange={table.setPage} onPageSizeChange={table.setPageSize} />
           </article>
-
-          {selectedThread ? <ChatThreadDrawer conversation={selectedThread} onClose={() => setSelectedThread(null)} /> : null}
 
           {assignTarget ? (
             <aside className="dashboard-panel dashboard-panel--accent">
