@@ -20,22 +20,47 @@ Use the templates in `supabase/environments/` and keep real values out of git.
 - `staging.env.example`
 - `production.env.example`
 
-## Migration strategy
+## Ordered migration baseline
 
-All schema changes live in `supabase/migrations/` as timestamped SQL files.
+In addition to timestamp migrations, this repo now carries an explicit ordered release set:
 
-Bounded context split:
+1. `001_extensions.sql`
+2. `002_core_profiles_roles.sql`
+3. `003_applications.sql`
+4. `004_chats.sql`
+5. `005_cms_pages.sql`
+6. `006_blogs.sql`
+7. `007_billing.sql`
+8. `008_payments.sql`
+9. `009_webhooks.sql`
+10. `010_settings_audit.sql`
+11. `011_rls_policies.sql`
+12. `012_indexes_perf.sql`
+13. `013_seed_reference_data.sql`
 
-1. platform foundation (schemas, extensions, helper functions)
-2. users
-3. applications
-4. chats
-5. billing
-6. payments
-7. cms/blog
-8. settings
-9. audit
-10. rls
-11. seeds
+## Seed scripts
 
-The SQL files are idempotent where practical (`IF NOT EXISTS`, guarded DDL, and `DO` blocks).
+Reference seed scripts live in `supabase/seeds/`:
+
+- `001_roles.sql`
+- `002_default_settings.sql`
+- `003_plan_catalog.sql`
+- `004_test_safe_coupons.sql`
+
+## CI guardrails
+
+Database CI checks are defined in `.github/workflows/supabase-db-guardrails.yml` and run:
+
+- migration lint (`supabase/scripts/migration_lint.sh`)
+- schema drift detection (`supabase/scripts/schema_drift_check.sh`)
+- RLS policy smoke checks for anon/authenticated/service roles (`supabase/scripts/policy_smoke_check.sh`)
+
+## Release + rollback
+
+Use `supabase/RELEASE_RUNBOOK.md` for:
+
+- backup snapshot
+- apply migrations
+- post-migration verification SQL
+- app-traffic enablement
+- forward-fix-first rollback strategy with emergency snapshot restore path

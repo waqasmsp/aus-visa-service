@@ -1,0 +1,33 @@
+name: Supabase DB Guardrails
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-db-guardrails.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-db-guardrails.yml'
+
+jobs:
+  db-checks:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client ripgrep
+
+      - name: Migration lint
+        run: ./supabase/scripts/migration_lint.sh
+
+      - name: Schema drift detection
+        run: ./supabase/scripts/schema_drift_check.sh
+
+      - name: Policy smoke checks (anon/authenticated/service_role)
+        run: ./supabase/scripts/policy_smoke_check.sh
