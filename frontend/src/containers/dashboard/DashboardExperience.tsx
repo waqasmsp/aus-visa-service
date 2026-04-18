@@ -22,12 +22,12 @@ import { BillingWorkspace } from '../../components/dashboard/payments/BillingWor
 import { canPerform, collectDestructiveApproval } from '../../services/dashboard/authPolicy';
 import { writeAuditEvent } from '../../services/dashboard/audit.service';
 import { isModuleEnabled, listModuleFlags } from '../../services/dashboard/featureFlags.service';
+import { DashboardDummyCredential, DashboardRole, loginCredentialsService } from '../../services/dashboard/loginCredentials.service';
 
 type DashboardExperienceProps = {
   pathname: string;
 };
 
-type DashboardRole = 'admin' | 'manager' | 'user';
 type PaymentsWorkspaceView = 'billing' | 'transactions';
 type AuthSession = {
   role: DashboardRole;
@@ -109,25 +109,6 @@ const userSidebarItems: Array<{ section: UserSection; label: string; href: strin
   { section: 'messages', label: 'Support', href: '/dashboard/messages' },
   { section: 'profile', label: 'Profile', href: '/dashboard/profile' }
 ];
-
-
-const dummyCredentials: Record<DashboardRole, { email: string; password: string; route: string }> = {
-  admin: {
-    email: 'admin@ausvisaservice.com',
-    password: 'Admin@123',
-    route: '/dashboard'
-  },
-  manager: {
-    email: 'manager@ausvisaservice.com',
-    password: 'Manager@123',
-    route: '/dashboard'
-  },
-  user: {
-    email: 'user@ausvisaservice.com',
-    password: 'User@123',
-    route: '/dashboard'
-  }
-};
 
 const normalizePathname = (pathname: string): string => pathname.toLowerCase().replace(/\/+$/, '') || '/';
 
@@ -1690,36 +1671,52 @@ function ProfileSettingsPanel({ role, userEmail }: { role: DashboardRole; userEm
 }
 
 function DashboardLoginPage() {
-  const [email, setEmail] = useState(dummyCredentials.admin.email);
-  const [password, setPassword] = useState(dummyCredentials.admin.password);
+  const [dummyCredentials, setDummyCredentials] = useState<DashboardDummyCredential[]>([]);
+  const [email, setEmail] = useState('admin@ausvisaservice.com');
+  const [password, setPassword] = useState('Admin@123');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
+    let active = true;
+
+    const syncDummyCredentialDb = async () => {
+      const seeded = await loginCredentialsService.ensureSeeded();
+      if (!active) {
+        return;
+      }
+      setDummyCredentials(seeded);
+      if (!email && seeded[0]) {
+        setEmail(seeded[0].email);
+      }
+    };
+
+    void syncDummyCredentialDb();
+
     const existing = readAuthSession();
     if (!existing) {
-      return;
+      return () => {
+        active = false;
+      };
     }
     navigateClient('/dashboard', true);
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const matchedRole = (Object.keys(dummyCredentials) as DashboardRole[]).find((role) => {
-      const credentials = dummyCredentials[role];
-      return email.trim().toLowerCase() === credentials.email.toLowerCase() && password === credentials.password;
-    });
-
-    if (!matchedRole) {
+    const matchedCredential = await loginCredentialsService.validate(email, password);
+    if (!matchedCredential) {
       setMessageType('error');
-      setMessage('Invalid credentials. Use one of the dummy accounts listed below.');
+      setMessage('Invalid credentials. Use one of the dummy logins loaded from database.');
       return;
     }
 
-    const expected = dummyCredentials[matchedRole];
     writeAuthSession({
-      role: matchedRole,
-      email: expected.email,
+      role: matchedCredential.role,
+      email: matchedCredential.email,
       loginAt: new Date().toISOString()
     });
 
@@ -1729,7 +1726,7 @@ function DashboardLoginPage() {
         navigateClient(next, true);
         return;
       }
-      navigateClient(expected.route, true);
+      navigateClient(matchedCredential.route, true);
       return;
     }
 
@@ -1772,9 +1769,11 @@ function DashboardLoginPage() {
           </form>
           <div className="dashboard-auth__dummy-list">
             <strong>Dummy Logins</strong>
-            <p>Admin: admin@ausvisaservice.com / Admin@123</p>
-            <p>Manager: manager@ausvisaservice.com / Manager@123</p>
-            <p>User: user@ausvisaservice.com / User@123</p>
+            {dummyCredentials.map((credential) => (
+              <p key={credential.role}>
+                {credential.role[0].toUpperCase() + credential.role.slice(1)}: {credential.email} / {credential.password}
+              </p>
+            ))}
           </div>
           {message ? <p className={`dashboard-auth__message ${messageType === 'error' ? 'is-error' : ''}`}>{message}</p> : null}
           <div className="dashboard-auth__links">
