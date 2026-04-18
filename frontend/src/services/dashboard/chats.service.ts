@@ -8,90 +8,128 @@ import {
   ListUserChatsResponse,
   UserChatConversation
 } from '../../types/dashboard/chats';
-import { delay } from './async';
+import { DashboardUserRole } from '../../types/dashboard/applications';
+import { dashboardDbFetch } from './dbClient';
 
-const USE_BACKEND_API = (import.meta.env.VITE_DASHBOARD_CHATS_API_MODE ?? 'mock').toLowerCase() === 'api';
-const CHATS_API_BASE = import.meta.env.VITE_DASHBOARD_CHATS_API_BASE_URL ?? '/api/dashboard/chats';
+type ChatConversationDbRow = {
+  id: string;
+  user_id: string;
+  user_email: string | null;
+  user_full_name: string | null;
+  channel: 'web' | 'email' | 'sms' | 'whatsapp' | 'in_app';
+  status: 'open' | 'pending' | 'resolved' | 'closed' | 'archived';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  assigned_owner_id: string | null;
+  last_activity_at: string;
+  unread_count: number;
+  last_message_text: string | null;
+  deleted_at: string | null;
+};
+
+type ChatMessageDbRow = {
+  id: string;
+  conversation_id: string;
+  sender_role: 'user' | 'agent' | 'system';
+  direction: 'inbound' | 'outbound';
+  message_text: string;
+  sent_at: string;
+};
+
+type ProfileLite = { id: string; email: string | null; full_name: string | null };
+
+type ViewerContext = { viewerEmail?: string; actorRole?: DashboardUserRole };
 
 const toEpoch = (value: string): number => new Date(value).getTime();
 
-let mockConversations: UserChatConversation[] = [
-  {
-    id: 'chat-101',
-    userName: 'Sana Malik',
-    userEmail: 'sana.malik@example.com',
-    lastMessage: 'Can you confirm if my passport scan is acceptable?',
-    assignedAgent: 'Nadia R.',
-    assignedOwnerEmail: 'nadia.r@ausvisaservice.com',
-    status: 'Open',
-    priority: 'High',
-    unreadCount: 3,
-    channel: 'Live Chat',
-    lastActivity: '2026-04-16T07:40:00Z',
-    deletedAt: null,
-    transcript: [
-      { id: 'm-1', senderName: 'Sana Malik', senderRole: 'user', message: 'Uploaded the passport scan, please review.', sentAt: '2026-04-16T07:35:00Z', direction: 'inbound' },
-      { id: 'm-2', senderName: 'Nadia R.', senderRole: 'agent', message: 'I am checking it now.', sentAt: '2026-04-16T07:38:00Z', direction: 'outbound' },
-      { id: 'm-3', senderName: 'Sana Malik', senderRole: 'user', message: 'Can you confirm if my passport scan is acceptable?', sentAt: '2026-04-16T07:40:00Z', direction: 'inbound' }
-    ]
-  },
-  {
-    id: 'chat-102',
-    userName: 'Oliver Dean',
-    userEmail: 'oliver.dean@example.com',
-    lastMessage: 'Thanks, received the payment receipt.',
-    assignedAgent: 'Jordan M.',
-    assignedOwnerEmail: 'jordan.m@ausvisaservice.com',
-    status: 'Resolved',
-    priority: 'Medium',
-    unreadCount: 0,
-    channel: 'Email',
-    lastActivity: '2026-04-15T19:00:00Z',
-    deletedAt: null,
-    transcript: [
-      { id: 'm-4', senderName: 'Jordan M.', senderRole: 'agent', message: 'Your payment receipt is attached.', sentAt: '2026-04-15T18:55:00Z', direction: 'outbound' },
-      { id: 'm-5', senderName: 'Oliver Dean', senderRole: 'user', message: 'Thanks, received the payment receipt.', sentAt: '2026-04-15T19:00:00Z', direction: 'inbound' }
-    ]
-  },
-  {
-    id: 'chat-103',
-    userName: 'Aisha Farooq',
-    userEmail: 'aisha.farooq@example.com',
-    lastMessage: 'Still waiting for manager review.',
-    assignedAgent: 'Escalation Queue',
-    assignedOwnerEmail: 'queue@ausvisaservice.com',
-    status: 'Pending',
-    priority: 'Urgent',
-    unreadCount: 5,
-    channel: 'WhatsApp',
-    lastActivity: '2026-04-16T05:20:00Z',
-    deletedAt: null,
-    transcript: [
-      { id: 'm-6', senderName: 'Aisha Farooq', senderRole: 'user', message: 'Still waiting for manager review.', sentAt: '2026-04-16T05:20:00Z', direction: 'inbound' }
-    ]
-  },
-  {
-    id: 'chat-104',
-    userName: 'Mateo Rossi',
-    userEmail: 'mateo.rossi@example.com',
-    lastMessage: 'Conversation archived by admin',
-    assignedAgent: 'Mikael D.',
-    assignedOwnerEmail: 'mikael.d@ausvisaservice.com',
-    status: 'Closed',
-    priority: 'Low',
-    unreadCount: 0,
-    channel: 'Facebook',
-    lastActivity: '2026-04-12T11:00:00Z',
-    deletedAt: '2026-04-13T06:00:00Z',
-    transcript: [
-      { id: 'm-7', senderName: 'System', senderRole: 'system', message: 'Conversation archived by admin', sentAt: '2026-04-13T06:00:00Z', direction: 'outbound' }
-    ]
-  }
-];
+const channelToUi = (channel: ChatConversationDbRow['channel']): ChatChannel => {
+  if (channel === 'email') return 'Email';
+  if (channel === 'whatsapp') return 'WhatsApp';
+  return 'Live Chat';
+};
 
-const mockFilterConversations = (request: ListUserChatsRequestDto): UserChatConversation[] => {
+const statusToUi = (status: ChatConversationDbRow['status']): ChatConversationStatus => {
+  if (status === 'open') return 'Open';
+  if (status === 'pending') return 'Pending';
+  if (status === 'resolved') return 'Resolved';
+  return 'Closed';
+};
+
+const priorityToUi = (priority: ChatConversationDbRow['priority']): ChatPriority => {
+  if (priority === 'low') return 'Low';
+  if (priority === 'high') return 'High';
+  if (priority === 'urgent') return 'Urgent';
+  return 'Medium';
+};
+
+const fetchProfiles = async (): Promise<ProfileLite[]> => dashboardDbFetch<ProfileLite[]>('profiles', undefined, { select: 'id,email,full_name', limit: '5000' });
+
+const resolveProfileIdByEmail = async (email?: string): Promise<string | null> => {
+  if (!email) return null;
+  const rows = await dashboardDbFetch<Array<{ id: string }>>('profiles', undefined, { select: 'id', email: `eq.${email}`, limit: '1' });
+  return rows[0]?.id ?? null;
+};
+
+const mapConversation = (row: ChatConversationDbRow, profiles: Map<string, ProfileLite>, transcript: ChatMessage[]): UserChatConversation => {
+  const assigned = row.assigned_owner_id ? profiles.get(row.assigned_owner_id) : null;
+  return {
+    id: row.id,
+    userName: row.user_full_name ?? row.user_email ?? 'Unknown user',
+    userEmail: row.user_email ?? '',
+    lastMessage: row.last_message_text ?? '',
+    assignedAgent: assigned?.full_name ?? assigned?.email ?? 'Unassigned',
+    assignedOwnerEmail: assigned?.email ?? '',
+    status: statusToUi(row.status),
+    priority: priorityToUi(row.priority),
+    unreadCount: row.unread_count,
+    channel: channelToUi(row.channel),
+    lastActivity: row.last_activity_at,
+    deletedAt: row.deleted_at,
+    transcript
+  };
+};
+
+const listFromDb = async (request: ListUserChatsRequestDto, context: ViewerContext): Promise<ListUserChatsResponse> => {
+  const rows = await dashboardDbFetch<ChatConversationDbRow[]>('chat_conversations', undefined, {
+    select: 'id,user_id,user_email,user_full_name,channel,status,priority,assigned_owner_id,last_activity_at,unread_count,last_message_text,deleted_at',
+    order: 'last_activity_at.desc',
+    limit: '5000'
+  });
+  const viewerId = await resolveProfileIdByEmail(context.viewerEmail);
+  const profileRows = await fetchProfiles();
+  const profileMap = new Map(profileRows.map((item) => [item.id, item]));
+
+  const ids = rows.map((row) => row.id);
+  const messages = ids.length
+    ? await dashboardDbFetch<ChatMessageDbRow[]>('chat_messages', undefined, {
+      select: 'id,conversation_id,sender_role,direction,message_text,sent_at',
+      conversation_id: `in.(${ids.join(',')})`,
+      order: 'sent_at.asc'
+    })
+    : [];
+
+  const mapped = rows
+    .filter((row) => {
+      if (context.actorRole === 'user' && viewerId) {
+        return row.user_id === viewerId;
+      }
+      return true;
+    })
+    .map((row) => {
+      const transcript: ChatMessage[] = messages
+        .filter((message) => message.conversation_id === row.id)
+        .map((message) => ({
+          id: message.id,
+          senderName: message.sender_role === 'user' ? (row.user_full_name ?? row.user_email ?? 'User') : 'Support',
+          senderRole: message.sender_role,
+          message: message.message_text,
+          sentAt: message.sent_at,
+          direction: message.direction
+        }));
+      return mapConversation(row, profileMap, transcript);
+    });
+
   const search = request.search?.trim().toLowerCase() ?? '';
-  return mockConversations.filter((conversation) => {
+  const filtered = mapped.filter((conversation) => {
     const matchesSearch = !search || [conversation.userName, conversation.userEmail].some((value) => value.toLowerCase().includes(search));
     const matchesStatus = request.filters.status === 'All' || conversation.status === request.filters.status;
     const matchesPriority = request.filters.priority === 'All' || conversation.priority === request.filters.priority;
@@ -102,142 +140,45 @@ const mockFilterConversations = (request: ListUserChatsRequestDto): UserChatConv
     const matchesDateTo = !request.filters.dateTo || toEpoch(conversation.lastActivity) <= toEpoch(`${request.filters.dateTo}T23:59:59Z`);
     return matchesSearch && matchesStatus && matchesPriority && matchesAgent && matchesChannel && matchesDeleted && matchesDateFrom && matchesDateTo;
   });
-};
 
-const buildExportText = (conversation: UserChatConversation): string => {
-  const lines = [`Conversation: ${conversation.id}`, `User: ${conversation.userName} <${conversation.userEmail}>`, `Assigned: ${conversation.assignedAgent}`, ''];
-  conversation.transcript.forEach((message: ChatMessage) => {
-    lines.push(`[${message.sentAt}] ${message.senderName}: ${message.message}`);
-  });
-  return lines.join('\n');
-};
-
-const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(url, {
-    headers: {
-      'content-type': 'application/json',
-      ...(init?.headers ?? {})
-    },
-    ...init
-  });
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(payload.message ?? 'Failed to complete chats request.');
-  }
-
-  return response.json() as Promise<T>;
-};
-
-const listFromApi = async (request: ListUserChatsRequestDto): Promise<ListUserChatsResponse> => {
-  const params = new URLSearchParams({
-    page: String(request.page),
-    page_size: String(request.page_size),
-    search: request.search ?? ''
-  });
-  Object.entries(request.filters).forEach(([key, value]) => {
-    params.set(key, value);
-  });
-  return fetchJson<ListUserChatsResponse>(`${CHATS_API_BASE}?${params.toString()}`);
-};
-
-const listFromMock = async (request: ListUserChatsRequestDto): Promise<ListUserChatsResponse> => {
-  await delay();
-  const filtered = mockFilterConversations(request).sort((a, b) => toEpoch(b.lastActivity) - toEpoch(a.lastActivity));
   const start = (request.page - 1) * request.page_size;
   const items = filtered.slice(start, start + request.page_size);
   return { items, meta: { total: filtered.length, page: request.page, pageSize: request.page_size } };
 };
 
-const softDeleteFromApi = async (conversationId: string): Promise<void> => {
-  await fetchJson<{ ok: boolean }>(`${CHATS_API_BASE}/${conversationId}/soft-delete`, { method: 'POST', body: JSON.stringify({}) });
-};
-
-const exportThreadFromApi = async (conversationId: string): Promise<string> => {
-  const response = await fetch(`${CHATS_API_BASE}/${conversationId}/export`, { method: 'GET' });
-  if (!response.ok) {
-    throw new Error('Failed to export conversation transcript.');
-  }
-  return response.text();
-};
-
-const assignOwnerFromApi = async (payload: AssignConversationOwnerRequest): Promise<UserChatConversation> => {
-  return fetchJson<UserChatConversation>(`${CHATS_API_BASE}/${payload.conversationId}/assign-owner`, {
-    method: 'POST',
-    body: JSON.stringify({ ownerEmail: payload.ownerEmail, ownerName: payload.ownerName })
-  });
-};
-
 export const chatsService = {
-  async list(request: ListUserChatsRequestDto): Promise<ListUserChatsResponse> {
-    if (USE_BACKEND_API) {
-      try {
-        return await listFromApi(request);
-      } catch {
-        return listFromMock(request);
-      }
-    }
-    return listFromMock(request);
+  async list(request: ListUserChatsRequestDto, context: ViewerContext = {}): Promise<ListUserChatsResponse> {
+    return listFromDb(request, context);
   },
 
   async softDelete(conversationId: string): Promise<void> {
-    if (USE_BACKEND_API) {
-      try {
-        await softDeleteFromApi(conversationId);
-        return;
-      } catch {
-        // fallback to mock store
-      }
-    }
-
-    await delay();
-    mockConversations = mockConversations.map((conversation) =>
-      conversation.id === conversationId
-        ? { ...conversation, deletedAt: new Date().toISOString(), status: 'Closed', unreadCount: 0, lastMessage: 'Conversation soft-deleted.' }
-        : conversation
-    );
+    await dashboardDbFetch<void>(`chat_conversations?id=eq.${conversationId}`, { method: 'PATCH', body: JSON.stringify({ deleted_at: new Date().toISOString(), status: 'closed', unread_count: 0 }) });
   },
 
   async exportThreadTranscript(conversationId: string): Promise<string> {
-    if (USE_BACKEND_API) {
-      try {
-        return await exportThreadFromApi(conversationId);
-      } catch {
-        // fallback to mock export
-      }
-    }
-
-    await delay(120);
-    const conversation = mockConversations.find((item) => item.id === conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found.');
-    }
-    return buildExportText(conversation);
+    const conversation = await dashboardDbFetch<ChatConversationDbRow[]>('chat_conversations', undefined, { select: 'id,user_email,user_full_name,assigned_owner_id', id: `eq.${conversationId}`, limit: '1' });
+    if (!conversation[0]) throw new Error('Conversation not found.');
+    const messages = await dashboardDbFetch<ChatMessageDbRow[]>('chat_messages', undefined, { select: 'id,sender_role,direction,message_text,sent_at,conversation_id', conversation_id: `eq.${conversationId}`, order: 'sent_at.asc' });
+    const lines = [`Conversation: ${conversationId}`, `User: ${conversation[0].user_full_name ?? 'Unknown'} <${conversation[0].user_email ?? ''}>`, ''];
+    messages.forEach((message) => {
+      lines.push(`[${message.sent_at}] ${message.sender_role}: ${message.message_text}`);
+    });
+    return lines.join('\n');
   },
 
   async assignOwner(payload: AssignConversationOwnerRequest): Promise<UserChatConversation> {
-    if (USE_BACKEND_API) {
-      try {
-        return await assignOwnerFromApi(payload);
-      } catch {
-        // fallback to mock update
-      }
+    const profileId = await resolveProfileIdByEmail(payload.ownerEmail);
+    if (!profileId) {
+      throw new Error('Owner profile not found.');
     }
-
-    await delay(120);
-    const target = mockConversations.find((item) => item.id === payload.conversationId);
-    if (!target) {
-      throw new Error('Conversation not found.');
-    }
-
-    const updated: UserChatConversation = {
-      ...target,
-      assignedAgent: payload.ownerName,
-      assignedOwnerEmail: payload.ownerEmail,
-      lastActivity: new Date().toISOString()
-    };
-    mockConversations = mockConversations.map((item) => (item.id === payload.conversationId ? updated : item));
-    return updated;
+    await dashboardDbFetch<void>(`chat_conversations?id=eq.${payload.conversationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ assigned_owner_id: profileId, last_activity_at: new Date().toISOString() })
+    });
+    const response = await listFromDb({ page: 1, page_size: 1, filters: { status: 'All', priority: 'All', agent: 'All', channel: 'All', includeDeleted: 'true', dateFrom: '', dateTo: '' } }, {});
+    const found = response.items.find((item) => item.id === payload.conversationId);
+    if (!found) throw new Error('Conversation not found.');
+    return found;
   },
 
   listAgents(conversations: UserChatConversation[]): string[] {

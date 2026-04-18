@@ -15,6 +15,7 @@ import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
 type Props = {
   role: DashboardUserRole;
   basePath: string;
+  viewerEmail?: string;
 };
 
 const defaultFilters: UserChatsFilters = {
@@ -27,7 +28,7 @@ const defaultFilters: UserChatsFilters = {
   includeDeleted: 'false'
 };
 
-export function UserChatsPanel({ role, basePath }: Props) {
+export function UserChatsPanel({ role, basePath, viewerEmail }: Props) {
   const [items, setItems] = useState<UserChatConversation[]>([]);
   const [totalConversationsCount, setTotalConversationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -59,7 +60,7 @@ export function UserChatsPanel({ role, basePath }: Props) {
         page_size: table.state.pagination.pageSize,
         search: table.state.search,
         filters: table.state.filters
-      });
+      }, { viewerEmail, actorRole: role });
       setItems(response.items);
       setTotalConversationsCount(response.meta.total);
     } catch (loadError) {

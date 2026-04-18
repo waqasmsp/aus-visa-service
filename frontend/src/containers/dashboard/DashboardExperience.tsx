@@ -454,8 +454,8 @@ function DashboardWorkspace({ pathname, role, session }: { pathname: string; rol
           {!profileRoute && activeSection === 'pages' ? <PagesPanel role={session.role} /> : null}
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'users' ? <UsersPanel role={session.role} basePath="/dashboard/users" /> : null}
-          {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel role={session.role} basePath="/dashboard/visa-applications" /> : null}
-          {!profileRoute && activeSection === 'user-chats' ? <UserChatsPanel role={session.role} basePath="/dashboard/user-chats" /> : null}
+          {!profileRoute && activeSection === 'visa-applications' ? <VisaApplicationsPanel role={session.role} basePath="/dashboard/visa-applications" viewerEmail={session.email} /> : null}
+          {!profileRoute && activeSection === 'user-chats' ? <UserChatsPanel role={session.role} basePath="/dashboard/user-chats" viewerEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'documents' ? <DocumentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'payments' ? <PaymentsPanel role={role} /> : null}
           {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="admin" /> : null}
@@ -1172,9 +1172,9 @@ function ManagerDashboardWorkspace({ pathname, session }: { pathname: string; se
           {profileRoute ? <ProfileSettingsPanel role="manager" userEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'overview' ? <ManagerOverviewPanel /> : null}
           {!profileRoute && activeSection === 'team' ? <ManagerTeamPanel /> : null}
-          {!profileRoute && activeSection === 'applications' ? <ManagerApplicationsPanel /> : null}
+          {!profileRoute && activeSection === 'applications' ? <ManagerApplicationsPanel viewerEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'blogs' ? <RoleBasedBlogsPanel role="manager" /> : null}
-          {!profileRoute && activeSection === 'user-chats' ? <UserChatsPanel role="manager" basePath="/dashboard/user-chats" /> : null}
+          {!profileRoute && activeSection === 'user-chats' ? <UserChatsPanel role="manager" basePath="/dashboard/user-chats" viewerEmail={session.email} /> : null}
           {!profileRoute && activeSection === 'documents' ? <ManagerDocumentsPanel /> : null}
           {!profileRoute && activeSection === 'payments' ? <ManagerPaymentsPanel /> : null}
           {!profileRoute && activeSection === 'contact-entries' ? <ContactEntriesPanel audience="manager" /> : null}
@@ -1291,8 +1291,8 @@ function ManagerTeamPanel() {
   );
 }
 
-function ManagerApplicationsPanel() {
-  return <VisaApplicationsPanel role="manager" basePath="/dashboard/applications" />;
+function ManagerApplicationsPanel({ viewerEmail }: { viewerEmail: string }) {
+  return <VisaApplicationsPanel role="manager" basePath="/dashboard/applications" viewerEmail={viewerEmail} />;
 }
 
 function ManagerDocumentsPanel() {
@@ -1450,7 +1450,7 @@ function UserDashboardWorkspace({ pathname, session }: { pathname: string; sessi
             <p className="dashboard-auth__message is-error">This module is temporarily paused while release flags are updated.</p>
           ) : null}
           {flagAwareSection === 'overview' ? <UserOverviewPanel /> : null}
-          {flagAwareSection === 'applications' ? <UserApplicationsPanel /> : null}
+          {flagAwareSection === 'applications' ? <UserApplicationsPanel viewerEmail={session.email} /> : null}
           {flagAwareSection === 'documents' ? <UserDocumentsPanel /> : null}
           {flagAwareSection === 'payments' ? <UserPaymentsPanel /> : null}
           {flagAwareSection === 'messages' ? <UserMessagesPanel /> : null}
@@ -1514,8 +1514,8 @@ function UserOverviewPanel() {
   );
 }
 
-function UserApplicationsPanel() {
-  return <VisaApplicationsPanel role="user" basePath="/dashboard/applications" />;
+function UserApplicationsPanel({ viewerEmail }: { viewerEmail: string }) {
+  return <VisaApplicationsPanel role="user" basePath="/dashboard/applications" viewerEmail={viewerEmail} />;
 }
 
 function UserDocumentsPanel() {

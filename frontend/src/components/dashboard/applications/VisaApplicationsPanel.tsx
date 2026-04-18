@@ -23,6 +23,7 @@ import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
 type Props = {
   role: DashboardUserRole;
   basePath: string;
+  viewerEmail?: string;
 };
 
 const presetStorageKey = 'dashboard-applications-preset-v1';
@@ -39,7 +40,7 @@ const defaultFilters: ApplicationFilters = {
   includeDeleted: 'false'
 };
 
-export function VisaApplicationsPanel({ role, basePath }: Props) {
+export function VisaApplicationsPanel({ role, basePath, viewerEmail }: Props) {
   const [applications, setApplications] = useState<VisaApplication[]>([]);
   const [totalApplicationsCount, setTotalApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -80,7 +81,7 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
         sort_field: table.state.sort?.field,
         sort_direction: table.state.sort?.direction,
         filters: table.state.filters
-      });
+      }, { viewerEmail, actorRole: role });
       setApplications(response.items);
       setTotalApplicationsCount(response.meta.total);
       setSelectedIds((prev) => prev.filter((id) => response.items.some((item) => item.id === id)));
@@ -162,7 +163,7 @@ export function VisaApplicationsPanel({ role, basePath }: Props) {
             priority: payload.priority.toLowerCase() as 'low' | 'medium' | 'high',
             assigned_to: payload.assignedTo,
             status: payload.status.toLowerCase().replace(/\s+/g, '_') as never,
-            owner_id: role === 'user' ? 'user@ausvisaservice.com' : 'manager@ausvisaservice.com'
+            owner_id: role === 'user' ? (viewerEmail ?? '') : (viewerEmail ?? '')
           },
           role
         );
