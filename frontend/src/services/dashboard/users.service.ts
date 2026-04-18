@@ -2,108 +2,32 @@ import {
   ListUsersRequestDto,
   PortalUser,
   UpsertUserRequest,
-  UserDto,
   UserImportReport,
   UserImportRow,
   UserImportValidationError
 } from '../../types/dashboard/users';
 import { DashboardListResponse } from '../../types/dashboard/query';
 import { DashboardUserRole } from '../../types/dashboard/applications';
-import { delay } from './async';
 import { assertPermission, DestructiveApprovalContext, enforceDestructiveApproval } from './authPolicy';
 import { writeAuditEvent } from './audit.service';
 import { trackAdminEvent } from './dashboardAnalytics.service';
 import { mapUserDtoToUi } from './mappers/users.mapper';
+import { dashboardDbFetch } from './dbClient';
+
+type ProfileRow = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  country: string | null;
+  source: string | null;
+  status: string | null;
+  last_seen_at: string | null;
+};
+
+type ActivityRow = { id: number; profile_id: string; event_type: 'activity' | 'application' | 'payment' | 'support'; event_action: string; event_at: string };
 
 const normalizePhone = (value: string): string => value.replace(/[^\d+]/g, '').replace(/^00/, '+');
-
-let userStore: UserDto[] = [
-  {
-    id: 'usr-1',
-    full_name: 'Arman Siddiqui',
-    email: 'arman.s@example.com',
-    phone: '+92 300 123 9988',
-    normalized_phone: '+923001239988',
-    segment: 'registered',
-    purchased: true,
-    source: 'Google Search',
-    country: 'Pakistan',
-    spent_usd: 149,
-    last_seen: '2h ago',
-    last_seen_at: '2026-04-15T08:30:00Z',
-    status: 'active',
-    role_scope: 'editor',
-    timeline: [
-      { id: 't-1', label: 'Signed in from Lahore', occurredAt: '2026-04-15T08:30:00Z', actor: 'System', type: 'activity' },
-      { id: 't-2', label: 'Subclass 600 lodged', occurredAt: '2026-04-12T10:20:00Z', actor: 'Arman Siddiqui', type: 'application' },
-      { id: 't-3', label: 'Paid $149 consultation fee', occurredAt: '2026-04-10T13:11:00Z', actor: 'Stripe', type: 'payment' }
-    ]
-  },
-  {
-    id: 'usr-2',
-    full_name: 'Olivia Brown',
-    email: 'olivia.brown@example.com',
-    phone: '+44 7700 900111',
-    normalized_phone: '+447700900111',
-    segment: 'lead',
-    purchased: false,
-    source: 'Meta Ads',
-    country: 'United Kingdom',
-    spent_usd: 0,
-    last_seen: '1d ago',
-    last_seen_at: '2026-04-14T11:00:00Z',
-    status: 'active',
-    role_scope: 'editor',
-    timeline: [
-      { id: 't-4', label: 'Requested callback', occurredAt: '2026-04-14T11:00:00Z', actor: 'Olivia Brown', type: 'support' }
-    ]
-  },
-  {
-    id: 'usr-3',
-    full_name: 'Hassan Ali',
-    email: 'hassan.ali@example.com',
-    phone: '+971 50 123 1234',
-    normalized_phone: '+971501231234',
-    segment: 'registered',
-    purchased: false,
-    source: 'Direct',
-    country: 'UAE',
-    spent_usd: 0,
-    last_seen: '45m ago',
-    last_seen_at: '2026-04-15T09:45:00Z',
-    status: 'deactivated',
-    role_scope: 'manager',
-    timeline: [
-      { id: 't-5', label: 'Account deactivated by admin', occurredAt: '2026-04-13T16:14:00Z', actor: 'Admin', type: 'activity' }
-    ]
-  },
-  {
-    id: 'usr-4',
-    full_name: 'Emma Wilson',
-    email: 'emma.w@example.com',
-    phone: '+1 415 555 0167',
-    normalized_phone: '+14155550167',
-    segment: 'registered',
-    purchased: true,
-    source: 'Referral',
-    country: 'United States',
-    spent_usd: 699,
-    last_seen: '4h ago',
-    last_seen_at: '2026-04-15T06:00:00Z',
-    status: 'active',
-    role_scope: 'admin',
-    timeline: [
-      { id: 't-6', label: 'Paid $550 visa package', occurredAt: '2026-04-11T08:20:00Z', actor: 'Stripe', type: 'payment' }
-    ]
-  }
-];
-
-const findDuplicate = (email: string, phone: string, ignoreId?: string): UserDto | undefined => {
-  const normalized = normalizePhone(phone);
-  return userStore.find(
-    (item) => item.id !== ignoreId && (item.email.toLowerCase() === email.toLowerCase() || item.normalized_phone === normalized)
-  );
-};
 
 const withinLastSeenRange = (isoDate: string, lastSeenDays: ListUsersRequestDto['filters']['lastSeenDays']) => {
   if (lastSeenDays === 'All') return true;
@@ -119,6 +43,16 @@ const withinSpendBand = (spent: number, band: ListUsersRequestDto['filters']['sp
   return spent >= 500;
 };
 
+const toRelativeLastSeen = (iso: string | null): string => {
+  if (!iso) return 'unknown';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+};
+
 const validateImportRow = (row: UserImportRow, index: number): UserImportValidationError[] => {
   const errors: UserImportValidationError[] = [];
   if (!row.full_name.trim()) errors.push({ row: index, field: 'full_name', message: 'Name is required.' });
@@ -129,25 +63,63 @@ const validateImportRow = (row: UserImportRow, index: number): UserImportValidat
   return errors;
 };
 
+const listProfiles = async (): Promise<ProfileRow[]> => {
+  return dashboardDbFetch<ProfileRow[]>('profiles', undefined, { select: 'id,full_name,email,phone,country,source,status,last_seen_at', limit: '5000', order: 'last_seen_at.desc.nullslast' });
+};
+
+const listActivities = async (): Promise<ActivityRow[]> => {
+  return dashboardDbFetch<ActivityRow[]>('user_activity_events', undefined, { select: 'id,profile_id,event_type,event_action,event_at', limit: '10000', order: 'event_at.desc' });
+};
+
+const upsertProfile = async (id: string, payload: Partial<ProfileRow>): Promise<ProfileRow> => {
+  const records = await dashboardDbFetch<ProfileRow[]>(`profiles?id=eq.${id}&select=id,full_name,email,phone,country,source,status,last_seen_at`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(payload)
+  });
+  if (!records[0]) {
+    throw new Error('User record not found.');
+  }
+  return records[0];
+};
+
 export const usersService = {
   async list(request: ListUsersRequestDto): Promise<DashboardListResponse<PortalUser>> {
-    await delay();
+    const [profiles, activities] = await Promise.all([listProfiles(), listActivities()]);
+    const activityMap = new Map<string, ActivityRow[]>();
+    activities.forEach((row) => {
+      const list = activityMap.get(row.profile_id) ?? [];
+      list.push(row);
+      activityMap.set(row.profile_id, list);
+    });
+
+    const userDtos = profiles.map((profile) => {
+      const timelineRows = activityMap.get(profile.id) ?? [];
+      const spent = timelineRows.filter((item) => item.event_type === 'payment').length * 149;
+      return {
+        id: profile.id,
+        full_name: profile.full_name ?? 'Unknown',
+        email: profile.email ?? '',
+        phone: profile.phone ?? '',
+        normalized_phone: normalizePhone(profile.phone ?? ''),
+        segment: (spent > 0 ? 'registered' : 'lead') as 'registered' | 'lead',
+        purchased: spent > 0,
+        source: profile.source ?? 'Direct',
+        country: profile.country ?? 'Unknown',
+        spent_usd: spent,
+        last_seen: toRelativeLastSeen(profile.last_seen_at),
+        last_seen_at: profile.last_seen_at ?? new Date(0).toISOString(),
+        status: (profile.status === 'deactivated' ? 'deactivated' : profile.status === 'deleted' ? 'deleted' : 'active') as 'active' | 'deactivated' | 'deleted',
+        role_scope: 'editor' as const,
+        timeline: timelineRows.map((row) => ({ id: String(row.id), label: row.event_action, occurredAt: row.event_at, actor: 'System', type: row.event_type }))
+      };
+    });
+
     const search = request.search?.trim().toLowerCase() ?? '';
-    const filtered = userStore.filter((user) => {
-      const matchesQuery =
-        !search ||
-        user.full_name.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search) ||
-        user.country.toLowerCase().includes(search) ||
-        user.phone.toLowerCase().includes(search);
-      const matchesSegment =
-        request.filters.segment === 'All' ||
-        (request.filters.segment === 'Registered' && user.segment === 'registered') ||
-        (request.filters.segment === 'Lead' && user.segment === 'lead');
-      const matchesPurchase =
-        request.filters.purchase === 'All' ||
-        (request.filters.purchase === 'Purchased' && user.purchased) ||
-        (request.filters.purchase === 'Abandoned' && !user.purchased);
+    const filtered = userDtos.filter((user) => {
+      const matchesQuery = !search || [user.full_name, user.email, user.country, user.phone].some((value) => value.toLowerCase().includes(search));
+      const matchesSegment = request.filters.segment === 'All' || (request.filters.segment === 'Registered' && user.segment === 'registered') || (request.filters.segment === 'Lead' && user.segment === 'lead');
+      const matchesPurchase = request.filters.purchase === 'All' || (request.filters.purchase === 'Purchased' && user.purchased) || (request.filters.purchase === 'Abandoned' && !user.purchased);
       const matchesSource = request.filters.source === 'All' || user.source === request.filters.source;
       const matchesCountry = request.filters.country === 'All' || user.country === request.filters.country;
       const matchesDeleted = request.filters.includeDeleted === 'true' || user.status !== 'deleted';
@@ -163,183 +135,87 @@ export const usersService = {
   },
 
   async create(payload: UpsertUserRequest, role: DashboardUserRole): Promise<PortalUser> {
-    await delay();
     assertPermission(role, 'users', 'create');
-    const duplicate = findDuplicate(payload.email, payload.phone);
-    if (duplicate) {
-      throw new Error(`Duplicate detected with ${duplicate.email} / ${duplicate.phone}.`);
-    }
-
-    const id = `usr-${Date.now()}`;
-    const now = new Date().toISOString();
-    const record: UserDto = {
-      id,
-      full_name: payload.full_name,
-      email: payload.email,
-      phone: payload.phone,
-      normalized_phone: normalizePhone(payload.phone),
+    const rows = await dashboardDbFetch<ProfileRow[]>('profiles?select=id,full_name,email,phone,country,source,status,last_seen_at', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify([{ full_name: payload.full_name, email: payload.email, phone: payload.phone, country: payload.country, source: payload.source, status: 'active', last_seen_at: new Date().toISOString() }])
+    });
+    const record = rows[0];
+    const dto = {
+      id: record.id,
+      full_name: record.full_name ?? payload.full_name,
+      email: record.email ?? payload.email,
+      phone: record.phone ?? payload.phone,
+      normalized_phone: normalizePhone(record.phone ?? payload.phone),
       segment: payload.segment,
       purchased: payload.purchased,
-      source: payload.source,
-      country: payload.country,
+      source: record.source ?? payload.source,
+      country: record.country ?? payload.country,
       spent_usd: 0,
       last_seen: 'just now',
-      last_seen_at: now,
-      status: 'active',
+      last_seen_at: record.last_seen_at ?? new Date().toISOString(),
+      status: 'active' as const,
       role_scope: payload.role_scope,
-      timeline: [{ id: `${id}-1`, label: 'Profile created', occurredAt: now, actor: role, type: 'activity' }]
+      timeline: []
     };
-    userStore = [record, ...userStore];
-    writeAuditEvent({ actor: role, action: 'create', entityType: 'users', entityId: id, before: null, after: record });
-    trackAdminEvent({ name: 'users_created', module: 'users', actorRole: role, entityId: id, status: 'success' });
-    return mapUserDtoToUi(record);
+    writeAuditEvent({ actor: role, action: 'create', entityType: 'users', entityId: dto.id, before: null, after: dto });
+    trackAdminEvent({ name: 'users_created', module: 'users', actorRole: role, entityId: dto.id, status: 'success' });
+    return mapUserDtoToUi(dto);
   },
 
   async update(id: string, payload: Partial<UpsertUserRequest>, role: DashboardUserRole): Promise<PortalUser> {
-    await delay();
     assertPermission(role, 'users', 'edit');
-    const existing = userStore.find((item) => item.id === id);
-    if (!existing) throw new Error('User record not found.');
-    const before = { ...existing };
-
-    const nextEmail = payload.email ?? existing.email;
-    const nextPhone = payload.phone ?? existing.phone;
-    const duplicate = findDuplicate(nextEmail, nextPhone, id);
-    if (duplicate) {
-      throw new Error(`Duplicate detected with ${duplicate.email} / ${duplicate.phone}.`);
-    }
-
-    const updated: UserDto = {
-      ...existing,
-      full_name: payload.full_name ?? existing.full_name,
-      email: nextEmail,
-      phone: nextPhone,
-      normalized_phone: normalizePhone(nextPhone),
-      segment: payload.segment ?? existing.segment,
-      purchased: payload.purchased ?? existing.purchased,
-      source: payload.source ?? existing.source,
-      country: payload.country ?? existing.country,
-      role_scope: payload.role_scope ?? existing.role_scope,
-      timeline: [
-        { id: `${id}-${Date.now()}`, label: 'Profile updated', occurredAt: new Date().toISOString(), actor: role, type: 'activity' },
-        ...existing.timeline
-      ]
+    const updated = await upsertProfile(id, { full_name: payload.full_name, email: payload.email, phone: payload.phone, country: payload.country, source: payload.source });
+    const dto = {
+      id: updated.id,
+      full_name: updated.full_name ?? '',
+      email: updated.email ?? '',
+      phone: updated.phone ?? '',
+      normalized_phone: normalizePhone(updated.phone ?? ''),
+      segment: (payload.segment ?? 'registered') as 'registered' | 'lead',
+      purchased: payload.purchased ?? false,
+      source: updated.source ?? 'Direct',
+      country: updated.country ?? 'Unknown',
+      spent_usd: 0,
+      last_seen: toRelativeLastSeen(updated.last_seen_at),
+      last_seen_at: updated.last_seen_at ?? new Date().toISOString(),
+      status: (updated.status === 'deactivated' ? 'deactivated' : updated.status === 'deleted' ? 'deleted' : 'active') as 'active' | 'deactivated' | 'deleted',
+      role_scope: (payload.role_scope ?? 'editor') as 'admin' | 'manager' | 'editor',
+      timeline: []
     };
-    userStore = userStore.map((item) => (item.id === id ? updated : item));
-    writeAuditEvent({ actor: role, action: 'edit', entityType: 'users', entityId: id, before, after: updated });
+    writeAuditEvent({ actor: role, action: 'edit', entityType: 'users', entityId: id, before: null, after: dto });
     trackAdminEvent({ name: 'users_updated', module: 'users', actorRole: role, entityId: id, status: 'success' });
-    return mapUserDtoToUi(updated);
+    return mapUserDtoToUi(dto);
   },
 
   async setActive(id: string, active: boolean, role: DashboardUserRole): Promise<void> {
-    await delay();
     assertPermission(role, 'users', 'edit');
-    userStore = userStore.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            status: active ? 'active' : 'deactivated',
-            timeline: [
-              {
-                id: `${id}-${Date.now()}`,
-                label: active ? 'Account reactivated' : 'Account deactivated',
-                occurredAt: new Date().toISOString(),
-                actor: role,
-                type: 'activity'
-              },
-              ...item.timeline
-            ]
-          }
-        : item
-    );
+    await upsertProfile(id, { status: active ? 'active' : 'deactivated' });
   },
 
   async softDelete(id: string, role: DashboardUserRole, approval: DestructiveApprovalContext): Promise<void> {
-    await delay();
     assertPermission(role, 'users', 'delete');
     enforceDestructiveApproval('users', 'delete', approval);
-    const existing = userStore.find((item) => item.id === id);
-    const before = existing ? { ...existing } : null;
-    userStore = userStore.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            status: 'deleted',
-            timeline: [
-              { id: `${id}-${Date.now()}`, label: 'Soft-deleted from CRM view', occurredAt: new Date().toISOString(), actor: role, type: 'activity' },
-              ...item.timeline
-            ]
-          }
-        : item
-    );
-    const after = userStore.find((item) => item.id === id);
-    if (after) {
-      writeAuditEvent({ actor: role, action: 'delete', entityType: 'users', entityId: id, before, after: { ...after, ...approval } });
-      trackAdminEvent({ name: 'users_deleted', module: 'users', actorRole: role, entityId: id, status: 'success' });
-    }
-  },
-
-  async exportCsv(filters: ListUsersRequestDto['filters']): Promise<string> {
-    await delay();
-    const rows = (await this.list({ page: 1, page_size: 1000, filters })).items;
-    const header = 'id,full_name,email,phone,segment,purchase,source,country,status,role_scope,spent_usd,last_seen\n';
-    const body = rows
-      .map((row) =>
-        [
-          row.id,
-          row.fullName,
-          row.email,
-          row.phone,
-          row.segment,
-          row.purchased ? 'Purchased' : 'Abandoned',
-          row.source,
-          row.country,
-          row.status,
-          row.roleScope,
-          row.spentUsd,
-          row.lastSeen
-        ]
-          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
-          .join(',')
-      )
-      .join('\n');
-    return `${header}${body}`;
+    await upsertProfile(id, { status: 'deleted' });
+    writeAuditEvent({ actor: role, action: 'delete', entityType: 'users', entityId: id, before: null, after: { ...approval, status: 'deleted' } });
+    trackAdminEvent({ name: 'users_deleted', module: 'users', actorRole: role, entityId: id, status: 'success' });
   },
 
   async importRows(rows: UserImportRow[], role: DashboardUserRole): Promise<UserImportReport> {
-    await delay();
     assertPermission(role, 'users', 'create');
+    const errors = rows.flatMap((row, index) => validateImportRow(row, index + 1));
+    if (errors.length) return { importedCount: 0, rejectedCount: rows.length, errors };
+    await Promise.all(rows.map((row) => this.create({ ...row, purchased: false }, role)));
+    return { importedCount: rows.length, rejectedCount: 0, errors: [] };
+  },
 
-    const errors: UserImportValidationError[] = [];
-    let importedCount = 0;
-
-    rows.forEach((row, index) => {
-      const rowNumber = index + 2;
-      errors.push(...validateImportRow(row, rowNumber));
-      const duplicate = findDuplicate(row.email, row.phone);
-      if (duplicate) {
-        errors.push({ row: rowNumber, field: 'email', message: `Potential duplicate: ${duplicate.email}` });
-      }
-    });
-
-    if (errors.length === 0) {
-      for (const row of rows) {
-        await this.create(row, role);
-        importedCount += 1;
-      }
-      trackAdminEvent({
-        name: 'users_imported',
-        module: 'users',
-        actorRole: role,
-        status: 'success',
-        metadata: { importedCount, source: 'csv' }
-      });
-    }
-
-    return {
-      importedCount,
-      rejectedCount: errors.length,
-      errors
-    };
+  async exportCsv(filters: ListUsersRequestDto['filters']): Promise<string> {
+    const response = await this.list({ page: 1, page_size: 5000, filters, search: '' });
+    const header = 'id,name,email,phone,country,status,last_seen_at\n';
+    const rows = response.items
+      .map((item) => [item.id, item.fullName, item.email, item.phone, item.country, item.status, item.lastSeenAt].map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    return `${header}${rows}`;
   }
 };
