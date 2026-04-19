@@ -11,7 +11,11 @@ type StepDefinition = {
 
 const TOTAL_STEPS = 20;
 
-export function FullApplicationWizard() {
+type Props = {
+  onBackToApplications: () => void;
+};
+
+export function FullApplicationWizard({ onBackToApplications }: Props) {
   const [currentStep, setCurrentStep] = useState(1);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -45,6 +49,9 @@ export function FullApplicationWizard() {
           <h2>Full visa application</h2>
           <small>Step {currentStep}/{TOTAL_STEPS} · {activeStep.title}</small>
         </div>
+        <DashboardButton type="button" variant="ghost" onClick={onBackToApplications}>
+          Back to My Applications
+        </DashboardButton>
       </div>
 
       <div className="dashboard-application-wizard__progress" aria-hidden="true">
