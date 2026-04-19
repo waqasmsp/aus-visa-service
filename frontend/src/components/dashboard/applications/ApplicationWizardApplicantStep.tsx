@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { currentLocationCountryOptions } from '../../../constants/applicationFormOptions';
+import { DashboardButton } from '../common/DashboardButton';
 import { DashboardField } from '../common/DashboardField';
 import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
@@ -149,6 +151,8 @@ export function ApplicationWizardApplicantStep({
   disableNext,
   layoutVariant = '3-col'
 }: Props) {
+  const [isNationalIdModalOpen, setIsNationalIdModalOpen] = useState(false);
+
   return (
     <ApplicationWizardStepLayout
       stepId="wizard-step-applicant"
@@ -234,6 +238,21 @@ export function ApplicationWizardApplicantStep({
           value={hasNationalIdentityCard}
           onChange={onHasNationalIdentityCardChange}
         />
+        {hasNationalIdentityCard === 'yes' ? (
+          <section className="dashboard-application-wizard__identity-card-panel" aria-label="National identity card details">
+            <h3 className="dashboard-application-wizard__subheading">Add details</h3>
+            <div className="dashboard-application-wizard__identity-card-table">
+              <div>Family name</div>
+              <div>Given names</div>
+              <div>Identification number</div>
+              <div>Country of issue</div>
+              <div>Actions</div>
+            </div>
+            <DashboardButton type="button" variant="secondary" size="sm" onClick={() => setIsNationalIdModalOpen(true)}>
+              Add
+            </DashboardButton>
+          </section>
+        ) : null}
         <YesNoField
           label="Is the applicant a Pacific-Australia Card holder?"
           name="has-pacific-australia-card"
@@ -320,6 +339,60 @@ export function ApplicationWizardApplicantStep({
           value={hasHealthExaminationLast12Months}
           onChange={onHasHealthExaminationLast12MonthsChange}
         />
+
+        {isNationalIdModalOpen ? (
+          <div
+            className="dashboard-modal-backdrop"
+            onMouseDown={(event) => (event.target === event.currentTarget ? setIsNationalIdModalOpen(false) : undefined)}
+          >
+            <div className="dashboard-modal-card dashboard-application-wizard__identity-modal" role="dialog" aria-modal="true">
+              <h3 className="dashboard-application-wizard__section-heading">National identity card</h3>
+              <p className="dashboard-panel__note">Enter details exactly as shown on the national identity card.</p>
+
+              <DashboardField className="dashboard-application-wizard__panel-row" label="Family name" htmlFor="national-id-family-name">
+                <DashboardInput id="national-id-family-name" />
+              </DashboardField>
+              <DashboardField className="dashboard-application-wizard__panel-row" label="Given names" htmlFor="national-id-given-names">
+                <DashboardInput id="national-id-given-names" />
+              </DashboardField>
+              <DashboardField
+                className="dashboard-application-wizard__panel-row"
+                label="Identification number"
+                htmlFor="national-id-identification-number"
+              >
+                <DashboardInput id="national-id-identification-number" />
+              </DashboardField>
+              <DashboardField className="dashboard-application-wizard__panel-row" label="Country of issue" htmlFor="national-id-country-of-issue">
+                <DashboardSelect id="national-id-country-of-issue" defaultValue="">
+                  <option value="">Select country</option>
+                  {currentLocationCountryOptions.map((country) => (
+                    <option key={`national-id-country-${country.value}`} value={country.value}>
+                      {country.label}
+                    </option>
+                  ))}
+                </DashboardSelect>
+              </DashboardField>
+              <p className="dashboard-panel__note">
+                Note: If the national identity card does not have a date of issue or date of expiry, leave the fields blank.
+              </p>
+              <DashboardField className="dashboard-application-wizard__panel-row" label="Date of issue" htmlFor="national-id-date-of-issue">
+                <DashboardInput id="national-id-date-of-issue" type="date" />
+              </DashboardField>
+              <DashboardField className="dashboard-application-wizard__panel-row" label="Date of expiry" htmlFor="national-id-date-of-expiry">
+                <DashboardInput id="national-id-date-of-expiry" type="date" />
+              </DashboardField>
+
+              <div className="dashboard-application-wizard__identity-modal-actions">
+                <DashboardButton type="button" variant="ghost" onClick={() => setIsNationalIdModalOpen(false)}>
+                  Cancel
+                </DashboardButton>
+                <DashboardButton type="button" onClick={() => setIsNationalIdModalOpen(false)}>
+                  Confirm
+                </DashboardButton>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
     </ApplicationWizardStepLayout>
   );
