@@ -19,6 +19,7 @@ import { ApplicationsTable } from './ApplicationsTable';
 import { ApplicationFormModal } from './ApplicationFormModal';
 import { ApplicationDetailsDrawer } from './ApplicationDetailsDrawer';
 import { DataTablePaginationFooter } from '../common/DataTablePrimitives';
+import { FullApplicationWizard } from './FullApplicationWizard';
 
 type Props = {
   role: DashboardUserRole;
@@ -41,6 +42,7 @@ const defaultFilters: ApplicationFilters = {
 };
 
 export function VisaApplicationsPanel({ role, basePath, viewerEmail }: Props) {
+  const [activeView, setActiveView] = useState<'applications' | 'full-application-wizard'>('applications');
   const [applications, setApplications] = useState<VisaApplication[]>([]);
   const [totalApplicationsCount, setTotalApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -243,49 +245,55 @@ export function VisaApplicationsPanel({ role, basePath, viewerEmail }: Props) {
             }}
           />
           <article className="dashboard-panel">
-            <ApplicationsFilterBar
-              search={table.state.search}
-              filters={table.state.filters}
-              preset={activePreset}
-              onSearchChange={table.setSearch}
-              onFilterChange={table.setFilter}
-              onPresetChange={applyPreset}
-              onCreate={() => { setEditingApplication(null); setOpenCreateModal(true); }}
-              onCreateFullApplication={() => { setEditingApplication(null); setOpenCreateModal(true); }}
-              canCreate={roleActions.canCreate}
-              roleLabel={role}
-              applications={applications}
-            />
-            {applications.length === 0 ? (
-              table.state.search || Object.values(table.state.filters).some((value) => value && value !== 'All' && value !== 'false') ? (
-                <DashboardNoResultsState description="No applications match your filters." onReset={() => table.setState((prev) => ({ ...prev, search: '', filters: defaultFilters, pagination: { ...prev.pagination, page: 1 } }))} />
-              ) : (
-                <DashboardEmptyState title="No applications found" description="Try different filter criteria or preset combinations." />
-              )
-            ) : (
+            {activeView === 'applications' ? (
               <>
-                <ApplicationsTable
+                <ApplicationsFilterBar
+                  search={table.state.search}
+                  filters={table.state.filters}
+                  preset={activePreset}
+                  onSearchChange={table.setSearch}
+                  onFilterChange={table.setFilter}
+                  onPresetChange={applyPreset}
+                  onCreate={() => { setEditingApplication(null); setOpenCreateModal(true); }}
+                  onStartFullApplicationWizard={() => { setEditingApplication(null); setOpenCreateModal(false); setActiveView('full-application-wizard'); }}
+                  canCreate={roleActions.canCreate}
+                  roleLabel={role}
                   applications={applications}
-                  selectedIds={selectedIds}
-                  sort={table.state.sort}
-                  canEdit={roleActions.canEdit}
-                  canDelete={roleActions.canDelete}
-                  onSelect={(id, selected) => setSelectedIds((prev) => (selected ? [...prev, id] : prev.filter((item) => item !== id)))}
-                  onToggleSelectAll={(selected) => setSelectedIds(selected ? applications.map((item) => item.id) : [])}
-                  onSort={table.setSort}
-                  onViewDetails={setDetailsApplication}
-                  onEdit={(application) => { setEditingApplication(application); setOpenCreateModal(true); }}
-                  onDelete={(application) => setDeleteTarget(application)}
-                  onRestore={(application) => void restoreApplication(application)}
                 />
-                <DataTablePaginationFooter
-                  page={table.state.pagination.page}
-                  pageSize={table.state.pagination.pageSize}
-                  total={totalApplicationsCount}
-                  onPageChange={table.setPage}
-                  onPageSizeChange={table.setPageSize}
-                />
+                {applications.length === 0 ? (
+                  table.state.search || Object.values(table.state.filters).some((value) => value && value !== 'All' && value !== 'false') ? (
+                    <DashboardNoResultsState description="No applications match your filters." onReset={() => table.setState((prev) => ({ ...prev, search: '', filters: defaultFilters, pagination: { ...prev.pagination, page: 1 } }))} />
+                  ) : (
+                    <DashboardEmptyState title="No applications found" description="Try different filter criteria or preset combinations." />
+                  )
+                ) : (
+                  <>
+                    <ApplicationsTable
+                      applications={applications}
+                      selectedIds={selectedIds}
+                      sort={table.state.sort}
+                      canEdit={roleActions.canEdit}
+                      canDelete={roleActions.canDelete}
+                      onSelect={(id, selected) => setSelectedIds((prev) => (selected ? [...prev, id] : prev.filter((item) => item !== id)))}
+                      onToggleSelectAll={(selected) => setSelectedIds(selected ? applications.map((item) => item.id) : [])}
+                      onSort={table.setSort}
+                      onViewDetails={setDetailsApplication}
+                      onEdit={(application) => { setEditingApplication(application); setOpenCreateModal(true); }}
+                      onDelete={(application) => setDeleteTarget(application)}
+                      onRestore={(application) => void restoreApplication(application)}
+                    />
+                    <DataTablePaginationFooter
+                      page={table.state.pagination.page}
+                      pageSize={table.state.pagination.pageSize}
+                      total={totalApplicationsCount}
+                      onPageChange={table.setPage}
+                      onPageSizeChange={table.setPageSize}
+                    />
+                  </>
+                )}
               </>
+            ) : (
+              <FullApplicationWizard onBackToApplications={() => setActiveView('applications')} />
             )}
           </article>
           {openCreateModal ? <ApplicationFormModal editingApplication={editingApplication} onClose={() => { setOpenCreateModal(false); setEditingApplication(null); }} onSubmit={(payload) => void upsertApplication(payload)} /> : null}
