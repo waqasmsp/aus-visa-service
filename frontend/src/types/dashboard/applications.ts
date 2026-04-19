@@ -130,6 +130,7 @@ export type FullApplicationWizardFormPayload = {
   requestedEndDate: string;
   reasonForFurtherStay: string;
   specialCategoryOfEntry: '' | 'yes' | 'no';
+  specialCategoryEntryType: '' | 'foreign-government-representative' | 'un-laissez-passer' | 'exempt-group';
   currentLocation: string;
   legalStatus: string;
   selectedVisitReason: string;
