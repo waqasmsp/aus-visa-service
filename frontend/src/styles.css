@@ -7809,7 +7809,32 @@ body.body--menu-open {
 */
 .dashboard-application-wizard__panel-row {
   display: grid;
-  gap: 0.75rem;
+  grid-template-columns: minmax(0, 35%) minmax(0, 65%);
+  column-gap: 1rem;
+  row-gap: 0.45rem;
+  align-items: start;
+}
+
+.dashboard-application-wizard__panel-row > .dashboard-field__label {
+  grid-column: 1;
+  padding-top: 0.5rem;
+}
+
+.dashboard-application-wizard__panel-row > :not(.dashboard-field__label) {
+  grid-column: 2;
+}
+
+@media (max-width: 900px) {
+  .dashboard-application-wizard__panel-row {
+    grid-template-columns: 1fr;
+    row-gap: 0.35rem;
+  }
+
+  .dashboard-application-wizard__panel-row > .dashboard-field__label,
+  .dashboard-application-wizard__panel-row > :not(.dashboard-field__label) {
+    grid-column: 1;
+    padding-top: 0;
+  }
 }
 
 .dashboard-application-wizard__note {
