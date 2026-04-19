@@ -879,16 +879,14 @@ export function ApplicationStepOneForm() {
                 />
                 <p className="application-field-note">The country where you live permanently.</p>
 
-                <div className="application-form-grid application-form-grid--two">
-                  <label className={`application-field${hasError('homeAddress') ? ' application-field--error' : ''}`}><span>Home address</span><input type="text" name="homeAddress" placeholder="1234 Sesame St. Apt. 3, Springtown, Islamabad" value={homeAddress} onChange={(event) => { setHomeAddress(event.target.value); clearError('homeAddress'); }} aria-invalid={hasError('homeAddress')} /></label>
-                  <label className={`application-field${hasError('cityOrTown') ? ' application-field--error' : ''}`}><span>City or town</span><input type="text" name="cityOrTown" value={cityOrTown} onChange={(event) => { setCityOrTown(event.target.value); clearError('cityOrTown'); }} aria-invalid={hasError('cityOrTown')} /></label>
-                </div>
+                <label className={`application-field${hasError('homeAddress') ? ' application-field--error' : ''}`}><span>Home address</span><input type="text" name="homeAddress" placeholder="1234 Sesame St. Apt. 3, Springtown, Islamabad" value={homeAddress} onChange={(event) => { setHomeAddress(event.target.value); clearError('homeAddress'); }} aria-invalid={hasError('homeAddress')} /></label>
                 <p className="application-field-note">The address must be in the country where you live.</p>
 
-                <div className="application-form-grid application-form-grid--two">
-                  <label className={`application-field${hasError('stateOrProvince') ? ' application-field--error' : ''}`}><span>State or province</span><input type="text" name="stateOrProvince" value={stateOrProvince} onChange={(event) => { setStateOrProvince(event.target.value); clearError('stateOrProvince'); }} aria-invalid={hasError('stateOrProvince')} /></label>
+                <div className="application-form-grid application-form-grid--compact">
+                  <label className={`application-field${hasError('cityOrTown') ? ' application-field--error' : ''}`}><span>City or town</span><input type="text" name="cityOrTown" value={cityOrTown} onChange={(event) => { setCityOrTown(event.target.value); clearError('cityOrTown'); }} aria-invalid={hasError('cityOrTown')} /></label>
                   <label className={`application-field${hasError('zipOrPostcode') ? ' application-field--error' : ''}`}><span>ZIP or postcode</span><input type="text" name="zipOrPostcode" value={zipOrPostcode} onChange={(event) => { setZipOrPostcode(event.target.value); clearError('zipOrPostcode'); }} aria-invalid={hasError('zipOrPostcode')} /></label>
                 </div>
+                <label className={`application-field${hasError('stateOrProvince') ? ' application-field--error' : ''}`}><span>State or province</span><input type="text" name="stateOrProvince" value={stateOrProvince} onChange={(event) => { setStateOrProvince(event.target.value); clearError('stateOrProvince'); }} aria-invalid={hasError('stateOrProvince')} /></label>
 
                 <div className="application-form-actions application-form-actions--split">
                   <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
@@ -1021,7 +1019,7 @@ export function ApplicationStepOneForm() {
                 <div className="payment-divider"><span>Or pay with</span></div>
                 <div className="payment-card-form">
                   <input type="text" placeholder="Card Number" value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} />
-                  <div className="payment-card-form__row">
+                  <div className="payment-card-form__row application-form-grid--compact">
                     <input type="text" placeholder="MM/YY" value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} />
                     <input type="text" placeholder="CVV" value={cardCvv} onChange={(event) => setCardCvv(event.target.value)} />
                   </div>
