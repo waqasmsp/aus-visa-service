@@ -120,6 +120,10 @@ export type QuickApplicationCreatePayload = {
 
 export type FullApplicationWizardFormPayload = {
   applicantName: string;
+  familyName: string;
+  givenNames: string;
+  sex: '' | 'female' | 'male' | 'other';
+  dateOfBirth: string;
   email: string;
   visaType: string;
   destinationCountry: string;
@@ -142,6 +146,26 @@ export type FullApplicationWizardFormPayload = {
   visitReasons: string[];
   significantVisitDates: string;
   isGroupProcessing: '' | 'yes' | 'no';
+  passportCountry: string;
+  passportNationality: string;
+  passportIssueDate: string;
+  passportExpiryDate: string;
+  placeOfIssue: string;
+  hasNationalIdentityCard: '' | 'yes' | 'no';
+  hasPacificAustraliaCard: '' | 'yes' | 'no';
+  birthTownCity: string;
+  birthStateProvince: string;
+  birthCountry: string;
+  relationshipStatus: string;
+  hasOtherNames: '' | 'yes' | 'no';
+  isCitizenOfPassportCountry: '' | 'yes' | 'no';
+  isCitizenOfOtherCountry: '' | 'yes' | 'no';
+  hasPreviouslyTravelledToAustralia: '' | 'yes' | 'no';
+  hasPreviouslyAppliedAustralianVisa: '' | 'yes' | 'no';
+  hasAustralianVisaGrantNumber: '' | 'yes' | 'no';
+  hasOtherPassportsOrTravelDocuments: '' | 'yes' | 'no';
+  hasOtherIdentityDocuments: '' | 'yes' | 'no';
+  hasHealthExaminationLast12Months: '' | 'yes' | 'no';
 };
 
 export type FullApplicationDraftPayload = {
