@@ -73,6 +73,48 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
               formPayload: { ...prev.formPayload, isOutsideAustralia: value }
             }))
           }
+          currentLocation={draft.formPayload.currentLocation ?? ''}
+          onCurrentLocationChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, currentLocation: value }
+            }))
+          }
+          legalStatus={draft.formPayload.legalStatus ?? ''}
+          onLegalStatusChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, legalStatus: value }
+            }))
+          }
+          selectedVisitReason={draft.formPayload.selectedVisitReason ?? ''}
+          onSelectedVisitReasonChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, selectedVisitReason: value }
+            }))
+          }
+          visitReasons={draft.formPayload.visitReasons ?? []}
+          onVisitReasonsChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, visitReasons: value }
+            }))
+          }
+          significantVisitDates={draft.formPayload.significantVisitDates ?? ''}
+          onSignificantVisitDatesChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, significantVisitDates: value }
+            }))
+          }
+          isGroupProcessing={draft.formPayload.isGroupProcessing ?? 'no'}
+          onIsGroupProcessingChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, isGroupProcessing: value }
+            }))
+          }
           lengthOfFurtherStay={draft.formPayload.lengthOfFurtherStay ?? ''}
           onLengthOfFurtherStayChange={(value) =>
             setDraft((prev) => ({
