@@ -192,6 +192,11 @@ export function ApplicationWizardCurrentLocationStep({
               </fieldset>
             </DashboardField>
 
+            <p className="dashboard-application-wizard__highlight-note">
+              <strong>Note:</strong> Once the application has been lodged, the stream cannot be changed. For more information on each stream,
+              click on the help icon above.
+            </p>
+
             {showSponsoredFamilyNote ? (
               <p className="dashboard-application-wizard__highlight-note">
                 <strong>Note:</strong> The Sponsored Family stream has more restrictive conditions than the Tourist stream. In some cases a
