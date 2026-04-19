@@ -172,7 +172,7 @@ export function ApplicationStepOneForm() {
   const [birthDay, setBirthDay] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthYear, setBirthYear] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | ''>('');
+  const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
 
   const [passportCountry, setPassportCountry] = useState(DEFAULT_COUNTRY);
   const [passportNationality, setPassportNationality] = useState(DEFAULT_COUNTRY);
@@ -184,6 +184,22 @@ export function ApplicationStepOneForm() {
   const [passportExpiryDay, setPassportExpiryDay] = useState('');
   const [passportExpiryMonth, setPassportExpiryMonth] = useState('');
   const [passportExpiryYear, setPassportExpiryYear] = useState('');
+  const [passportPlaceOfIssue, setPassportPlaceOfIssue] = useState('');
+  const [hasNationalIdentityCard, setHasNationalIdentityCard] = useState<YesNo>('');
+  const [isPacificAustraliaCardHolder, setIsPacificAustraliaCardHolder] = useState<YesNo>('');
+  const [birthTownCity, setBirthTownCity] = useState('');
+  const [birthStateProvince, setBirthStateProvince] = useState('');
+  const [birthCountry, setBirthCountry] = useState(DEFAULT_COUNTRY);
+  const [relationshipStatus, setRelationshipStatus] = useState('');
+  const [hasOtherNames, setHasOtherNames] = useState<YesNo>('');
+  const [isCitizenOfPassportCountry, setIsCitizenOfPassportCountry] = useState<YesNo>('');
+  const [isCitizenOfOtherCountry, setIsCitizenOfOtherCountry] = useState<YesNo>('');
+  const [hasPreviouslyTravelledToAustralia, setHasPreviouslyTravelledToAustralia] = useState<YesNo>('');
+  const [hasPreviouslyAppliedAustralianVisa, setHasPreviouslyAppliedAustralianVisa] = useState<YesNo>('');
+  const [hasAustralianVisaGrantNumber, setHasAustralianVisaGrantNumber] = useState<YesNo>('');
+  const [hasOtherPassportsOrTravelDocuments, setHasOtherPassportsOrTravelDocuments] = useState<YesNo>('');
+  const [hasOtherIdentityDocuments, setHasOtherIdentityDocuments] = useState<YesNo>('');
+  const [hasHealthExaminationLastYear, setHasHealthExaminationLastYear] = useState<YesNo>('');
 
   const [residenceCountry, setResidenceCountry] = useState(DEFAULT_COUNTRY);
   const [homeAddress, setHomeAddress] = useState('');
@@ -274,7 +290,7 @@ export function ApplicationStepOneForm() {
       setBirthDay((draft.birthDay as string) ?? '');
       setBirthMonth((draft.birthMonth as string) ?? '');
       setBirthYear((draft.birthYear as string) ?? '');
-      setGender((draft.gender as 'male' | 'female' | '') ?? '');
+      setGender((draft.gender as 'male' | 'female' | 'other' | '') ?? '');
       setPassportCountry((draft.passportCountry as string) ?? DEFAULT_COUNTRY);
       setPassportNationality((draft.passportNationality as string) ?? DEFAULT_COUNTRY);
       setPassportInfoAvailable((draft.passportInfoAvailable as YesNo) ?? '');
@@ -285,6 +301,22 @@ export function ApplicationStepOneForm() {
       setPassportExpiryDay((draft.passportExpiryDay as string) ?? '');
       setPassportExpiryMonth((draft.passportExpiryMonth as string) ?? '');
       setPassportExpiryYear((draft.passportExpiryYear as string) ?? '');
+      setPassportPlaceOfIssue((draft.passportPlaceOfIssue as string) ?? '');
+      setHasNationalIdentityCard((draft.hasNationalIdentityCard as YesNo) ?? '');
+      setIsPacificAustraliaCardHolder((draft.isPacificAustraliaCardHolder as YesNo) ?? '');
+      setBirthTownCity((draft.birthTownCity as string) ?? '');
+      setBirthStateProvince((draft.birthStateProvince as string) ?? '');
+      setBirthCountry((draft.birthCountry as string) ?? DEFAULT_COUNTRY);
+      setRelationshipStatus((draft.relationshipStatus as string) ?? '');
+      setHasOtherNames((draft.hasOtherNames as YesNo) ?? '');
+      setIsCitizenOfPassportCountry((draft.isCitizenOfPassportCountry as YesNo) ?? '');
+      setIsCitizenOfOtherCountry((draft.isCitizenOfOtherCountry as YesNo) ?? '');
+      setHasPreviouslyTravelledToAustralia((draft.hasPreviouslyTravelledToAustralia as YesNo) ?? '');
+      setHasPreviouslyAppliedAustralianVisa((draft.hasPreviouslyAppliedAustralianVisa as YesNo) ?? '');
+      setHasAustralianVisaGrantNumber((draft.hasAustralianVisaGrantNumber as YesNo) ?? '');
+      setHasOtherPassportsOrTravelDocuments((draft.hasOtherPassportsOrTravelDocuments as YesNo) ?? '');
+      setHasOtherIdentityDocuments((draft.hasOtherIdentityDocuments as YesNo) ?? '');
+      setHasHealthExaminationLastYear((draft.hasHealthExaminationLastYear as YesNo) ?? '');
       setResidenceCountry((draft.residenceCountry as string) ?? DEFAULT_COUNTRY);
       setHomeAddress((draft.homeAddress as string) ?? '');
       setCityOrTown((draft.cityOrTown as string) ?? '');
@@ -331,6 +363,22 @@ export function ApplicationStepOneForm() {
       passportExpiryDay,
       passportExpiryMonth,
       passportExpiryYear,
+      passportPlaceOfIssue,
+      hasNationalIdentityCard,
+      isPacificAustraliaCardHolder,
+      birthTownCity,
+      birthStateProvince,
+      birthCountry,
+      relationshipStatus,
+      hasOtherNames,
+      isCitizenOfPassportCountry,
+      isCitizenOfOtherCountry,
+      hasPreviouslyTravelledToAustralia,
+      hasPreviouslyAppliedAustralianVisa,
+      hasAustralianVisaGrantNumber,
+      hasOtherPassportsOrTravelDocuments,
+      hasOtherIdentityDocuments,
+      hasHealthExaminationLastYear,
       residenceCountry,
       homeAddress,
       cityOrTown,
@@ -369,6 +417,22 @@ export function ApplicationStepOneForm() {
     passportExpiryDay,
     passportExpiryMonth,
     passportExpiryYear,
+    passportPlaceOfIssue,
+    hasNationalIdentityCard,
+    isPacificAustraliaCardHolder,
+    birthTownCity,
+    birthStateProvince,
+    birthCountry,
+    relationshipStatus,
+    hasOtherNames,
+    isCitizenOfPassportCountry,
+    isCitizenOfOtherCountry,
+    hasPreviouslyTravelledToAustralia,
+    hasPreviouslyAppliedAustralianVisa,
+    hasAustralianVisaGrantNumber,
+    hasOtherPassportsOrTravelDocuments,
+    hasOtherIdentityDocuments,
+    hasHealthExaminationLastYear,
     residenceCountry,
     homeAddress,
     cityOrTown,
@@ -403,6 +467,22 @@ export function ApplicationStepOneForm() {
     setPassportExpiryDay('');
     setPassportExpiryMonth('');
     setPassportExpiryYear('');
+    setPassportPlaceOfIssue('');
+    setHasNationalIdentityCard('');
+    setIsPacificAustraliaCardHolder('');
+    setBirthTownCity('');
+    setBirthStateProvince('');
+    setBirthCountry(DEFAULT_COUNTRY);
+    setRelationshipStatus('');
+    setHasOtherNames('');
+    setIsCitizenOfPassportCountry('');
+    setIsCitizenOfOtherCountry('');
+    setHasPreviouslyTravelledToAustralia('');
+    setHasPreviouslyAppliedAustralianVisa('');
+    setHasAustralianVisaGrantNumber('');
+    setHasOtherPassportsOrTravelDocuments('');
+    setHasOtherIdentityDocuments('');
+    setHasHealthExaminationLastYear('');
     setResidenceCountry(DEFAULT_COUNTRY);
     setHomeAddress('');
     setCityOrTown('');
@@ -517,8 +597,37 @@ export function ApplicationStepOneForm() {
   const submitStepThree = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const errors: string[] = [];
+    if (!lastName.trim()) errors.push('lastName');
+    if (!firstName.trim()) errors.push('firstName');
+    if (!gender) errors.push('gender');
+    if (!birthDay) errors.push('birthDay');
+    if (!birthMonth) errors.push('birthMonth');
+    if (!birthYear) errors.push('birthYear');
+    if (!passportNumber.trim()) errors.push('passportNumber');
     if (!passportCountry) errors.push('passportCountry');
     if (!passportNationality) errors.push('passportNationality');
+    if (!passportIssueDay) errors.push('passportIssueDay');
+    if (!passportIssueMonth) errors.push('passportIssueMonth');
+    if (!passportIssueYear) errors.push('passportIssueYear');
+    if (!passportExpiryDay) errors.push('passportExpiryDay');
+    if (!passportExpiryMonth) errors.push('passportExpiryMonth');
+    if (!passportExpiryYear) errors.push('passportExpiryYear');
+    if (!passportPlaceOfIssue.trim()) errors.push('passportPlaceOfIssue');
+    if (!hasNationalIdentityCard) errors.push('hasNationalIdentityCard');
+    if (!isPacificAustraliaCardHolder) errors.push('isPacificAustraliaCardHolder');
+    if (!birthTownCity.trim()) errors.push('birthTownCity');
+    if (!birthStateProvince.trim()) errors.push('birthStateProvince');
+    if (!birthCountry) errors.push('birthCountry');
+    if (!relationshipStatus) errors.push('relationshipStatus');
+    if (!hasOtherNames) errors.push('hasOtherNames');
+    if (!isCitizenOfPassportCountry) errors.push('isCitizenOfPassportCountry');
+    if (!isCitizenOfOtherCountry) errors.push('isCitizenOfOtherCountry');
+    if (!hasPreviouslyTravelledToAustralia) errors.push('hasPreviouslyTravelledToAustralia');
+    if (!hasPreviouslyAppliedAustralianVisa) errors.push('hasPreviouslyAppliedAustralianVisa');
+    if (!hasAustralianVisaGrantNumber) errors.push('hasAustralianVisaGrantNumber');
+    if (!hasOtherPassportsOrTravelDocuments) errors.push('hasOtherPassportsOrTravelDocuments');
+    if (!hasOtherIdentityDocuments) errors.push('hasOtherIdentityDocuments');
+    if (!hasHealthExaminationLastYear) errors.push('hasHealthExaminationLastYear');
     applyValidation(errors);
     if (errors.length === 0) {
       setApplicationSubStep(4);
@@ -809,7 +918,8 @@ export function ApplicationStepOneForm() {
                   onChange={(value) => { setGender(value); clearError('gender'); }}
                   options={[
                     { label: 'Male', value: 'male' },
-                    { label: 'Female', value: 'female' }
+                    { label: 'Female', value: 'female' },
+                    { label: 'Other', value: 'other' }
                   ]}
                   error={hasError('gender')}
                 />
@@ -881,8 +991,56 @@ export function ApplicationStepOneForm() {
             </>
           ) : applicationSubStep === 3 ? (
             <>
-              <header className="application-form-card__header"><h1>Step 3 · Passport Country Details</h1></header>
+              <header className="application-form-card__header">
+                <h1>Applicant</h1>
+                <p><strong>Information:</strong> Entering names incorrectly may result in denial of permission to board an aircraft to Australia, or result in delays in border processing on arrival to Australia, even if the applicant has been granted a visa.</p>
+              </header>
               <form className="application-step-form" onSubmit={submitStepThree}>
+                <h2 className="application-form-section-title">Passport details</h2>
+                <p className="application-field-note">Enter the following details as they appear in the applicant&apos;s personal passport.</p>
+
+                <div className="application-form-grid application-form-grid--two">
+                  <label className={`application-field${hasError('lastName') ? ' application-field--error' : ''}`}>
+                    <span>Family name</span>
+                    <input type="text" name="lastName" value={lastName} onChange={(event) => { setLastName(event.target.value); clearError('lastName'); }} aria-invalid={hasError('lastName')} />
+                  </label>
+                  <label className={`application-field${hasError('firstName') ? ' application-field--error' : ''}`}>
+                    <span>Given names</span>
+                    <input type="text" name="firstName" value={firstName} onChange={(event) => { setFirstName(event.target.value); clearError('firstName'); }} aria-invalid={hasError('firstName')} />
+                  </label>
+                </div>
+
+                <ApplicationRadioPillGroup
+                  legend="Sex"
+                  value={gender}
+                  onChange={(value) => { setGender(value); clearError('gender'); }}
+                  options={[
+                    { label: 'Female', value: 'female' },
+                    { label: 'Male', value: 'male' },
+                    { label: 'Other', value: 'other' }
+                  ]}
+                  error={hasError('gender')}
+                />
+
+                <ApplicationDateRow
+                  label="Date of birth"
+                  valueDay={birthDay}
+                  valueMonth={birthMonth}
+                  valueYear={birthYear}
+                  onChangeDay={(value) => { setBirthDay(value); clearError('birthDay'); }}
+                  onChangeMonth={(value) => { setBirthMonth(value); clearError('birthMonth'); }}
+                  onChangeYear={(value) => { setBirthYear(value); clearError('birthYear'); }}
+                  dayError={hasError('birthDay')}
+                  monthError={hasError('birthMonth')}
+                  yearError={hasError('birthYear')}
+                  optionPrefix="birth"
+                />
+
+                <label className={`application-field${hasError('passportNumber') ? ' application-field--error' : ''}`}>
+                  <span>Passport number</span>
+                  <input type="text" name="passportNumber" value={passportNumber} onChange={(event) => { setPassportNumber(event.target.value); clearError('passportNumber'); }} aria-invalid={hasError('passportNumber')} />
+                </label>
+
                 <ApplicationSelectField
                   label="Country of passport"
                   value={passportCountry}
@@ -898,6 +1056,197 @@ export function ApplicationStepOneForm() {
                   options={currentLocationCountryOptions}
                   iconText={passportNationality.slice(0, 2)}
                   error={hasError('passportNationality')}
+                />
+
+                <ApplicationDateRow
+                  label="Date of issue"
+                  valueDay={passportIssueDay}
+                  valueMonth={passportIssueMonth}
+                  valueYear={passportIssueYear}
+                  onChangeDay={(value) => { setPassportIssueDay(value); clearError('passportIssueDay'); }}
+                  onChangeMonth={(value) => { setPassportIssueMonth(value); clearError('passportIssueMonth'); }}
+                  onChangeYear={(value) => { setPassportIssueYear(value); clearError('passportIssueYear'); }}
+                  dayError={hasError('passportIssueDay')}
+                  monthError={hasError('passportIssueMonth')}
+                  yearError={hasError('passportIssueYear')}
+                  optionPrefix="passport-issue"
+                />
+
+                <ApplicationDateRow
+                  label="Date of expiry"
+                  valueDay={passportExpiryDay}
+                  valueMonth={passportExpiryMonth}
+                  valueYear={passportExpiryYear}
+                  onChangeDay={(value) => { setPassportExpiryDay(value); clearError('passportExpiryDay'); }}
+                  onChangeMonth={(value) => { setPassportExpiryMonth(value); clearError('passportExpiryMonth'); }}
+                  onChangeYear={(value) => { setPassportExpiryYear(value); clearError('passportExpiryYear'); }}
+                  dayError={hasError('passportExpiryDay')}
+                  monthError={hasError('passportExpiryMonth')}
+                  yearError={hasError('passportExpiryYear')}
+                  optionPrefix="passport-expiry"
+                />
+
+                <label className={`application-field${hasError('passportPlaceOfIssue') ? ' application-field--error' : ''}`}>
+                  <span>Place of issue / issuing authority</span>
+                  <input type="text" name="passportPlaceOfIssue" value={passportPlaceOfIssue} onChange={(event) => { setPassportPlaceOfIssue(event.target.value); clearError('passportPlaceOfIssue'); }} aria-invalid={hasError('passportPlaceOfIssue')} />
+                </label>
+                <p className="application-field-note">It is strongly recommended that the passport be valid for at least six months.</p>
+
+                <ApplicationRadioPillGroup
+                  legend="Does this applicant have a national identity card?"
+                  value={hasNationalIdentityCard}
+                  onChange={(value) => { setHasNationalIdentityCard(value); clearError('hasNationalIdentityCard'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasNationalIdentityCard')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Is the applicant a Pacific-Australia Card holder?"
+                  value={isPacificAustraliaCardHolder}
+                  onChange={(value) => { setIsPacificAustraliaCardHolder(value); clearError('isPacificAustraliaCardHolder'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('isPacificAustraliaCardHolder')}
+                />
+
+                <h2 className="application-form-section-title">Place of birth</h2>
+                <div className="application-form-grid application-form-grid--two">
+                  <label className={`application-field${hasError('birthTownCity') ? ' application-field--error' : ''}`}>
+                    <span>Town / City</span>
+                    <input type="text" name="birthTownCity" value={birthTownCity} onChange={(event) => { setBirthTownCity(event.target.value); clearError('birthTownCity'); }} aria-invalid={hasError('birthTownCity')} />
+                  </label>
+                  <label className={`application-field${hasError('birthStateProvince') ? ' application-field--error' : ''}`}>
+                    <span>State / Province</span>
+                    <input type="text" name="birthStateProvince" value={birthStateProvince} onChange={(event) => { setBirthStateProvince(event.target.value); clearError('birthStateProvince'); }} aria-invalid={hasError('birthStateProvince')} />
+                  </label>
+                </div>
+                <ApplicationSelectField
+                  label="Country of birth"
+                  value={birthCountry}
+                  onChange={(value) => { setBirthCountry(value); clearError('birthCountry'); }}
+                  options={currentLocationCountryOptions}
+                  iconText={birthCountry.slice(0, 2)}
+                  error={hasError('birthCountry')}
+                />
+
+                <ApplicationSelectField
+                  label="Relationship status"
+                  value={relationshipStatus}
+                  onChange={(value) => { setRelationshipStatus(value); clearError('relationshipStatus'); }}
+                  options={[
+                    { value: 'single', label: 'Single' },
+                    { value: 'married', label: 'Married' },
+                    { value: 'de-facto', label: 'De facto' },
+                    { value: 'separated', label: 'Separated' },
+                    { value: 'divorced', label: 'Divorced' },
+                    { value: 'widowed', label: 'Widowed' }
+                  ]}
+                  includeEmptyOption="Select relationship status"
+                  error={hasError('relationshipStatus')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Is this applicant currently, or have they ever been known by any other names?"
+                  value={hasOtherNames}
+                  onChange={(value) => { setHasOtherNames(value); clearError('hasOtherNames'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasOtherNames')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Is this applicant a citizen of the selected country of passport?"
+                  value={isCitizenOfPassportCountry}
+                  onChange={(value) => { setIsCitizenOfPassportCountry(value); clearError('isCitizenOfPassportCountry'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('isCitizenOfPassportCountry')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Is this applicant a citizen of any other country?"
+                  value={isCitizenOfOtherCountry}
+                  onChange={(value) => { setIsCitizenOfOtherCountry(value); clearError('isCitizenOfOtherCountry'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('isCitizenOfOtherCountry')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Has this applicant previously travelled to Australia?"
+                  value={hasPreviouslyTravelledToAustralia}
+                  onChange={(value) => { setHasPreviouslyTravelledToAustralia(value); clearError('hasPreviouslyTravelledToAustralia'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasPreviouslyTravelledToAustralia')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Has this applicant previously applied for a visa to Australia?"
+                  value={hasPreviouslyAppliedAustralianVisa}
+                  onChange={(value) => { setHasPreviouslyAppliedAustralianVisa(value); clearError('hasPreviouslyAppliedAustralianVisa'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasPreviouslyAppliedAustralianVisa')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Does this applicant have an Australian visa grant number?"
+                  value={hasAustralianVisaGrantNumber}
+                  onChange={(value) => { setHasAustralianVisaGrantNumber(value); clearError('hasAustralianVisaGrantNumber'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasAustralianVisaGrantNumber')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Does this applicant have any other passports or documents for travel?"
+                  value={hasOtherPassportsOrTravelDocuments}
+                  onChange={(value) => { setHasOtherPassportsOrTravelDocuments(value); clearError('hasOtherPassportsOrTravelDocuments'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasOtherPassportsOrTravelDocuments')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Does this applicant have other identity documents?"
+                  value={hasOtherIdentityDocuments}
+                  onChange={(value) => { setHasOtherIdentityDocuments(value); clearError('hasOtherIdentityDocuments'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasOtherIdentityDocuments')}
+                />
+
+                <ApplicationRadioPillGroup
+                  legend="Has this applicant undertaken a health examination for an Australian visa in the last 12 months?"
+                  value={hasHealthExaminationLastYear}
+                  onChange={(value) => { setHasHealthExaminationLastYear(value); clearError('hasHealthExaminationLastYear'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasHealthExaminationLastYear')}
                 />
                 <div className="application-form-actions application-form-actions--split">
                   <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
