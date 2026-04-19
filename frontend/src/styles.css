@@ -7655,6 +7655,45 @@ body.body--menu-open {
   background: rgb(245 249 255 / 0.7);
 }
 
+
+.dashboard-application-wizard__group {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.dashboard-application-wizard__group h3 {
+  margin: 0;
+  color: #0f4d93;
+  font-size: 1.05rem;
+}
+
+.dashboard-application-wizard__radio-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-application-wizard__radio-group legend {
+  width: 100%;
+  margin-bottom: 0.15rem;
+  color: #111827;
+}
+
+.dashboard-application-wizard__radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.dashboard-application-wizard__note {
+  margin: 0;
+  color: #1f2937;
+}
+
 .dashboard-application-wizard__actions {
   display: flex;
   justify-content: space-between;

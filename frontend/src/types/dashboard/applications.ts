@@ -125,6 +125,11 @@ export type FullApplicationWizardFormPayload = {
   destinationCountry: string;
   travelDate: string;
   passportNumber: string;
+  isOutsideAustralia: '' | 'yes' | 'no';
+  lengthOfFurtherStay: string;
+  requestedEndDate: string;
+  reasonForFurtherStay: string;
+  specialCategoryOfEntry: '' | 'yes' | 'no';
 };
 
 export type FullApplicationDraftPayload = {
