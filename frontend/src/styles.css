@@ -7705,3 +7705,26 @@ body.body--menu-open {
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard-application-wizard__visit-reasons-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dashboard-application-wizard__selected-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.dashboard-application-wizard__reason-chip {
+  border: 1px solid var(--dashboard-border);
+  border-radius: 999px;
+  background: rgb(237 246 255);
+  color: #173b63;
+  font: inherit;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}

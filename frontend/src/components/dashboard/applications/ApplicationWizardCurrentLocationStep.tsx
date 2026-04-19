@@ -1,14 +1,33 @@
+import { DashboardButton } from '../common/DashboardButton';
 import { DashboardField } from '../common/DashboardField';
 import { DashboardInput } from '../common/DashboardInput';
 import { DashboardSelect } from '../common/DashboardSelect';
 import { DashboardTextarea } from '../common/DashboardTextarea';
+import {
+  currentLocationCountryOptions,
+  legalStatusOptions,
+  reasonForVisitingAustraliaOptions
+} from '../../../constants/applicationFormOptions';
 
 type CurrentLocationAnswer = 'yes' | 'no' | '';
 type SpecialCategoryAnswer = 'yes' | 'no' | '';
+type GroupProcessingAnswer = 'yes' | 'no' | '';
 
 type Props = {
   isOutsideAustralia: CurrentLocationAnswer;
   onIsOutsideAustraliaChange: (value: CurrentLocationAnswer) => void;
+  currentLocation: string;
+  onCurrentLocationChange: (value: string) => void;
+  legalStatus: string;
+  onLegalStatusChange: (value: string) => void;
+  selectedVisitReason: string;
+  onSelectedVisitReasonChange: (value: string) => void;
+  visitReasons: string[];
+  onVisitReasonsChange: (value: string[]) => void;
+  significantVisitDates: string;
+  onSignificantVisitDatesChange: (value: string) => void;
+  isGroupProcessing: GroupProcessingAnswer;
+  onIsGroupProcessingChange: (value: GroupProcessingAnswer) => void;
   lengthOfFurtherStay: string;
   onLengthOfFurtherStayChange: (value: string) => void;
   requestedEndDate: string;
@@ -22,6 +41,18 @@ type Props = {
 export function ApplicationWizardCurrentLocationStep({
   isOutsideAustralia,
   onIsOutsideAustraliaChange,
+  currentLocation,
+  onCurrentLocationChange,
+  legalStatus,
+  onLegalStatusChange,
+  selectedVisitReason,
+  onSelectedVisitReasonChange,
+  visitReasons,
+  onVisitReasonsChange,
+  significantVisitDates,
+  onSignificantVisitDatesChange,
+  isGroupProcessing,
+  onIsGroupProcessingChange,
   lengthOfFurtherStay,
   onLengthOfFurtherStayChange,
   requestedEndDate,
@@ -31,7 +62,16 @@ export function ApplicationWizardCurrentLocationStep({
   specialCategoryOfEntry,
   onSpecialCategoryOfEntryChange
 }: Props) {
+  const showOutsideAustraliaFields = isOutsideAustralia === 'yes';
   const showFurtherStayFields = isOutsideAustralia === 'no';
+
+  const addVisitReason = () => {
+    if (!selectedVisitReason || visitReasons.includes(selectedVisitReason)) return;
+    if (visitReasons.length >= reasonForVisitingAustraliaOptions.length) return;
+
+    onVisitReasonsChange([...visitReasons, selectedVisitReason]);
+    onSelectedVisitReasonChange('');
+  };
 
   return (
     <section className="dashboard-application-wizard__step" aria-labelledby="wizard-step-location-title">
@@ -64,6 +104,107 @@ export function ApplicationWizardCurrentLocationStep({
             No
           </label>
         </fieldset>
+
+        {showOutsideAustraliaFields ? (
+          <>
+            <p className="dashboard-panel__note">Give the current location of the applicant and their legal status at this location.</p>
+
+            <DashboardField label="Current location" htmlFor="current-location">
+              <DashboardSelect id="current-location" value={currentLocation} onChange={(event) => onCurrentLocationChange(event.target.value)}>
+                <option value="">Select country</option>
+                {currentLocationCountryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </DashboardSelect>
+            </DashboardField>
+
+            <DashboardField label="Legal status" htmlFor="legal-status">
+              <DashboardSelect id="legal-status" value={legalStatus} onChange={(event) => onLegalStatusChange(event.target.value)}>
+                <option value="">Select legal status</option>
+                {legalStatusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </DashboardSelect>
+            </DashboardField>
+
+            <DashboardField label="List all reasons for visiting Australia" htmlFor="visit-reason-select">
+              <div className="dashboard-application-wizard__visit-reasons-control">
+                <DashboardSelect
+                  id="visit-reason-select"
+                  value={selectedVisitReason}
+                  onChange={(event) => onSelectedVisitReasonChange(event.target.value)}
+                >
+                  <option value="">Select reason</option>
+                  {reasonForVisitingAustraliaOptions.map((option) => (
+                    <option key={option.value} value={option.value} disabled={visitReasons.includes(option.value)}>
+                      {option.label}
+                    </option>
+                  ))}
+                </DashboardSelect>
+                <DashboardButton type="button" size="sm" onClick={addVisitReason} disabled={!selectedVisitReason}>
+                  Add
+                </DashboardButton>
+              </div>
+            </DashboardField>
+
+            {visitReasons.length > 0 ? (
+              <div className="dashboard-application-wizard__selected-reasons" aria-live="polite">
+                {visitReasons.map((reason) => {
+                  const option = reasonForVisitingAustraliaOptions.find((item) => item.value === reason);
+                  if (!option) return null;
+                  return (
+                    <button
+                      key={reason}
+                      type="button"
+                      className="dashboard-application-wizard__reason-chip"
+                      onClick={() => onVisitReasonsChange(visitReasons.filter((item) => item !== reason))}
+                    >
+                      {option.label} ×
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            <DashboardField label="Give details of any significant dates on which the applicant needs to be in Australia" htmlFor="significant-visit-dates">
+              <DashboardTextarea
+                id="significant-visit-dates"
+                rows={4}
+                value={significantVisitDates}
+                onChange={(event) => onSignificantVisitDatesChange(event.target.value)}
+              />
+            </DashboardField>
+
+            <h3>Group processing</h3>
+            <fieldset className="dashboard-application-wizard__radio-group">
+              <legend>Is this application being lodged as part of a group of applications?</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="isGroupProcessing"
+                  value="yes"
+                  checked={isGroupProcessing === 'yes'}
+                  onChange={() => onIsGroupProcessingChange('yes')}
+                />
+                Yes
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="isGroupProcessing"
+                  value="no"
+                  checked={isGroupProcessing === 'no'}
+                  onChange={() => onIsGroupProcessingChange('no')}
+                />
+                No
+              </label>
+            </fieldset>
+          </>
+        ) : null}
 
         {showFurtherStayFields ? (
           <>

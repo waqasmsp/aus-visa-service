@@ -130,6 +130,12 @@ export type FullApplicationWizardFormPayload = {
   requestedEndDate: string;
   reasonForFurtherStay: string;
   specialCategoryOfEntry: '' | 'yes' | 'no';
+  currentLocation: string;
+  legalStatus: string;
+  selectedVisitReason: string;
+  visitReasons: string[];
+  significantVisitDates: string;
+  isGroupProcessing: '' | 'yes' | 'no';
 };
 
 export type FullApplicationDraftPayload = {
