@@ -20,12 +20,18 @@ type StepDefinition = StepConfig & {
 };
 
 const TOTAL_STEPS = 20;
-const fullApplicationDraftStorageKey = 'dashboard-full-application-draft-v1';
+const fullApplicationDraftStorageKey = 'dashboard-full-application-draft-v2';
+const legacyFullApplicationDraftStorageKey = 'dashboard-full-application-draft-v1';
+const fullApplicationDraftSchemaVersion = 2;
 
 const defaultDraft: FullApplicationDraftPayload = {
   termsAccepted: false,
   currentStep: 1,
   formPayload: {}
+};
+
+type StoredFullApplicationDraft = Partial<FullApplicationDraftPayload> & {
+  schemaVersion?: number;
 };
 
 const stepConfigs: StepConfig[] = [
@@ -69,7 +75,11 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
     if (!rawDraft) return defaultDraft;
 
     try {
-      const parsedDraft = JSON.parse(rawDraft) as Partial<FullApplicationDraftPayload>;
+      const parsedDraft = JSON.parse(rawDraft) as StoredFullApplicationDraft;
+      if (parsedDraft.schemaVersion !== fullApplicationDraftSchemaVersion) {
+        return defaultDraft;
+      }
+
       return {
         termsAccepted: Boolean(parsedDraft.termsAccepted),
         currentStep: Math.max(1, Math.min(TOTAL_STEPS, Number(parsedDraft.currentStep) || 1)),
@@ -82,7 +92,14 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem(fullApplicationDraftStorageKey, JSON.stringify(draft));
+    window.localStorage.removeItem(legacyFullApplicationDraftStorageKey);
+    window.localStorage.setItem(
+      fullApplicationDraftStorageKey,
+      JSON.stringify({
+        ...draft,
+        schemaVersion: fullApplicationDraftSchemaVersion
+      })
+    );
   }, [draft]);
 
   const goBack = () => {
