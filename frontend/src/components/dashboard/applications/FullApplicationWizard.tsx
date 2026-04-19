@@ -3,6 +3,7 @@ import { FullApplicationDraftPayload } from '../../../types/dashboard/applicatio
 import { DashboardButton } from '../common/DashboardButton';
 import { ApplicationWizardTermsStep } from './ApplicationWizardTermsStep';
 import { ApplicationWizardPlaceholderStep } from './ApplicationWizardPlaceholderStep';
+import { ApplicationWizardCurrentLocationStep } from './ApplicationWizardCurrentLocationStep';
 
 type StepDefinition = {
   title: string;
@@ -61,7 +62,51 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
       }
     ];
 
-    for (let step = 2; step <= TOTAL_STEPS; step += 1) {
+    generatedSteps.push({
+      title: 'Application context',
+      render: () => (
+        <ApplicationWizardCurrentLocationStep
+          isOutsideAustralia={draft.formPayload.isOutsideAustralia ?? ''}
+          onIsOutsideAustraliaChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, isOutsideAustralia: value }
+            }))
+          }
+          lengthOfFurtherStay={draft.formPayload.lengthOfFurtherStay ?? ''}
+          onLengthOfFurtherStayChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, lengthOfFurtherStay: value }
+            }))
+          }
+          requestedEndDate={draft.formPayload.requestedEndDate ?? ''}
+          onRequestedEndDateChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, requestedEndDate: value }
+            }))
+          }
+          reasonForFurtherStay={draft.formPayload.reasonForFurtherStay ?? ''}
+          onReasonForFurtherStayChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, reasonForFurtherStay: value }
+            }))
+          }
+          specialCategoryOfEntry={draft.formPayload.specialCategoryOfEntry ?? ''}
+          onSpecialCategoryOfEntryChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, specialCategoryOfEntry: value }
+            }))
+          }
+        />
+      ),
+      canProceed: Boolean(draft.formPayload.isOutsideAustralia)
+    });
+
+    for (let step = 3; step <= TOTAL_STEPS; step += 1) {
       generatedSteps.push({
         title: `Step ${step}`,
         render: () => <ApplicationWizardPlaceholderStep stepNumber={step} />,
@@ -70,7 +115,7 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
     }
 
     return generatedSteps;
-  }, [draft.termsAccepted]);
+  }, [draft.formPayload, draft.termsAccepted]);
 
   const activeStep = steps[draft.currentStep - 1];
   const progressPercent = (draft.currentStep / TOTAL_STEPS) * 100;
