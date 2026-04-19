@@ -80,3 +80,5 @@ if (rootElement.hasChildNodes()) {
 } else {
   createRoot(rootElement).render(app);
 }
+
+document.documentElement.classList.remove('dashboard-route-preload');

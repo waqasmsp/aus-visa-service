@@ -9,6 +9,25 @@
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <title>AUS Visa Service</title>
+    <style>
+      html.dashboard-route-preload #root {
+        visibility: hidden;
+      }
+    </style>
+    <script>
+      (function () {
+        var path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+        if (
+          path.indexOf('/dashboard') === 0 ||
+          path.indexOf('/manager-dashboard') === 0 ||
+          path.indexOf('/user-dashboard') === 0 ||
+          path === '/login' ||
+          path === '/signup'
+        ) {
+          document.documentElement.classList.add('dashboard-route-preload');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
