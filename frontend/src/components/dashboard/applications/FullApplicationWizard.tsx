@@ -326,7 +326,19 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
               onHasPacificAustraliaCardChange={(value) =>
                 setDraft((prev) => ({
                   ...prev,
-                  formPayload: { ...prev.formPayload, hasPacificAustraliaCard: value }
+                  formPayload: {
+                    ...prev.formPayload,
+                    hasPacificAustraliaCard: value,
+                    pacificAustraliaCardSerialNumber:
+                      value === 'yes' ? prev.formPayload.pacificAustraliaCardSerialNumber ?? '' : ''
+                  }
+                }))
+              }
+              pacificAustraliaCardSerialNumber={draft.formPayload.pacificAustraliaCardSerialNumber ?? ''}
+              onPacificAustraliaCardSerialNumberChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, pacificAustraliaCardSerialNumber: value }
                 }))
               }
               birthTownCity={draft.formPayload.birthTownCity ?? ''}

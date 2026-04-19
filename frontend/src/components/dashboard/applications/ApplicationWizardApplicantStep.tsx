@@ -34,6 +34,8 @@ type Props = {
   onHasNationalIdentityCardChange: (value: YesNoAnswer) => void;
   hasPacificAustraliaCard: YesNoAnswer;
   onHasPacificAustraliaCardChange: (value: YesNoAnswer) => void;
+  pacificAustraliaCardSerialNumber: string;
+  onPacificAustraliaCardSerialNumberChange: (value: string) => void;
   birthTownCity: string;
   onBirthTownCityChange: (value: string) => void;
   birthStateProvince: string;
@@ -119,6 +121,8 @@ export function ApplicationWizardApplicantStep({
   onHasNationalIdentityCardChange,
   hasPacificAustraliaCard,
   onHasPacificAustraliaCardChange,
+  pacificAustraliaCardSerialNumber,
+  onPacificAustraliaCardSerialNumberChange,
   birthTownCity,
   onBirthTownCityChange,
   birthStateProvince,
@@ -259,6 +263,19 @@ export function ApplicationWizardApplicantStep({
           value={hasPacificAustraliaCard}
           onChange={onHasPacificAustraliaCardChange}
         />
+        {hasPacificAustraliaCard === 'yes' ? (
+          <DashboardField
+            className="dashboard-application-wizard__panel-row"
+            label="Pacific-Australia Card serial number (printed on the front of your card)"
+            htmlFor="pacific-australia-card-serial-number"
+          >
+            <DashboardInput
+              id="pacific-australia-card-serial-number"
+              value={pacificAustraliaCardSerialNumber}
+              onChange={(event) => onPacificAustraliaCardSerialNumberChange(event.target.value)}
+            />
+          </DashboardField>
+        ) : null}
 
         <h2 className="dashboard-application-wizard__section-heading">Place of birth</h2>
         <DashboardField className="dashboard-application-wizard__panel-row" label="Town / City" htmlFor="birth-town-city">
