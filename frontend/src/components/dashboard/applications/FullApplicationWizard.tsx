@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { FullApplicationDraftPayload } from '../../../types/dashboard/applications';
 import { DashboardButton } from '../common/DashboardButton';
 import { ApplicationWizardTermsStep } from './ApplicationWizardTermsStep';
 import { ApplicationWizardPlaceholderStep } from './ApplicationWizardPlaceholderStep';
@@ -10,21 +11,53 @@ type StepDefinition = {
 };
 
 const TOTAL_STEPS = 20;
+const fullApplicationDraftStorageKey = 'dashboard-full-application-draft-v1';
+
+const defaultDraft: FullApplicationDraftPayload = {
+  termsAccepted: false,
+  currentStep: 1,
+  formPayload: {}
+};
 
 type Props = {
   onBackToApplications: () => void;
 };
 
 export function FullApplicationWizard({ onBackToApplications }: Props) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [draft, setDraft] = useState<FullApplicationDraftPayload>(() => {
+    if (typeof window === 'undefined') return defaultDraft;
+
+    const rawDraft = window.localStorage.getItem(fullApplicationDraftStorageKey);
+    if (!rawDraft) return defaultDraft;
+
+    try {
+      const parsedDraft = JSON.parse(rawDraft) as Partial<FullApplicationDraftPayload>;
+      return {
+        termsAccepted: Boolean(parsedDraft.termsAccepted),
+        currentStep: Math.max(1, Math.min(TOTAL_STEPS, Number(parsedDraft.currentStep) || 1)),
+        formPayload: parsedDraft.formPayload ?? {}
+      };
+    } catch {
+      return defaultDraft;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(fullApplicationDraftStorageKey, JSON.stringify(draft));
+  }, [draft]);
 
   const steps = useMemo<StepDefinition[]>(() => {
     const generatedSteps: StepDefinition[] = [
       {
         title: 'Terms and Conditions',
-        render: () => <ApplicationWizardTermsStep acceptedTerms={acceptedTerms} onAcceptedTermsChange={setAcceptedTerms} />,
-        canProceed: acceptedTerms
+        render: () => (
+          <ApplicationWizardTermsStep
+            acceptedTerms={draft.termsAccepted}
+            onAcceptedTermsChange={(value) => setDraft((prev) => ({ ...prev, termsAccepted: value }))}
+          />
+        ),
+        canProceed: draft.termsAccepted
       }
     ];
 
@@ -37,17 +70,17 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
     }
 
     return generatedSteps;
-  }, [acceptedTerms]);
+  }, [draft.termsAccepted]);
 
-  const activeStep = steps[currentStep - 1];
-  const progressPercent = (currentStep / TOTAL_STEPS) * 100;
+  const activeStep = steps[draft.currentStep - 1];
+  const progressPercent = (draft.currentStep / TOTAL_STEPS) * 100;
 
   return (
     <article className="dashboard-panel dashboard-application-wizard" aria-label="Full visa application wizard">
       <div className="dashboard-panel__header dashboard-panel__header--spread">
         <div>
           <h2>Full visa application</h2>
-          <small>Step {currentStep}/{TOTAL_STEPS} · {activeStep.title}</small>
+          <small>Step {draft.currentStep}/{TOTAL_STEPS} · {activeStep.title}</small>
         </div>
         <DashboardButton type="button" variant="ghost" onClick={onBackToApplications}>
           Back to My Applications
@@ -64,16 +97,16 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
         <DashboardButton
           type="button"
           variant="ghost"
-          onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-          disabled={currentStep === 1}
+          onClick={() => setDraft((prev) => ({ ...prev, currentStep: Math.max(1, prev.currentStep - 1) }))}
+          disabled={draft.currentStep === 1}
         >
           Back
         </DashboardButton>
         <DashboardButton
           type="button"
           variant="primary"
-          onClick={() => setCurrentStep((prev) => Math.min(TOTAL_STEPS, prev + 1))}
-          disabled={currentStep === TOTAL_STEPS || !activeStep.canProceed}
+          onClick={() => setDraft((prev) => ({ ...prev, currentStep: Math.min(TOTAL_STEPS, prev.currentStep + 1) }))}
+          disabled={draft.currentStep === TOTAL_STEPS || !activeStep.canProceed}
         >
           Next
         </DashboardButton>

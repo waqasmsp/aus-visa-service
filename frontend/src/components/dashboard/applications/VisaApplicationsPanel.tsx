@@ -7,6 +7,7 @@ import {
   ApplicationFilters,
   ApplicationStatus,
   DashboardUserRole,
+  QuickApplicationCreatePayload,
   VisaApplication
 } from '../../../types/dashboard/applications';
 import { DashboardQueryState } from '../../../types/dashboard/query';
@@ -131,15 +132,7 @@ export function VisaApplicationsPanel({ role, basePath, viewerEmail }: Props) {
     }
   };
 
-  const upsertApplication = async (payload: {
-    applicant: string;
-    email: string;
-    visaType: string;
-    destinationCountry: string;
-    priority: 'Low' | 'Medium' | 'High';
-    assignedTo: string;
-    status: ApplicationStatus;
-  }) => {
+  const upsertApplication = async (payload: QuickApplicationCreatePayload) => {
     try {
       if (editingApplication) {
         await applicationsService.update(
