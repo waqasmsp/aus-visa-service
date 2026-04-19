@@ -108,6 +108,31 @@ export type CreateApplicationRequestDto = {
   owner_id: string;
 };
 
+export type QuickApplicationCreatePayload = {
+  applicant: string;
+  email: string;
+  visaType: string;
+  destinationCountry: string;
+  priority: ApplicationPriority;
+  assignedTo: string;
+  status: ApplicationStatus;
+};
+
+export type FullApplicationWizardFormPayload = {
+  applicantName: string;
+  email: string;
+  visaType: string;
+  destinationCountry: string;
+  travelDate: string;
+  passportNumber: string;
+};
+
+export type FullApplicationDraftPayload = {
+  termsAccepted: boolean;
+  currentStep: number;
+  formPayload: Partial<FullApplicationWizardFormPayload>;
+};
+
 export type UpdateApplicationRequestDto = Partial<CreateApplicationRequestDto>;
 
 export type BulkAssignOwnerRequest = {
