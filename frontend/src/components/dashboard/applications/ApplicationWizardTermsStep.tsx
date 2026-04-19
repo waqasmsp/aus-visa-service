@@ -1,20 +1,36 @@
 import { DashboardCheckbox } from '../common/DashboardCheckbox';
+import { ApplicationWizardStepGridVariant, ApplicationWizardStepLayout } from './ApplicationWizardStepLayout';
 
 type Props = {
   acceptedTerms: boolean;
   onAcceptedTermsChange: (value: boolean) => void;
+  onBack: () => void;
+  onNext: () => void;
+  disableBack: boolean;
+  disableNext: boolean;
+  layoutVariant?: ApplicationWizardStepGridVariant;
 };
 
-export function ApplicationWizardTermsStep({ acceptedTerms, onAcceptedTermsChange }: Props) {
+export function ApplicationWizardTermsStep({
+  acceptedTerms,
+  onAcceptedTermsChange,
+  onBack,
+  onNext,
+  disableBack,
+  disableNext,
+  layoutVariant = '1-col'
+}: Props) {
   return (
-    <section className="dashboard-application-wizard__step" aria-labelledby="wizard-step-terms-title">
-      <header className="dashboard-panel__header">
-        <h2 id="wizard-step-terms-title">Terms and Conditions</h2>
-      </header>
-      <p className="dashboard-panel__note">
-        Before proceeding with your visa application, please review and accept the legal agreements below.
-      </p>
-
+    <ApplicationWizardStepLayout
+      stepId="wizard-step-terms"
+      title="Terms and Conditions"
+      subtitle="Before proceeding with your visa application, please review and accept the legal agreements below."
+      gridVariant={layoutVariant}
+      onBack={onBack}
+      onNext={onNext}
+      disableBack={disableBack}
+      disableNext={disableNext}
+    >
       <div className="dashboard-application-wizard__link-grid" role="list" aria-label="Legal documents">
         <a className="dashboard-application-wizard__link-card" href="/terms-and-conditions" target="_blank" rel="noreferrer" role="listitem">
           <strong>View Terms and Conditions</strong>
@@ -34,6 +50,6 @@ export function ApplicationWizardTermsStep({ acceptedTerms, onAcceptedTermsChang
           required
         />
       </div>
-    </section>
+    </ApplicationWizardStepLayout>
   );
 }

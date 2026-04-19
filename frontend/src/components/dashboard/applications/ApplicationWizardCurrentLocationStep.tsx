@@ -8,6 +8,7 @@ import {
   legalStatusOptions,
   reasonForVisitingAustraliaOptions
 } from '../../../constants/applicationFormOptions';
+import { ApplicationWizardStepGridVariant, ApplicationWizardStepLayout } from './ApplicationWizardStepLayout';
 
 type CurrentLocationAnswer = 'yes' | 'no' | '';
 type SpecialCategoryAnswer = 'yes' | 'no' | '';
@@ -39,6 +40,11 @@ type Props = {
   onSpecialCategoryOfEntryChange: (value: SpecialCategoryAnswer) => void;
   specialCategoryEntryType: SpecialCategoryTypeAnswer;
   onSpecialCategoryEntryTypeChange: (value: SpecialCategoryTypeAnswer) => void;
+  onBack: () => void;
+  onNext: () => void;
+  disableBack: boolean;
+  disableNext: boolean;
+  layoutVariant?: ApplicationWizardStepGridVariant;
 };
 
 export function ApplicationWizardCurrentLocationStep({
@@ -65,7 +71,12 @@ export function ApplicationWizardCurrentLocationStep({
   specialCategoryOfEntry,
   onSpecialCategoryOfEntryChange,
   specialCategoryEntryType,
-  onSpecialCategoryEntryTypeChange
+  onSpecialCategoryEntryTypeChange,
+  onBack,
+  onNext,
+  disableBack,
+  disableNext,
+  layoutVariant = '2-col'
 }: Props) {
   const showOutsideAustraliaFields = isOutsideAustralia === 'yes';
   const showFurtherStayFields = isOutsideAustralia === 'no';
@@ -79,12 +90,16 @@ export function ApplicationWizardCurrentLocationStep({
   };
 
   return (
-    <section className="dashboard-application-wizard__step" aria-labelledby="wizard-step-location-title">
-      <header className="dashboard-panel__header">
-        <h2 id="wizard-step-location-title">Application context</h2>
-      </header>
-
-      <div className="dashboard-application-wizard__group">
+    <ApplicationWizardStepLayout
+      stepId="wizard-step-location"
+      title="Application context"
+      gridVariant={layoutVariant}
+      onBack={onBack}
+      onNext={onNext}
+      disableBack={disableBack}
+      disableNext={disableNext}
+    >
+      <div className="dashboard-application-wizard__group dashboard-application-wizard__field-span-full">
         <h3>Current location</h3>
         <fieldset className="dashboard-application-wizard__radio-group">
           <legend>Is the applicant currently outside Australia?</legend>
@@ -325,6 +340,6 @@ export function ApplicationWizardCurrentLocationStep({
           </>
         ) : null}
       </div>
-    </section>
+    </ApplicationWizardStepLayout>
   );
 }
