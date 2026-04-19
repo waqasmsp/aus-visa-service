@@ -7801,6 +7801,34 @@ body.body--menu-open {
   accent-color: var(--color-primary);
 }
 
+.dashboard-application-wizard__stacked-radio-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.dashboard-application-wizard__stacked-radio-group legend {
+  margin-bottom: 0.2rem;
+  color: #111827;
+}
+
+.dashboard-application-wizard__stacked-radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dashboard-application-wizard__highlight-note {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #f59e0b;
+  border-radius: var(--form-field-radius);
+  background: linear-gradient(90deg, rgb(254 243 199 / 0.95), rgb(255 251 235 / 0.95));
+  color: #7c2d12;
+}
+
 /*
   Wizard row grouping guideline:
   - Keep each logical question row as one `.dashboard-application-wizard__field-span-full` group.
@@ -7876,6 +7904,11 @@ body.body--menu-open {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: center;
+}
+
+.dashboard-application-wizard__visit-reasons-stack {
+  display: grid;
+  gap: 0.5rem;
 }
 
 .dashboard-application-wizard__selected-reasons {

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { DashboardButton } from '../common/DashboardButton';
 import { DashboardField } from '../common/DashboardField';
 import { DashboardInput } from '../common/DashboardInput';
@@ -6,6 +7,7 @@ import { DashboardTextarea } from '../common/DashboardTextarea';
 import {
   currentLocationCountryOptions,
   legalStatusOptions,
+  purposeOfStayOptions,
   reasonForVisitingAustraliaOptions
 } from '../../../constants/applicationFormOptions';
 import { ApplicationWizardStepGridVariant, ApplicationWizardStepLayout } from './ApplicationWizardStepLayout';
@@ -14,6 +16,7 @@ type CurrentLocationAnswer = 'yes' | 'no' | '';
 type SpecialCategoryAnswer = 'yes' | 'no' | '';
 type SpecialCategoryTypeAnswer = '' | 'foreign-government-representative' | 'un-laissez-passer' | 'exempt-group';
 type GroupProcessingAnswer = 'yes' | 'no' | '';
+type PurposeOfStayAnswer = '' | 'business-visitor' | 'frequent-traveller' | 'sponsored-family' | 'tourist';
 
 type Props = {
   isOutsideAustralia: CurrentLocationAnswer;
@@ -22,8 +25,8 @@ type Props = {
   onCurrentLocationChange: (value: string) => void;
   legalStatus: string;
   onLegalStatusChange: (value: string) => void;
-  selectedVisitReason: string;
-  onSelectedVisitReasonChange: (value: string) => void;
+  purposeOfStay: PurposeOfStayAnswer;
+  onPurposeOfStayChange: (value: PurposeOfStayAnswer) => void;
   visitReasons: string[];
   onVisitReasonsChange: (value: string[]) => void;
   significantVisitDates: string;
@@ -54,8 +57,8 @@ export function ApplicationWizardCurrentLocationStep({
   onCurrentLocationChange,
   legalStatus,
   onLegalStatusChange,
-  selectedVisitReason,
-  onSelectedVisitReasonChange,
+  purposeOfStay,
+  onPurposeOfStayChange,
   visitReasons,
   onVisitReasonsChange,
   significantVisitDates,
@@ -80,14 +83,31 @@ export function ApplicationWizardCurrentLocationStep({
 }: Props) {
   const showOutsideAustraliaFields = isOutsideAustralia === 'yes';
   const showFurtherStayFields = isOutsideAustralia === 'no';
+  const showSpecialCategoryForOutsideAustralia = showOutsideAustraliaFields && ['business-visitor', 'tourist'].includes(purposeOfStay);
+  const showSponsoredFamilyNote = showOutsideAustraliaFields && purposeOfStay === 'sponsored-family';
+  const canAddMoreVisitReasons = visitReasons.length < 3 && visitReasons.length < reasonForVisitingAustraliaOptions.length;
 
   const addVisitReason = () => {
-    if (!selectedVisitReason || visitReasons.includes(selectedVisitReason)) return;
-    if (visitReasons.length >= reasonForVisitingAustraliaOptions.length) return;
+    if (!canAddMoreVisitReasons) return;
 
-    onVisitReasonsChange([...visitReasons, selectedVisitReason]);
-    onSelectedVisitReasonChange('');
+    onVisitReasonsChange([...visitReasons, '']);
   };
+
+  const onVisitReasonChange = (index: number, value: string) => {
+    const updatedReasons = [...visitReasons];
+    updatedReasons[index] = value;
+    onVisitReasonsChange(updatedReasons);
+  };
+
+  const removeVisitReason = (index: number) => {
+    onVisitReasonsChange(visitReasons.filter((_, reasonIndex) => reasonIndex !== index));
+  };
+
+  useEffect(() => {
+    if (!showSpecialCategoryForOutsideAustralia) return;
+    if (specialCategoryOfEntry) return;
+    onSpecialCategoryOfEntryChange('no');
+  }, [onSpecialCategoryOfEntryChange, showSpecialCategoryForOutsideAustralia, specialCategoryOfEntry]);
 
   return (
     <ApplicationWizardStepLayout
@@ -154,44 +174,57 @@ export function ApplicationWizardCurrentLocationStep({
               </DashboardSelect>
             </DashboardField>
 
-            <DashboardField className="dashboard-application-wizard__panel-row" label="List all reasons for visiting Australia" htmlFor="visit-reason-select">
-              <div className="dashboard-application-wizard__visit-reasons-control">
-                <DashboardSelect
-                  id="visit-reason-select"
-                  value={selectedVisitReason}
-                  onChange={(event) => onSelectedVisitReasonChange(event.target.value)}
-                >
-                  <option value="">Select reason</option>
-                  {reasonForVisitingAustraliaOptions.map((option) => (
-                    <option key={option.value} value={option.value} disabled={visitReasons.includes(option.value)}>
-                      {option.label}
-                    </option>
-                  ))}
-                </DashboardSelect>
-                <DashboardButton type="button" size="sm" onClick={addVisitReason} disabled={!selectedVisitReason}>
-                  Add
+            <DashboardField className="dashboard-application-wizard__panel-row" label="Purpose of stay" htmlFor="purpose-of-stay">
+              <fieldset className="dashboard-application-wizard__stacked-radio-group">
+                <legend>Select the stream the applicant is applying for:</legend>
+                {purposeOfStayOptions.map((option) => (
+                  <label key={option.value}>
+                    <input
+                      type="radio"
+                      name="purposeOfStay"
+                      value={option.value}
+                      checked={purposeOfStay === option.value}
+                      onChange={() => onPurposeOfStayChange(option.value as PurposeOfStayAnswer)}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </fieldset>
+            </DashboardField>
+
+            {showSponsoredFamilyNote ? (
+              <p className="dashboard-application-wizard__highlight-note">
+                <strong>Note:</strong> The Sponsored Family stream has more restrictive conditions than the Tourist stream. In some cases a
+                security bond may be requested. If you are planning to visit family, you can apply for the Tourist stream which does not
+                require a bond and does not require formal sponsorship.
+              </p>
+            ) : null}
+
+            <DashboardField className="dashboard-application-wizard__panel-row" label="List all reasons for visiting Australia" htmlFor="visit-reason-select-1">
+              <div className="dashboard-application-wizard__visit-reasons-stack">
+                {visitReasons.map((reason, index) => (
+                  <div key={`visit-reason-${index + 1}`} className="dashboard-application-wizard__visit-reasons-control">
+                    <DashboardSelect id={`visit-reason-select-${index + 1}`} value={reason} onChange={(event) => onVisitReasonChange(index, event.target.value)}>
+                      <option value="">Select reason</option>
+                      {reasonForVisitingAustraliaOptions.map((option) => (
+                        <option key={option.value} value={option.value} disabled={visitReasons.some((item, itemIndex) => itemIndex !== index && item === option.value)}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </DashboardSelect>
+                    {visitReasons.length > 1 ? (
+                      <DashboardButton type="button" size="sm" variant="ghost" onClick={() => removeVisitReason(index)}>
+                        Remove
+                      </DashboardButton>
+                    ) : null}
+                  </div>
+                ))}
+
+                <DashboardButton type="button" size="sm" onClick={addVisitReason} disabled={!canAddMoreVisitReasons}>
+                  Add another reason
                 </DashboardButton>
               </div>
             </DashboardField>
-
-            {visitReasons.length > 0 ? (
-              <div className="dashboard-application-wizard__selected-reasons" aria-live="polite">
-                {visitReasons.map((reason) => {
-                  const option = reasonForVisitingAustraliaOptions.find((item) => item.value === reason);
-                  if (!option) return null;
-                  return (
-                    <button
-                      key={reason}
-                      type="button"
-                      className="dashboard-application-wizard__reason-chip"
-                      onClick={() => onVisitReasonsChange(visitReasons.filter((item) => item !== reason))}
-                    >
-                      {option.label} ×
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
 
               <DashboardField
                 className="dashboard-application-wizard__panel-row"
@@ -233,6 +266,77 @@ export function ApplicationWizardCurrentLocationStep({
                 </label>
               </fieldset>
             </section>
+
+            {showSpecialCategoryForOutsideAustralia ? (
+              <section className="dashboard-application-wizard__panel">
+                <h3 className="dashboard-application-wizard__subheading">Special category of entry</h3>
+                <fieldset className="dashboard-application-wizard__radio-group">
+                  <legend>
+                    Is the applicant travelling as a representative of a foreign government, travelling on a United Nations Laissez-Passer or a
+                    member of an exempt group?
+                  </legend>
+                  <label>
+                    <input
+                      type="radio"
+                      name="specialCategoryOfEntry"
+                      value="yes"
+                      checked={specialCategoryOfEntry === 'yes'}
+                      onChange={() => onSpecialCategoryOfEntryChange('yes')}
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="specialCategoryOfEntry"
+                      value="no"
+                      checked={specialCategoryOfEntry === 'no'}
+                      onChange={() => {
+                        onSpecialCategoryOfEntryChange('no');
+                        onSpecialCategoryEntryTypeChange('');
+                      }}
+                    />
+                    No
+                  </label>
+                </fieldset>
+
+                {specialCategoryOfEntry === 'yes' ? (
+                  <fieldset className="dashboard-application-wizard__radio-group">
+                    <legend>Select the special category of entry</legend>
+                    <label>
+                      <input
+                        type="radio"
+                        name="specialCategoryEntryType"
+                        value="foreign-government-representative"
+                        checked={specialCategoryEntryType === 'foreign-government-representative'}
+                        onChange={() => onSpecialCategoryEntryTypeChange('foreign-government-representative')}
+                      />
+                      Travelling as a foreign government representative
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="specialCategoryEntryType"
+                        value="un-laissez-passer"
+                        checked={specialCategoryEntryType === 'un-laissez-passer'}
+                        onChange={() => onSpecialCategoryEntryTypeChange('un-laissez-passer')}
+                      />
+                      Travelling on a United Nations Laissez-Passer
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="specialCategoryEntryType"
+                        value="exempt-group"
+                        checked={specialCategoryEntryType === 'exempt-group'}
+                        onChange={() => onSpecialCategoryEntryTypeChange('exempt-group')}
+                      />
+                      Member of an exempt group
+                    </label>
+                  </fieldset>
+                ) : null}
+              </section>
+            ) : null}
           </>
         ) : null}
 

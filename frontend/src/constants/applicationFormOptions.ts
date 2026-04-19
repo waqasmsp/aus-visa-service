@@ -124,6 +124,16 @@ export const legalStatusOptions: Option[] = [
   { value: 'other', label: 'Other' }
 ];
 
+export const purposeOfStayOptions: Option[] = [
+  {
+    value: 'business-visitor',
+    label: 'Business Visitor stream (business visit for meetings, conferences or negotiations but not for work)'
+  },
+  { value: 'frequent-traveller', label: 'Frequent Traveller stream (tourism or business purposes)' },
+  { value: 'sponsored-family', label: 'Sponsored Family stream (requires Sponsorship form 1149)' },
+  { value: 'tourist', label: 'Tourist stream (tourism/visit family or friends)' }
+];
+
 export const reasonForVisitingAustraliaOptions: Option[] = [
   { value: 'business', label: 'Business' },
   { value: 'tourism', label: 'Tourism' },
