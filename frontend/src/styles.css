@@ -21,6 +21,11 @@
   --radius-md: 0.875rem;
   --radius-lg: 1rem;
   --radius-pill: 999px;
+  --form-field-radius: var(--radius-lg);
+  --form-control-height: 3.2rem;
+  --form-control-height-sm: 2.55rem;
+  --form-section-gap: 1rem;
+  --form-panel-padding: 1rem;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -39,6 +44,12 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+
+  --form-button-secondary-border: #8fb0cc;
+  --form-button-secondary-bg: linear-gradient(180deg, var(--color-surface), #edf5fd);
+  --form-button-secondary-text: #1c4f79;
+  --form-button-primary-bg: linear-gradient(135deg, var(--color-brand-cyan-500), var(--color-brand-blue-500));
+  --form-button-primary-text: var(--color-surface);
 
   font-family: var(--font-family-base);
   color: var(--color-text-primary);
@@ -2089,7 +2100,7 @@ body.body--menu-open {
 .application-step-form {
   margin-top: 1.25rem;
   display: grid;
-  gap: 1.25rem;
+  gap: var(--form-section-gap);
 }
 
 .application-form-grid {
@@ -2110,6 +2121,16 @@ body.body--menu-open {
   gap: 0.7rem;
 }
 
+.form-field-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.form-section-panel {
+  display: grid;
+  gap: var(--form-section-gap);
+}
+
 .application-field {
   display: grid;
   gap: 0.45rem;
@@ -2124,9 +2145,9 @@ body.body--menu-open {
 .application-field input,
 .application-field select {
   width: 100%;
-  height: 3.2rem;
+  height: var(--form-control-height);
   border: 1px solid #b9ccdf;
-  border-radius: 1rem;
+  border-radius: var(--form-field-radius);
   background: linear-gradient(180deg, var(--color-surface), #f8fbff);
   color: #0f2947;
   padding: 0 1rem;
@@ -2466,9 +2487,9 @@ body.body--menu-open {
 }
 
 .application-gender-option {
-  height: 3.35rem;
+  min-height: var(--form-control-height);
   border: 1px solid #b9ccdf;
-  border-radius: 1rem;
+  border-radius: var(--form-field-radius);
   background: linear-gradient(180deg, var(--color-surface), #f8fbff);
   color: #123f66;
   font: inherit;
@@ -2517,17 +2538,18 @@ body.body--menu-open {
   gap: 0.75rem;
 }
 
+.form-button--secondary,
 .application-back-button {
   min-width: 8.7rem;
-  height: 3rem;
-  border: 1px solid #8fb0cc;
-  border-radius: 1rem;
+  height: var(--form-control-height);
+  border: 1px solid var(--form-button-secondary-border);
+  border-radius: var(--form-field-radius);
   padding: 0 1.2rem;
   font: inherit;
   font-size: 1.08rem;
   font-weight: var(--font-weight-semibold);
-  color: #1c4f79;
-  background: linear-gradient(180deg, var(--color-surface), #edf5fd);
+  color: var(--form-button-secondary-text);
+  background: var(--form-button-secondary-bg);
   box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
   cursor: pointer;
   transition: transform 170ms ease, box-shadow 170ms ease, border-color 170ms ease;
@@ -2539,17 +2561,18 @@ body.body--menu-open {
   box-shadow: 0 12px 22px rgb(15 23 42 / 0.12);
 }
 
+.form-button--primary,
 .application-continue-button {
   min-width: 8.7rem;
-  height: 3rem;
+  height: var(--form-control-height);
   border: 0;
-  border-radius: 1rem;
+  border-radius: var(--form-field-radius);
   padding: 0 1.2rem;
   font: inherit;
   font-size: 1.2rem;
   font-weight: var(--font-weight-semibold);
-  color: var(--color-surface);
-  background: linear-gradient(135deg, var(--color-brand-cyan-500), var(--color-brand-blue-500));
+  color: var(--form-button-primary-text);
+  background: var(--form-button-primary-bg);
   box-shadow: 0 12px 22px rgb(37 99 235 / 0.28);
   cursor: pointer;
   transition: transform 170ms ease, box-shadow 170ms ease, filter 170ms ease;
@@ -4752,12 +4775,12 @@ body.body--menu-open {
 }
 
 .dashboard-control {
-  height: 2.55rem;
+  height: var(--form-control-height-sm);
   border: 1px solid var(--dashboard-border);
-  border-radius: 0.75rem;
+  border-radius: var(--form-field-radius);
   font: inherit;
   color: #153356;
-  background: var(--color-surface);
+  background: linear-gradient(180deg, var(--color-surface), #f8fbff);
   padding: 0 0.75rem;
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease;
 }
@@ -4769,13 +4792,13 @@ body.body--menu-open {
 }
 
 .dashboard-control:hover {
-  border-color: var(--dashboard-control-hover-border);
+  border-color: #89a6c2;
 }
 
 .dashboard-control:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: var(--dashboard-control-focus-ring);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.16);
 }
 
 .dashboard-control:disabled {
@@ -5496,9 +5519,9 @@ body.body--menu-open {
 
 .dashboard-button {
   border: 1px solid var(--dashboard-border);
-  border-radius: 0.75rem;
+  border-radius: var(--form-field-radius);
   padding: 0 0.85rem;
-  min-height: 2.55rem;
+  min-height: var(--form-control-height-sm);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -5512,23 +5535,24 @@ body.body--menu-open {
 }
 
 .dashboard-button--md {
-  min-height: 2.55rem;
+  min-height: var(--form-control-height-sm);
 }
 
 .dashboard-button--lg {
-  min-height: 2.8rem;
+  min-height: var(--form-control-height);
   padding: 0 1rem;
 }
 
 .dashboard-button--primary {
   border: 0;
-  color: var(--color-surface);
-  background: linear-gradient(140deg, var(--color-brand-cyan-500), var(--color-primary));
+  color: var(--form-button-primary-text);
+  background: var(--form-button-primary-bg);
 }
 
 .dashboard-button--secondary {
-  color: #1f3f67;
-  background: var(--color-surface);
+  color: var(--form-button-secondary-text);
+  border-color: var(--form-button-secondary-border);
+  background: var(--form-button-secondary-bg);
 }
 
 .dashboard-button--ghost {
@@ -7640,7 +7664,7 @@ body.body--menu-open {
 
 .dashboard-application-wizard__step {
   display: grid;
-  gap: 0.85rem;
+  gap: var(--form-section-gap);
 }
 
 .dashboard-application-wizard__step .dashboard-panel__header {
@@ -7650,7 +7674,7 @@ body.body--menu-open {
 
 .dashboard-application-wizard__field-grid {
   display: grid;
-  gap: 0.85rem;
+  gap: var(--form-section-gap);
 }
 
 .dashboard-application-wizard__field-grid--1-col {
@@ -7705,13 +7729,28 @@ body.body--menu-open {
 
 .dashboard-application-wizard__group {
   display: grid;
-  gap: 0.8rem;
+  gap: var(--form-section-gap);
 }
 
-.dashboard-application-wizard__group h3 {
+.dashboard-application-wizard__section-heading {
   margin: 0;
   color: #0f4d93;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+}
+
+.dashboard-application-wizard__subheading {
+  margin: 0;
+  color: #1d4e89;
+  font-size: 1rem;
+}
+
+.dashboard-application-wizard__panel {
+  padding: var(--form-panel-padding);
+  border: 1px solid var(--dashboard-border);
+  border-radius: var(--form-field-radius);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.92), rgb(246 250 255 / 0.92));
+  display: grid;
+  gap: var(--form-section-gap);
 }
 
 .dashboard-application-wizard__radio-group {
@@ -7733,7 +7772,44 @@ body.body--menu-open {
 .dashboard-application-wizard__radio-group label {
   display: inline-flex;
   align-items: center;
-  gap: 0.32rem;
+  gap: 0.45rem;
+  min-height: var(--form-control-height-sm);
+  border: 1px solid #b9ccdf;
+  border-radius: var(--form-field-radius);
+  padding: 0 0.8rem;
+  background: linear-gradient(180deg, var(--color-surface), #f8fbff);
+  color: #123f66;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.dashboard-application-wizard__radio-group label:hover {
+  border-color: #89a6c2;
+}
+
+.dashboard-application-wizard__radio-group label:has(input:focus-visible) {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.16);
+}
+
+.dashboard-application-wizard__radio-group label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: linear-gradient(120deg, rgb(219 234 254 / 0.8), rgb(207 250 254 / 0.68));
+}
+
+.dashboard-application-wizard__radio-group input[type='radio'] {
+  accent-color: var(--color-primary);
+}
+
+/*
+  Wizard row grouping guideline:
+  - Keep each logical question row as one `.dashboard-application-wizard__field-span-full` group.
+  - Use `.dashboard-application-wizard__panel` to stack related rows and avoid mixing unrelated inputs.
+  - Inside a row, keep controls on one line in desktop grids and allow mobile stacking via existing media queries.
+*/
+.dashboard-application-wizard__panel-row {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .dashboard-application-wizard__note {

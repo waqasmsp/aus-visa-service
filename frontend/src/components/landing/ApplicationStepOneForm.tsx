@@ -44,7 +44,7 @@ type ApplicationSelectFieldProps = {
 
 function ApplicationSelectField({ label, value, onChange, options, error = false, includeEmptyOption, iconText }: ApplicationSelectFieldProps) {
   return (
-    <label className={`application-field${error ? ' application-field--error' : ''}`}>
+    <label className={`application-field form-field-group${error ? ' application-field--error' : ''}`}>
       <span>{label}</span>
       <div className="application-select-wrap">
         {iconText ? <span className="application-select-icon" aria-hidden="true">{iconText}</span> : null}
@@ -92,21 +92,21 @@ function ApplicationDateRow({
     <div className="application-date-block">
       <p>{label}</p>
       <div className="application-form-grid application-form-grid--three">
-        <label className={`application-field${dayError ? ' application-field--error' : ''}`}>
+        <label className={`application-field form-field-group${dayError ? ' application-field--error' : ''}`}>
           <span className="sr-only">{label} day</span>
           <select value={valueDay} onChange={(event) => onChangeDay(event.target.value)} aria-invalid={dayError}>
             <option value="">Day</option>
             {DAY_OPTIONS.map((day) => <option key={`${optionPrefix}-day-${day}`} value={day}>{day}</option>)}
           </select>
         </label>
-        <label className={`application-field${monthError ? ' application-field--error' : ''}`}>
+        <label className={`application-field form-field-group${monthError ? ' application-field--error' : ''}`}>
           <span className="sr-only">{label} month</span>
           <select value={valueMonth} onChange={(event) => onChangeMonth(event.target.value)} aria-invalid={monthError}>
             <option value="">Month</option>
             {MONTH_OPTIONS.map((month) => <option key={`${optionPrefix}-month-${month}`} value={month}>{month}</option>)}
           </select>
         </label>
-        <label className={`application-field${yearError ? ' application-field--error' : ''}`}>
+        <label className={`application-field form-field-group${yearError ? ' application-field--error' : ''}`}>
           <span className="sr-only">{label} year</span>
           <select value={valueYear} onChange={(event) => onChangeYear(event.target.value)} aria-invalid={yearError}>
             <option value="">Year</option>
@@ -133,7 +133,7 @@ type ApplicationRadioPillGroupProps<T extends string> = {
 
 function ApplicationRadioPillGroup<T extends string>({ legend, value, onChange, options, error = false }: ApplicationRadioPillGroupProps<T>) {
   return (
-    <fieldset className={`application-fieldset${error ? ' application-fieldset--error' : ''}`}>
+    <fieldset className={`application-fieldset form-section-panel${error ? ' application-fieldset--error' : ''}`}>
       <legend>{legend}</legend>
       <div className="application-form-grid application-form-grid--two">
         {options.map((option) => (

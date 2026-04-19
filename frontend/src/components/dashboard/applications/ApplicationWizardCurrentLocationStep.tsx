@@ -100,36 +100,39 @@ export function ApplicationWizardCurrentLocationStep({
       disableNext={disableNext}
     >
       <div className="dashboard-application-wizard__group dashboard-application-wizard__field-span-full">
-        <h3>Current location</h3>
-        <fieldset className="dashboard-application-wizard__radio-group">
-          <legend>Is the applicant currently outside Australia?</legend>
-          <label>
-            <input
-              type="radio"
-              name="isOutsideAustralia"
-              value="yes"
-              checked={isOutsideAustralia === 'yes'}
-              onChange={() => onIsOutsideAustraliaChange('yes')}
-            />
-            Yes
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="isOutsideAustralia"
-              value="no"
-              checked={isOutsideAustralia === 'no'}
-              onChange={() => onIsOutsideAustraliaChange('no')}
-            />
-            No
-          </label>
-        </fieldset>
+        <section className="dashboard-application-wizard__panel">
+          <h2 className="dashboard-application-wizard__section-heading">Current location</h2>
+          <fieldset className="dashboard-application-wizard__radio-group">
+            <legend>Is the applicant currently outside Australia?</legend>
+            <label>
+              <input
+                type="radio"
+                name="isOutsideAustralia"
+                value="yes"
+                checked={isOutsideAustralia === 'yes'}
+                onChange={() => onIsOutsideAustraliaChange('yes')}
+              />
+              Yes
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="isOutsideAustralia"
+                value="no"
+                checked={isOutsideAustralia === 'no'}
+                onChange={() => onIsOutsideAustraliaChange('no')}
+              />
+              No
+            </label>
+          </fieldset>
+        </section>
 
         {showOutsideAustraliaFields ? (
           <>
-            <p className="dashboard-panel__note">Give the current location of the applicant and their legal status at this location.</p>
+            <section className="dashboard-application-wizard__panel">
+              <p className="dashboard-panel__note">Give the current location of the applicant and their legal status at this location.</p>
 
-            <DashboardField label="Current location" htmlFor="current-location">
+            <DashboardField className="dashboard-application-wizard__panel-row" label="Current location" htmlFor="current-location">
               <DashboardSelect id="current-location" value={currentLocation} onChange={(event) => onCurrentLocationChange(event.target.value)}>
                 <option value="">Select country</option>
                 {currentLocationCountryOptions.map((option) => (
@@ -140,7 +143,7 @@ export function ApplicationWizardCurrentLocationStep({
               </DashboardSelect>
             </DashboardField>
 
-            <DashboardField label="Legal status" htmlFor="legal-status">
+            <DashboardField className="dashboard-application-wizard__panel-row" label="Legal status" htmlFor="legal-status">
               <DashboardSelect id="legal-status" value={legalStatus} onChange={(event) => onLegalStatusChange(event.target.value)}>
                 <option value="">Select legal status</option>
                 {legalStatusOptions.map((option) => (
@@ -151,7 +154,7 @@ export function ApplicationWizardCurrentLocationStep({
               </DashboardSelect>
             </DashboardField>
 
-            <DashboardField label="List all reasons for visiting Australia" htmlFor="visit-reason-select">
+            <DashboardField className="dashboard-application-wizard__panel-row" label="List all reasons for visiting Australia" htmlFor="visit-reason-select">
               <div className="dashboard-application-wizard__visit-reasons-control">
                 <DashboardSelect
                   id="visit-reason-select"
@@ -190,52 +193,60 @@ export function ApplicationWizardCurrentLocationStep({
               </div>
             ) : null}
 
-            <DashboardField label="Give details of any significant dates on which the applicant needs to be in Australia" htmlFor="significant-visit-dates">
-              <DashboardTextarea
-                id="significant-visit-dates"
-                rows={4}
-                value={significantVisitDates}
-                onChange={(event) => onSignificantVisitDatesChange(event.target.value)}
-              />
-            </DashboardField>
+              <DashboardField
+                className="dashboard-application-wizard__panel-row"
+                label="Give details of any significant dates on which the applicant needs to be in Australia"
+                htmlFor="significant-visit-dates"
+              >
+                <DashboardTextarea
+                  id="significant-visit-dates"
+                  rows={4}
+                  value={significantVisitDates}
+                  onChange={(event) => onSignificantVisitDatesChange(event.target.value)}
+                />
+              </DashboardField>
+            </section>
 
-            <h3>Group processing</h3>
-            <fieldset className="dashboard-application-wizard__radio-group">
-              <legend>Is this application being lodged as part of a group of applications?</legend>
-              <label>
-                <input
-                  type="radio"
-                  name="isGroupProcessing"
-                  value="yes"
-                  checked={isGroupProcessing === 'yes'}
-                  onChange={() => onIsGroupProcessingChange('yes')}
-                />
-                Yes
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="isGroupProcessing"
-                  value="no"
-                  checked={isGroupProcessing === 'no'}
-                  onChange={() => onIsGroupProcessingChange('no')}
-                />
-                No
-              </label>
-            </fieldset>
+            <section className="dashboard-application-wizard__panel">
+              <h3 className="dashboard-application-wizard__subheading">Group processing</h3>
+              <fieldset className="dashboard-application-wizard__radio-group">
+                <legend>Is this application being lodged as part of a group of applications?</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="isGroupProcessing"
+                    value="yes"
+                    checked={isGroupProcessing === 'yes'}
+                    onChange={() => onIsGroupProcessingChange('yes')}
+                  />
+                  Yes
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="isGroupProcessing"
+                    value="no"
+                    checked={isGroupProcessing === 'no'}
+                    onChange={() => onIsGroupProcessingChange('no')}
+                  />
+                  No
+                </label>
+              </fieldset>
+            </section>
           </>
         ) : null}
 
         {showFurtherStayFields ? (
           <>
-            <p className="dashboard-application-wizard__note">
-              Note: Applications for the Visitor visa made within Australia are for the Tourist stream of the visa.
-            </p>
+            <section className="dashboard-application-wizard__panel">
+              <h2 className="dashboard-application-wizard__section-heading">Further stay request</h2>
+              <p className="dashboard-application-wizard__note">
+                Note: Applications for the Visitor visa made within Australia are for the Tourist stream of the visa.
+              </p>
 
-            <h3>Further stay</h3>
             <p className="dashboard-panel__note">Give details of the request for further stay.</p>
 
-            <DashboardField label="Length of further stay" htmlFor="length-of-further-stay">
+            <DashboardField className="dashboard-application-wizard__panel-row" label="Length of further stay" htmlFor="length-of-further-stay">
               <DashboardSelect
                 id="length-of-further-stay"
                 value={lengthOfFurtherStay}
@@ -248,7 +259,7 @@ export function ApplicationWizardCurrentLocationStep({
               </DashboardSelect>
             </DashboardField>
 
-            <DashboardField label="Requested end date" htmlFor="requested-end-date">
+            <DashboardField className="dashboard-application-wizard__panel-row" label="Requested end date" htmlFor="requested-end-date">
               <DashboardInput
                 id="requested-end-date"
                 type="date"
@@ -262,50 +273,52 @@ export function ApplicationWizardCurrentLocationStep({
               visitor, working holiday and bridging visas, they must demonstrate that they have exceptional reasons for the further stay.
             </p>
 
-            <DashboardField label="Reason for further stay" htmlFor="reason-for-further-stay">
-              <DashboardTextarea
-                id="reason-for-further-stay"
-                rows={4}
-                value={reasonForFurtherStay}
-                onChange={(event) => onReasonForFurtherStayChange(event.target.value)}
-              />
-            </DashboardField>
-
-            <h3>Special category of entry</h3>
-            <fieldset className="dashboard-application-wizard__radio-group">
-              <legend>
-                Is the applicant travelling as a representative of a foreign government, travelling on a United Nations Laissez-Passer or a
-                member of an exempt group?
-              </legend>
-              <label>
-                <input
-                  type="radio"
-                  name="specialCategoryOfEntry"
-                  value="yes"
-                  checked={specialCategoryOfEntry === 'yes'}
-                  onChange={() => onSpecialCategoryOfEntryChange('yes')}
+              <DashboardField className="dashboard-application-wizard__panel-row" label="Reason for further stay" htmlFor="reason-for-further-stay">
+                <DashboardTextarea
+                  id="reason-for-further-stay"
+                  rows={4}
+                  value={reasonForFurtherStay}
+                  onChange={(event) => onReasonForFurtherStayChange(event.target.value)}
                 />
-                Yes
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="specialCategoryOfEntry"
-                  value="no"
-                  checked={specialCategoryOfEntry === 'no'}
-                  onChange={() => {
-                    onSpecialCategoryOfEntryChange('no');
-                    onSpecialCategoryEntryTypeChange('');
-                  }}
-                />
-                No
-              </label>
-            </fieldset>
+              </DashboardField>
+            </section>
 
-            {specialCategoryOfEntry === 'yes' ? (
+            <section className="dashboard-application-wizard__panel">
+              <h3 className="dashboard-application-wizard__subheading">Special category of entry</h3>
               <fieldset className="dashboard-application-wizard__radio-group">
-                <legend>Select the special category of entry</legend>
+                <legend>
+                  Is the applicant travelling as a representative of a foreign government, travelling on a United Nations Laissez-Passer or a
+                  member of an exempt group?
+                </legend>
                 <label>
+                  <input
+                    type="radio"
+                    name="specialCategoryOfEntry"
+                    value="yes"
+                    checked={specialCategoryOfEntry === 'yes'}
+                    onChange={() => onSpecialCategoryOfEntryChange('yes')}
+                  />
+                  Yes
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="specialCategoryOfEntry"
+                    value="no"
+                    checked={specialCategoryOfEntry === 'no'}
+                    onChange={() => {
+                      onSpecialCategoryOfEntryChange('no');
+                      onSpecialCategoryEntryTypeChange('');
+                    }}
+                  />
+                  No
+                </label>
+              </fieldset>
+
+              {specialCategoryOfEntry === 'yes' ? (
+                <fieldset className="dashboard-application-wizard__radio-group">
+                  <legend>Select the special category of entry</legend>
+                  <label>
                   <input
                     type="radio"
                     name="specialCategoryEntryType"
@@ -314,8 +327,8 @@ export function ApplicationWizardCurrentLocationStep({
                     onChange={() => onSpecialCategoryEntryTypeChange('foreign-government-representative')}
                   />
                   Travelling as a foreign government representative
-                </label>
-                <label>
+                  </label>
+                  <label>
                   <input
                     type="radio"
                     name="specialCategoryEntryType"
@@ -324,8 +337,8 @@ export function ApplicationWizardCurrentLocationStep({
                     onChange={() => onSpecialCategoryEntryTypeChange('un-laissez-passer')}
                   />
                   Travelling on a United Nations Laissez-Passer
-                </label>
-                <label>
+                  </label>
+                  <label>
                   <input
                     type="radio"
                     name="specialCategoryEntryType"
@@ -334,9 +347,10 @@ export function ApplicationWizardCurrentLocationStep({
                     onChange={() => onSpecialCategoryEntryTypeChange('exempt-group')}
                   />
                   Member of an exempt group
-                </label>
-              </fieldset>
-            ) : null}
+                  </label>
+                </fieldset>
+              ) : null}
+            </section>
           </>
         ) : null}
       </div>
