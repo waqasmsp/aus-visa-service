@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { currentLocationCountryOptions, reasonForVisitingAustraliaOptions, type Option } from '../../constants/applicationFormOptions';
 
 type YesNo = 'yes' | 'no' | '';
-type ApplicationSubStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type ApplicationSubStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 type TravelerEntry = {
   id: string;
@@ -175,6 +175,7 @@ export function ApplicationStepOneForm() {
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
 
   const [passportCountry, setPassportCountry] = useState(DEFAULT_COUNTRY);
+  const [passportNationality, setPassportNationality] = useState(DEFAULT_COUNTRY);
   const [passportInfoAvailable, setPassportInfoAvailable] = useState<YesNo>('');
   const [passportNumber, setPassportNumber] = useState('');
   const [passportIssueDay, setPassportIssueDay] = useState('');
@@ -275,6 +276,7 @@ export function ApplicationStepOneForm() {
       setBirthYear((draft.birthYear as string) ?? '');
       setGender((draft.gender as 'male' | 'female' | '') ?? '');
       setPassportCountry((draft.passportCountry as string) ?? DEFAULT_COUNTRY);
+      setPassportNationality((draft.passportNationality as string) ?? DEFAULT_COUNTRY);
       setPassportInfoAvailable((draft.passportInfoAvailable as YesNo) ?? '');
       setPassportNumber((draft.passportNumber as string) ?? '');
       setPassportIssueDay((draft.passportIssueDay as string) ?? '');
@@ -320,6 +322,7 @@ export function ApplicationStepOneForm() {
       birthYear,
       gender,
       passportCountry,
+      passportNationality,
       passportInfoAvailable,
       passportNumber,
       passportIssueDay,
@@ -357,6 +360,7 @@ export function ApplicationStepOneForm() {
     birthYear,
     gender,
     passportCountry,
+    passportNationality,
     passportInfoAvailable,
     passportNumber,
     passportIssueDay,
@@ -390,6 +394,7 @@ export function ApplicationStepOneForm() {
     setBirthYear('');
     setGender('');
     setPassportCountry(DEFAULT_COUNTRY);
+    setPassportNationality(DEFAULT_COUNTRY);
     setPassportInfoAvailable('');
     setPassportNumber('');
     setPassportIssueDay('');
@@ -450,15 +455,15 @@ export function ApplicationStepOneForm() {
       }
     ]);
     setIsTravelersStage(true);
-    setApplicationSubStep(5);
+    setApplicationSubStep(6);
   };
 
   const travelerNames = travelers.map((traveler) => traveler.name).join(', ');
   const currentStage: 1 | 2 | 3 | 4 = !isTravelersStage
     ? 1
-    : applicationSubStep === 6
+    : applicationSubStep === 7
       ? 3
-      : applicationSubStep === 7
+      : applicationSubStep === 8
         ? 4
         : 2;
 
@@ -512,10 +517,8 @@ export function ApplicationStepOneForm() {
   const submitStepThree = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const errors: string[] = [];
-    if (!homeAddress.trim()) errors.push('homeAddress');
-    if (!cityOrTown.trim()) errors.push('cityOrTown');
-    if (!stateOrProvince.trim()) errors.push('stateOrProvince');
-    if (!zipOrPostcode.trim()) errors.push('zipOrPostcode');
+    if (!passportCountry) errors.push('passportCountry');
+    if (!passportNationality) errors.push('passportNationality');
     applyValidation(errors);
     if (errors.length === 0) {
       setApplicationSubStep(4);
@@ -523,6 +526,19 @@ export function ApplicationStepOneForm() {
   };
 
   const submitStepFour = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors: string[] = [];
+    if (!homeAddress.trim()) errors.push('homeAddress');
+    if (!cityOrTown.trim()) errors.push('cityOrTown');
+    if (!stateOrProvince.trim()) errors.push('stateOrProvince');
+    if (!zipOrPostcode.trim()) errors.push('zipOrPostcode');
+    applyValidation(errors);
+    if (errors.length === 0) {
+      setApplicationSubStep(5);
+    }
+  };
+
+  const submitStepFive = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const errors: string[] = [];
     if (!isEmployed) errors.push('isEmployed');
@@ -549,7 +565,7 @@ export function ApplicationStepOneForm() {
     }
     applyValidation(errors);
     if (errors.length === 0) {
-      setApplicationSubStep(7);
+      setApplicationSubStep(8);
     }
   };
 
@@ -558,7 +574,7 @@ export function ApplicationStepOneForm() {
 
     if (applicationSubStep === 1) {
       if (isTravelersStage) {
-        setApplicationSubStep(5);
+        setApplicationSubStep(6);
         return;
       }
 
@@ -597,7 +613,12 @@ export function ApplicationStepOneForm() {
       return;
     }
 
-    setApplicationSubStep(6);
+    if (applicationSubStep === 7) {
+      setApplicationSubStep(6);
+      return;
+    }
+
+    setApplicationSubStep(7);
   };
 
   return (
@@ -640,11 +661,11 @@ export function ApplicationStepOneForm() {
                   }
                   if (stepIndex === 3 && travelers.length > 0) {
                     setIsTravelersStage(true);
-                    setApplicationSubStep(6);
+                    setApplicationSubStep(7);
                   }
                   if (stepIndex === 4 && travelers.length > 0) {
                     setIsTravelersStage(true);
-                    setApplicationSubStep(7);
+                    setApplicationSubStep(8);
                   }
                 }}
               >
@@ -693,7 +714,7 @@ export function ApplicationStepOneForm() {
               }
 
               setIsTravelersStage(true);
-              setApplicationSubStep(5);
+              setApplicationSubStep(6);
             }}
           >
             View all travelers
@@ -720,7 +741,7 @@ export function ApplicationStepOneForm() {
             )}
           </div>
 
-          {applicationSubStep === 7 ? (
+          {applicationSubStep === 8 ? (
             <div className="application-pricing-card">
               <h3>Choose a processing time</h3>
               <p>Get it: Standard Processing</p>
@@ -741,7 +762,7 @@ export function ApplicationStepOneForm() {
         </aside>
 
         <section className="application-form-card" aria-label="Personal details">
-          {applicationSubStep === 7 ? (
+          {applicationSubStep === 8 ? (
             <div className="application-payment-notice" role="status" aria-live="polite">
               <p><span>Government fees</span><strong>{formatMoney(selectedPricing.governmentFees)}</strong></p>
               <p><span>Standard processing</span><strong>{formatMoney(selectedPricing.standard)}</strong></p>
@@ -804,14 +825,6 @@ export function ApplicationStepOneForm() {
               <header className="application-form-card__header"><h1>Passport Details</h1></header>
 
               <form className="application-step-form" onSubmit={submitStepTwo}>
-                <ApplicationSelectField
-                  label="Passport"
-                  value={passportCountry}
-                  onChange={setPassportCountry}
-                  options={currentLocationCountryOptions}
-                  iconText={passportCountry.slice(0, 2)}
-                />
-
                 <ApplicationRadioPillGroup
                   legend="Do you have passport information available?"
                   value={passportInfoAvailable}
@@ -868,8 +881,34 @@ export function ApplicationStepOneForm() {
             </>
           ) : applicationSubStep === 3 ? (
             <>
-              <header className="application-form-card__header"><h1>Address Details</h1></header>
+              <header className="application-form-card__header"><h1>Step 3 · Passport Country Details</h1></header>
               <form className="application-step-form" onSubmit={submitStepThree}>
+                <ApplicationSelectField
+                  label="Country of passport"
+                  value={passportCountry}
+                  onChange={(value) => { setPassportCountry(value); clearError('passportCountry'); }}
+                  options={currentLocationCountryOptions}
+                  iconText={passportCountry.slice(0, 2)}
+                  error={hasError('passportCountry')}
+                />
+                <ApplicationSelectField
+                  label="Nationality of passport holder"
+                  value={passportNationality}
+                  onChange={(value) => { setPassportNationality(value); clearError('passportNationality'); }}
+                  options={currentLocationCountryOptions}
+                  iconText={passportNationality.slice(0, 2)}
+                  error={hasError('passportNationality')}
+                />
+                <div className="application-form-actions application-form-actions--split">
+                  <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
+                  <button type="submit" className="application-continue-button">Continue</button>
+                </div>
+              </form>
+            </>
+          ) : applicationSubStep === 4 ? (
+            <>
+              <header className="application-form-card__header"><h1>Address Details</h1></header>
+              <form className="application-step-form" onSubmit={submitStepFour}>
                 <ApplicationSelectField
                   label="Country of residence"
                   value={residenceCountry}
@@ -894,10 +933,10 @@ export function ApplicationStepOneForm() {
                 </div>
               </form>
             </>
-          ) : applicationSubStep === 4 ? (
+          ) : applicationSubStep === 5 ? (
             <>
               <header className="application-form-card__header"><h1>Additional Information</h1></header>
-              <form className="application-step-form" onSubmit={submitStepFour}>
+              <form className="application-step-form" onSubmit={submitStepFive}>
                 <ApplicationRadioPillGroup
                   legend="Are you employed?"
                   value={isEmployed}
@@ -961,7 +1000,7 @@ export function ApplicationStepOneForm() {
                 </div>
               </form>
             </>
-          ) : applicationSubStep === 5 ? (
+          ) : applicationSubStep === 6 ? (
             <>
               <header className="application-form-card__header"><h1>Travelers</h1></header>
               <div className="application-step-form">
@@ -980,13 +1019,13 @@ export function ApplicationStepOneForm() {
                 <button type="button" className="traveler-add-button" onClick={startTravelerApplication}><span aria-hidden="true">+</span> Add Another Traveler</button>
                 <div className="application-form-actions application-form-actions--split">
                   <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
-                  <button type="button" className="application-continue-button" onClick={() => setApplicationSubStep(6)}>
+                  <button type="button" className="application-continue-button" onClick={() => setApplicationSubStep(7)}>
                     Continue
                   </button>
                 </div>
               </div>
             </>
-          ) : applicationSubStep === 6 ? (
+          ) : applicationSubStep === 7 ? (
             <>
               <header className="application-form-card__header"><h1>Contact Details</h1></header>
               <form className="application-step-form" onSubmit={submitContactStep}>
@@ -1011,7 +1050,7 @@ export function ApplicationStepOneForm() {
                 </div>
               </form>
             </>
-          ) : applicationSubStep === 7 ? (
+          ) : applicationSubStep === 8 ? (
             <>
               <header className="application-form-card__header"><h1>Choose how to pay</h1></header>
               <div className="application-step-form">
