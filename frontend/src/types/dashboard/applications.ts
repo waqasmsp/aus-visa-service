@@ -124,6 +124,11 @@ export type FullApplicationWizardFormPayload = {
   visaType: string;
   destinationCountry: string;
   travelDate: string;
+  plannedDepartureDate: string;
+  destinationCity: string;
+  accommodationDetails: string;
+  hasReturnTicket: '' | 'yes' | 'no';
+  travelAndStayNotes: string;
   passportNumber: string;
   isOutsideAustralia: '' | 'yes' | 'no';
   lengthOfFurtherStay: string;
