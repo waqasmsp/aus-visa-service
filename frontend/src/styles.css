@@ -2105,6 +2105,11 @@ body.body--menu-open {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.application-form-grid--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
 .application-field {
   display: grid;
   gap: 0.45rem;
@@ -2431,7 +2436,10 @@ body.body--menu-open {
 
 .payment-card-form__row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.payment-card-form__row.application-form-grid--compact {
+  gap: 0;
 }
 
 .payment-card-form__row input + input {
@@ -4227,9 +4235,8 @@ body.body--menu-open {
     position: static;
   }
 
-  .application-form-grid--two,
   .application-form-grid--three {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .application-form-actions {
@@ -4244,6 +4251,24 @@ body.body--menu-open {
   .application-back-button,
   .application-continue-button {
     width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .application-form-grid--two,
+  .application-form-grid--three {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .application-form-grid--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-card-form__row input + input {
+    border-left: 0;
+    border-top: 1px solid #d8e4ee;
   }
 }
 
