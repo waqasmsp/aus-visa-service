@@ -133,7 +133,7 @@ export type FullApplicationWizardFormPayload = {
   specialCategoryEntryType: '' | 'foreign-government-representative' | 'un-laissez-passer' | 'exempt-group';
   currentLocation: string;
   legalStatus: string;
-  selectedVisitReason: string;
+  purposeOfStay: '' | 'business-visitor' | 'frequent-traveller' | 'sponsored-family' | 'tourist';
   visitReasons: string[];
   significantVisitDates: string;
   isGroupProcessing: '' | 'yes' | 'no';

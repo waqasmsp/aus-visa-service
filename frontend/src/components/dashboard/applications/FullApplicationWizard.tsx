@@ -153,11 +153,11 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
                   formPayload: { ...prev.formPayload, legalStatus: value }
                 }))
               }
-              selectedVisitReason={draft.formPayload.selectedVisitReason ?? ''}
-              onSelectedVisitReasonChange={(value) =>
+              purposeOfStay={draft.formPayload.purposeOfStay ?? ''}
+              onPurposeOfStayChange={(value) =>
                 setDraft((prev) => ({
                   ...prev,
-                  formPayload: { ...prev.formPayload, selectedVisitReason: value }
+                  formPayload: { ...prev.formPayload, purposeOfStay: value }
                 }))
               }
               visitReasons={draft.formPayload.visitReasons ?? []}
