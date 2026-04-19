@@ -214,29 +214,33 @@ export function VisaApplicationsPanel({ role, basePath, viewerEmail }: Props) {
       {!loading && error ? <DashboardErrorState message={error} onRetry={() => void loadApplications()} /> : null}
       {!loading && !error ? (
         <>
-          <div className="dashboard-kpi-grid">
-            {(Object.keys(countByStatus) as ApplicationStatus[]).map((status) => (
-              <article key={status} className="dashboard-kpi-card"><p>{status}</p><strong>{countByStatus[status]}</strong><span>Applications</span></article>
-            ))}
-          </div>
-          <ApplicationsBulkActionBar
-            selectedCount={selectedIds.length}
-            canMutate={roleActions.canBulk}
-            onAssignOwner={async (owner) => {
-              await applicationsService.bulkAssignOwner({ ids: selectedIds, owner }, role);
-              notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success' }, `Assigned owner ${owner} to ${selectedIds.length} application(s).`));
-              await loadApplications();
-            }}
-            onUpdateStatus={async (status) => {
-              await applicationsService.bulkStatusUpdate({ ids: selectedIds, status }, role);
-              notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success' }, `Updated status to ${status} for ${selectedIds.length} application(s).`));
-              await loadApplications();
-            }}
-            onExport={async () => {
-              const uri = await applicationsService.exportSelected(selectedIds, role);
-              notifyInfo(formatNotificationMessage({ entity: 'application', action: 'export', result: 'success' }, `Export ready: ${uri}`));
-            }}
-          />
+          {activeView === 'applications' ? (
+            <>
+              <div className="dashboard-kpi-grid">
+                {(Object.keys(countByStatus) as ApplicationStatus[]).map((status) => (
+                  <article key={status} className="dashboard-kpi-card"><p>{status}</p><strong>{countByStatus[status]}</strong><span>Applications</span></article>
+                ))}
+              </div>
+              <ApplicationsBulkActionBar
+                selectedCount={selectedIds.length}
+                canMutate={roleActions.canBulk}
+                onAssignOwner={async (owner) => {
+                  await applicationsService.bulkAssignOwner({ ids: selectedIds, owner }, role);
+                  notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success' }, `Assigned owner ${owner} to ${selectedIds.length} application(s).`));
+                  await loadApplications();
+                }}
+                onUpdateStatus={async (status) => {
+                  await applicationsService.bulkStatusUpdate({ ids: selectedIds, status }, role);
+                  notifyInfo(formatNotificationMessage({ entity: 'application', action: 'status_change', result: 'success' }, `Updated status to ${status} for ${selectedIds.length} application(s).`));
+                  await loadApplications();
+                }}
+                onExport={async () => {
+                  const uri = await applicationsService.exportSelected(selectedIds, role);
+                  notifyInfo(formatNotificationMessage({ entity: 'application', action: 'export', result: 'success' }, `Export ready: ${uri}`));
+                }}
+              />
+            </>
+          ) : null}
           <article className="dashboard-panel">
             {activeView === 'applications' ? (
               <>
