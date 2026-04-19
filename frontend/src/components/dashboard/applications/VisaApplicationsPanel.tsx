@@ -251,6 +251,7 @@ export function VisaApplicationsPanel({ role, basePath, viewerEmail }: Props) {
               onFilterChange={table.setFilter}
               onPresetChange={applyPreset}
               onCreate={() => { setEditingApplication(null); setOpenCreateModal(true); }}
+              onCreateFullApplication={() => { setEditingApplication(null); setOpenCreateModal(true); }}
               canCreate={roleActions.canCreate}
               roleLabel={role}
               applications={applications}

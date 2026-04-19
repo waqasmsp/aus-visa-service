@@ -8,6 +8,7 @@ type Props = {
   onFilterChange: <K extends keyof ApplicationFilters>(key: K, value: ApplicationFilters[K]) => void;
   onPresetChange: (preset: string) => void;
   onCreate: () => void;
+  onCreateFullApplication: () => void;
   canCreate: boolean;
   roleLabel: string;
   applications: VisaApplication[];
@@ -25,6 +26,7 @@ export function ApplicationsFilterBar({
   onFilterChange,
   onPresetChange,
   onCreate,
+  onCreateFullApplication,
   canCreate,
   roleLabel,
   applications
@@ -48,9 +50,14 @@ export function ApplicationsFilterBar({
             </select>
           </label>
           {canCreate ? (
-            <button type="button" className="dashboard-button" onClick={onCreate}>
-              Add Application
-            </button>
+            <div className="dashboard-actions-inline">
+              <button type="button" className="dashboard-button" onClick={onCreate}>
+                Add Application
+              </button>
+              <button type="button" className="dashboard-button" onClick={onCreateFullApplication}>
+                Add Full Application
+              </button>
+            </div>
           ) : (
             <small>Read-only actions for {roleLabel}</small>
           )}
