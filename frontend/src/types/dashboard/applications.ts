@@ -153,6 +153,7 @@ export type FullApplicationWizardFormPayload = {
   placeOfIssue: string;
   hasNationalIdentityCard: '' | 'yes' | 'no';
   hasPacificAustraliaCard: '' | 'yes' | 'no';
+  pacificAustraliaCardSerialNumber: string;
   birthTownCity: string;
   birthStateProvince: string;
   birthCountry: string;
