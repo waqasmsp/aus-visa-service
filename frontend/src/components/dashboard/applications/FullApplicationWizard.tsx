@@ -4,6 +4,7 @@ import { DashboardButton } from '../common/DashboardButton';
 import { ApplicationWizardTermsStep } from './ApplicationWizardTermsStep';
 import { ApplicationWizardCurrentLocationStep } from './ApplicationWizardCurrentLocationStep';
 import { ApplicationWizardInformationalStep } from './ApplicationWizardInformationalStep';
+import { ApplicationWizardApplicantStep } from './ApplicationWizardApplicantStep';
 import { ApplicationWizardStepGridVariant } from './ApplicationWizardStepLayout';
 
 type StepConfig = {
@@ -42,7 +43,7 @@ const stepConfigs: StepConfig[] = [
     validationKeys: ['isOutsideAustralia'],
     layoutVariant: '2-col'
   },
-  { id: 'travel-and-stay', title: 'Travel and stay plans', validationKeys: [], layoutVariant: '2-col' },
+  { id: 'applicant', title: 'Applicant', validationKeys: [], layoutVariant: '3-col' },
   { id: 'passport-details', title: 'Passport details', validationKeys: [], layoutVariant: '3-col' },
   { id: 'applicant-identity', title: 'Applicant identity', validationKeys: [], layoutVariant: '2-col' },
   { id: 'contact-details', title: 'Contact details', validationKeys: [], layoutVariant: '2-col' },
@@ -231,6 +232,192 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
                 setDraft((prev) => ({
                   ...prev,
                   formPayload: { ...prev.formPayload, specialCategoryEntryType: value }
+                }))
+              }
+              {...baseStepProps}
+            />
+          )
+        };
+      }
+
+      if (index === 2) {
+        return {
+          ...config,
+          render: () => (
+            <ApplicationWizardApplicantStep
+              familyName={draft.formPayload.familyName ?? ''}
+              onFamilyNameChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, familyName: value }
+                }))
+              }
+              givenNames={draft.formPayload.givenNames ?? ''}
+              onGivenNamesChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, givenNames: value }
+                }))
+              }
+              sex={draft.formPayload.sex ?? ''}
+              onSexChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, sex: value }
+                }))
+              }
+              dateOfBirth={draft.formPayload.dateOfBirth ?? ''}
+              onDateOfBirthChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, dateOfBirth: value }
+                }))
+              }
+              passportNumber={draft.formPayload.passportNumber ?? ''}
+              onPassportNumberChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, passportNumber: value }
+                }))
+              }
+              passportCountry={draft.formPayload.passportCountry ?? ''}
+              onPassportCountryChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, passportCountry: value }
+                }))
+              }
+              passportNationality={draft.formPayload.passportNationality ?? ''}
+              onPassportNationalityChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, passportNationality: value }
+                }))
+              }
+              passportIssueDate={draft.formPayload.passportIssueDate ?? ''}
+              onPassportIssueDateChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, passportIssueDate: value }
+                }))
+              }
+              passportExpiryDate={draft.formPayload.passportExpiryDate ?? ''}
+              onPassportExpiryDateChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, passportExpiryDate: value }
+                }))
+              }
+              placeOfIssue={draft.formPayload.placeOfIssue ?? ''}
+              onPlaceOfIssueChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, placeOfIssue: value }
+                }))
+              }
+              hasNationalIdentityCard={draft.formPayload.hasNationalIdentityCard ?? ''}
+              onHasNationalIdentityCardChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasNationalIdentityCard: value }
+                }))
+              }
+              hasPacificAustraliaCard={draft.formPayload.hasPacificAustraliaCard ?? ''}
+              onHasPacificAustraliaCardChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasPacificAustraliaCard: value }
+                }))
+              }
+              birthTownCity={draft.formPayload.birthTownCity ?? ''}
+              onBirthTownCityChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, birthTownCity: value }
+                }))
+              }
+              birthStateProvince={draft.formPayload.birthStateProvince ?? ''}
+              onBirthStateProvinceChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, birthStateProvince: value }
+                }))
+              }
+              birthCountry={draft.formPayload.birthCountry ?? ''}
+              onBirthCountryChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, birthCountry: value }
+                }))
+              }
+              relationshipStatus={draft.formPayload.relationshipStatus ?? ''}
+              onRelationshipStatusChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, relationshipStatus: value }
+                }))
+              }
+              hasOtherNames={draft.formPayload.hasOtherNames ?? ''}
+              onHasOtherNamesChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasOtherNames: value }
+                }))
+              }
+              isCitizenOfPassportCountry={draft.formPayload.isCitizenOfPassportCountry ?? ''}
+              onIsCitizenOfPassportCountryChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, isCitizenOfPassportCountry: value }
+                }))
+              }
+              isCitizenOfOtherCountry={draft.formPayload.isCitizenOfOtherCountry ?? ''}
+              onIsCitizenOfOtherCountryChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, isCitizenOfOtherCountry: value }
+                }))
+              }
+              hasPreviouslyTravelledToAustralia={draft.formPayload.hasPreviouslyTravelledToAustralia ?? ''}
+              onHasPreviouslyTravelledToAustraliaChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasPreviouslyTravelledToAustralia: value }
+                }))
+              }
+              hasPreviouslyAppliedAustralianVisa={draft.formPayload.hasPreviouslyAppliedAustralianVisa ?? ''}
+              onHasPreviouslyAppliedAustralianVisaChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasPreviouslyAppliedAustralianVisa: value }
+                }))
+              }
+              hasAustralianVisaGrantNumber={draft.formPayload.hasAustralianVisaGrantNumber ?? ''}
+              onHasAustralianVisaGrantNumberChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasAustralianVisaGrantNumber: value }
+                }))
+              }
+              hasOtherPassportsOrTravelDocuments={draft.formPayload.hasOtherPassportsOrTravelDocuments ?? ''}
+              onHasOtherPassportsOrTravelDocumentsChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasOtherPassportsOrTravelDocuments: value }
+                }))
+              }
+              hasOtherIdentityDocuments={draft.formPayload.hasOtherIdentityDocuments ?? ''}
+              onHasOtherIdentityDocumentsChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasOtherIdentityDocuments: value }
+                }))
+              }
+              hasHealthExaminationLast12Months={draft.formPayload.hasHealthExaminationLast12Months ?? ''}
+              onHasHealthExaminationLast12MonthsChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  formPayload: { ...prev.formPayload, hasHealthExaminationLast12Months: value }
                 }))
               }
               {...baseStepProps}
