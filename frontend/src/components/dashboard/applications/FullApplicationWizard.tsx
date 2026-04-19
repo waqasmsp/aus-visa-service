@@ -4,7 +4,6 @@ import { DashboardButton } from '../common/DashboardButton';
 import { ApplicationWizardTermsStep } from './ApplicationWizardTermsStep';
 import { ApplicationWizardCurrentLocationStep } from './ApplicationWizardCurrentLocationStep';
 import { ApplicationWizardInformationalStep } from './ApplicationWizardInformationalStep';
-import { ApplicationWizardTravelStayPlansStep } from './ApplicationWizardTravelStayPlansStep';
 import { ApplicationWizardStepGridVariant } from './ApplicationWizardStepLayout';
 
 type StepConfig = {
@@ -232,59 +231,6 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
                 setDraft((prev) => ({
                   ...prev,
                   formPayload: { ...prev.formPayload, specialCategoryEntryType: value }
-                }))
-              }
-              {...baseStepProps}
-            />
-          )
-        };
-      }
-
-      if (index === 2) {
-        return {
-          ...config,
-          render: () => (
-            <ApplicationWizardTravelStayPlansStep
-              travelDate={draft.formPayload.travelDate ?? ''}
-              onTravelDateChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  formPayload: { ...prev.formPayload, travelDate: value }
-                }))
-              }
-              plannedDepartureDate={draft.formPayload.plannedDepartureDate ?? ''}
-              onPlannedDepartureDateChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  formPayload: { ...prev.formPayload, plannedDepartureDate: value }
-                }))
-              }
-              accommodationDetails={draft.formPayload.accommodationDetails ?? ''}
-              onAccommodationDetailsChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  formPayload: { ...prev.formPayload, accommodationDetails: value }
-                }))
-              }
-              destinationCity={draft.formPayload.destinationCity ?? ''}
-              onDestinationCityChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  formPayload: { ...prev.formPayload, destinationCity: value }
-                }))
-              }
-              hasReturnTicket={draft.formPayload.hasReturnTicket ?? ''}
-              onHasReturnTicketChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  formPayload: { ...prev.formPayload, hasReturnTicket: value }
-                }))
-              }
-              travelAndStayNotes={draft.formPayload.travelAndStayNotes ?? ''}
-              onTravelAndStayNotesChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  formPayload: { ...prev.formPayload, travelAndStayNotes: value }
                 }))
               }
               {...baseStepProps}
