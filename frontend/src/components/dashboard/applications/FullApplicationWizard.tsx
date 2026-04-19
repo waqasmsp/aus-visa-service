@@ -143,6 +143,13 @@ export function FullApplicationWizard({ onBackToApplications }: Props) {
               formPayload: { ...prev.formPayload, specialCategoryOfEntry: value }
             }))
           }
+          specialCategoryEntryType={draft.formPayload.specialCategoryEntryType ?? ''}
+          onSpecialCategoryEntryTypeChange={(value) =>
+            setDraft((prev) => ({
+              ...prev,
+              formPayload: { ...prev.formPayload, specialCategoryEntryType: value }
+            }))
+          }
         />
       ),
       canProceed: Boolean(draft.formPayload.isOutsideAustralia)

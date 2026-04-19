@@ -11,6 +11,7 @@ import {
 
 type CurrentLocationAnswer = 'yes' | 'no' | '';
 type SpecialCategoryAnswer = 'yes' | 'no' | '';
+type SpecialCategoryTypeAnswer = '' | 'foreign-government-representative' | 'un-laissez-passer' | 'exempt-group';
 type GroupProcessingAnswer = 'yes' | 'no' | '';
 
 type Props = {
@@ -36,6 +37,8 @@ type Props = {
   onReasonForFurtherStayChange: (value: string) => void;
   specialCategoryOfEntry: SpecialCategoryAnswer;
   onSpecialCategoryOfEntryChange: (value: SpecialCategoryAnswer) => void;
+  specialCategoryEntryType: SpecialCategoryTypeAnswer;
+  onSpecialCategoryEntryTypeChange: (value: SpecialCategoryTypeAnswer) => void;
 };
 
 export function ApplicationWizardCurrentLocationStep({
@@ -60,7 +63,9 @@ export function ApplicationWizardCurrentLocationStep({
   reasonForFurtherStay,
   onReasonForFurtherStayChange,
   specialCategoryOfEntry,
-  onSpecialCategoryOfEntryChange
+  onSpecialCategoryOfEntryChange,
+  specialCategoryEntryType,
+  onSpecialCategoryEntryTypeChange
 }: Props) {
   const showOutsideAustraliaFields = isOutsideAustralia === 'yes';
   const showFurtherStayFields = isOutsideAustralia === 'no';
@@ -273,11 +278,50 @@ export function ApplicationWizardCurrentLocationStep({
                   name="specialCategoryOfEntry"
                   value="no"
                   checked={specialCategoryOfEntry === 'no'}
-                  onChange={() => onSpecialCategoryOfEntryChange('no')}
+                  onChange={() => {
+                    onSpecialCategoryOfEntryChange('no');
+                    onSpecialCategoryEntryTypeChange('');
+                  }}
                 />
                 No
               </label>
             </fieldset>
+
+            {specialCategoryOfEntry === 'yes' ? (
+              <fieldset className="dashboard-application-wizard__radio-group">
+                <legend>Select the special category of entry</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="specialCategoryEntryType"
+                    value="foreign-government-representative"
+                    checked={specialCategoryEntryType === 'foreign-government-representative'}
+                    onChange={() => onSpecialCategoryEntryTypeChange('foreign-government-representative')}
+                  />
+                  Travelling as a foreign government representative
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="specialCategoryEntryType"
+                    value="un-laissez-passer"
+                    checked={specialCategoryEntryType === 'un-laissez-passer'}
+                    onChange={() => onSpecialCategoryEntryTypeChange('un-laissez-passer')}
+                  />
+                  Travelling on a United Nations Laissez-Passer
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="specialCategoryEntryType"
+                    value="exempt-group"
+                    checked={specialCategoryEntryType === 'exempt-group'}
+                    onChange={() => onSpecialCategoryEntryTypeChange('exempt-group')}
+                  />
+                  Member of an exempt group
+                </label>
+              </fieldset>
+            ) : null}
           </>
         ) : null}
       </div>
