@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { currentLocationCountryOptions, reasonForVisitingAustraliaOptions, type Option } from '../../constants/applicationFormOptions';
 
 type YesNo = 'yes' | 'no' | '';
 type ApplicationSubStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -26,10 +27,130 @@ const MONTH_OPTIONS = [
 ];
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 100 }, (_, index) => `${CURRENT_YEAR - index}`);
-const REASON_FOR_TRIP_OPTIONS = ['Tourism', 'Business', 'Family visit', 'Medical treatment', 'Conference or event'];
 const STEP_ITEMS = ['Application', 'Add Travelers', 'Contact Details', 'Confirm & Submit'];
 const FORM_STORAGE_KEY = 'aus-visa-application-draft-v1';
 const AUTH_SESSION_KEY = 'aus-visa-auth-session';
+const DEFAULT_COUNTRY = currentLocationCountryOptions.find((option) => option.label === 'PAKISTAN')?.value ?? currentLocationCountryOptions[0]?.value ?? '';
+
+type ApplicationSelectFieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Option[];
+  error?: boolean;
+  includeEmptyOption?: string;
+  iconText?: string;
+};
+
+function ApplicationSelectField({ label, value, onChange, options, error = false, includeEmptyOption, iconText }: ApplicationSelectFieldProps) {
+  return (
+    <label className={`application-field${error ? ' application-field--error' : ''}`}>
+      <span>{label}</span>
+      <div className="application-select-wrap">
+        {iconText ? <span className="application-select-icon" aria-hidden="true">{iconText}</span> : null}
+        <select value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={error}>
+          {includeEmptyOption ? <option value="">{includeEmptyOption}</option> : null}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  );
+}
+
+type ApplicationDateRowProps = {
+  label: string;
+  valueDay: string;
+  valueMonth: string;
+  valueYear: string;
+  onChangeDay: (value: string) => void;
+  onChangeMonth: (value: string) => void;
+  onChangeYear: (value: string) => void;
+  dayError?: boolean;
+  monthError?: boolean;
+  yearError?: boolean;
+  optionPrefix: string;
+};
+
+function ApplicationDateRow({
+  label,
+  valueDay,
+  valueMonth,
+  valueYear,
+  onChangeDay,
+  onChangeMonth,
+  onChangeYear,
+  dayError = false,
+  monthError = false,
+  yearError = false,
+  optionPrefix
+}: ApplicationDateRowProps) {
+  return (
+    <div className="application-date-block">
+      <p>{label}</p>
+      <div className="application-form-grid application-form-grid--three">
+        <label className={`application-field${dayError ? ' application-field--error' : ''}`}>
+          <span className="sr-only">{label} day</span>
+          <select value={valueDay} onChange={(event) => onChangeDay(event.target.value)} aria-invalid={dayError}>
+            <option value="">Day</option>
+            {DAY_OPTIONS.map((day) => <option key={`${optionPrefix}-day-${day}`} value={day}>{day}</option>)}
+          </select>
+        </label>
+        <label className={`application-field${monthError ? ' application-field--error' : ''}`}>
+          <span className="sr-only">{label} month</span>
+          <select value={valueMonth} onChange={(event) => onChangeMonth(event.target.value)} aria-invalid={monthError}>
+            <option value="">Month</option>
+            {MONTH_OPTIONS.map((month) => <option key={`${optionPrefix}-month-${month}`} value={month}>{month}</option>)}
+          </select>
+        </label>
+        <label className={`application-field${yearError ? ' application-field--error' : ''}`}>
+          <span className="sr-only">{label} year</span>
+          <select value={valueYear} onChange={(event) => onChangeYear(event.target.value)} aria-invalid={yearError}>
+            <option value="">Year</option>
+            {YEAR_OPTIONS.map((year) => <option key={`${optionPrefix}-year-${year}`} value={year}>{year}</option>)}
+          </select>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+type ApplicationRadioPillGroupOption<T extends string> = {
+  label: string;
+  value: T;
+};
+
+type ApplicationRadioPillGroupProps<T extends string> = {
+  legend: string;
+  value: T | '';
+  onChange: (value: T) => void;
+  options: ApplicationRadioPillGroupOption<T>[];
+  error?: boolean;
+};
+
+function ApplicationRadioPillGroup<T extends string>({ legend, value, onChange, options, error = false }: ApplicationRadioPillGroupProps<T>) {
+  return (
+    <fieldset className={`application-fieldset${error ? ' application-fieldset--error' : ''}`}>
+      <legend>{legend}</legend>
+      <div className="application-form-grid application-form-grid--two">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={`application-gender-option${value === option.value ? ' is-selected' : ''}${error ? ' is-error' : ''}`}
+            onClick={() => onChange(option.value)}
+          >
+            <span className="application-gender-option__dot" aria-hidden="true" />
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 function VisaBadgeIcon() {
   return (
@@ -53,7 +174,7 @@ export function ApplicationStepOneForm() {
   const [birthYear, setBirthYear] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
 
-  const [passportCountry, setPassportCountry] = useState('Pakistan');
+  const [passportCountry, setPassportCountry] = useState(DEFAULT_COUNTRY);
   const [passportInfoAvailable, setPassportInfoAvailable] = useState<YesNo>('');
   const [passportNumber, setPassportNumber] = useState('');
   const [passportIssueDay, setPassportIssueDay] = useState('');
@@ -63,7 +184,7 @@ export function ApplicationStepOneForm() {
   const [passportExpiryMonth, setPassportExpiryMonth] = useState('');
   const [passportExpiryYear, setPassportExpiryYear] = useState('');
 
-  const [residenceCountry, setResidenceCountry] = useState('Pakistan');
+  const [residenceCountry, setResidenceCountry] = useState(DEFAULT_COUNTRY);
   const [homeAddress, setHomeAddress] = useState('');
   const [cityOrTown, setCityOrTown] = useState('');
   const [stateOrProvince, setStateOrProvince] = useState('');
@@ -153,7 +274,7 @@ export function ApplicationStepOneForm() {
       setBirthMonth((draft.birthMonth as string) ?? '');
       setBirthYear((draft.birthYear as string) ?? '');
       setGender((draft.gender as 'male' | 'female' | '') ?? '');
-      setPassportCountry((draft.passportCountry as string) ?? 'Pakistan');
+      setPassportCountry((draft.passportCountry as string) ?? DEFAULT_COUNTRY);
       setPassportInfoAvailable((draft.passportInfoAvailable as YesNo) ?? '');
       setPassportNumber((draft.passportNumber as string) ?? '');
       setPassportIssueDay((draft.passportIssueDay as string) ?? '');
@@ -162,7 +283,7 @@ export function ApplicationStepOneForm() {
       setPassportExpiryDay((draft.passportExpiryDay as string) ?? '');
       setPassportExpiryMonth((draft.passportExpiryMonth as string) ?? '');
       setPassportExpiryYear((draft.passportExpiryYear as string) ?? '');
-      setResidenceCountry((draft.residenceCountry as string) ?? 'Pakistan');
+      setResidenceCountry((draft.residenceCountry as string) ?? DEFAULT_COUNTRY);
       setHomeAddress((draft.homeAddress as string) ?? '');
       setCityOrTown((draft.cityOrTown as string) ?? '');
       setStateOrProvince((draft.stateOrProvince as string) ?? '');
@@ -268,7 +389,7 @@ export function ApplicationStepOneForm() {
     setBirthMonth('');
     setBirthYear('');
     setGender('');
-    setPassportCountry('Pakistan');
+    setPassportCountry(DEFAULT_COUNTRY);
     setPassportInfoAvailable('');
     setPassportNumber('');
     setPassportIssueDay('');
@@ -277,7 +398,7 @@ export function ApplicationStepOneForm() {
     setPassportExpiryDay('');
     setPassportExpiryMonth('');
     setPassportExpiryYear('');
-    setResidenceCountry('Pakistan');
+    setResidenceCountry(DEFAULT_COUNTRY);
     setHomeAddress('');
     setCityOrTown('');
     setStateOrProvince('');
@@ -315,6 +436,9 @@ export function ApplicationStepOneForm() {
     resetTravelerDraft();
   };
 
+  const getCountryLabel = (countryCode: string) =>
+    currentLocationCountryOptions.find((option) => option.value === countryCode)?.label ?? countryCode;
+
   const completeTravelerApplication = () => {
     const travelerName = `${firstName} ${lastName}`.trim() || `Traveler ${travelers.length + 1}`;
     setTravelers((current) => [
@@ -322,7 +446,7 @@ export function ApplicationStepOneForm() {
       {
         id: `${Date.now()}-${current.length + 1}`,
         name: travelerName,
-        country: residenceCountry || passportCountry || 'United States'
+        country: getCountryLabel(residenceCountry || passportCountry || DEFAULT_COUNTRY)
       }
     ]);
     setIsTravelersStage(true);
@@ -644,22 +768,30 @@ export function ApplicationStepOneForm() {
                   </label>
                 </div>
 
-                <fieldset className={`application-fieldset${hasError('birthDay') || hasError('birthMonth') || hasError('birthYear') ? ' application-fieldset--error' : ''}`}>
-                  <legend>Date of birth</legend>
-                  <div className="application-form-grid application-form-grid--three">
-                    <label className={`application-field${hasError('birthDay') ? ' application-field--error' : ''}`}><span className="sr-only">Day</span><select value={birthDay} onChange={(event) => { setBirthDay(event.target.value); clearError('birthDay'); }} aria-invalid={hasError('birthDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={day} value={day}>{day}</option>)}</select></label>
-                    <label className={`application-field${hasError('birthMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Month</span><select value={birthMonth} onChange={(event) => { setBirthMonth(event.target.value); clearError('birthMonth'); }} aria-invalid={hasError('birthMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={month} value={month}>{month}</option>)}</select></label>
-                    <label className={`application-field${hasError('birthYear') ? ' application-field--error' : ''}`}><span className="sr-only">Year</span><select value={birthYear} onChange={(event) => { setBirthYear(event.target.value); clearError('birthYear'); }} aria-invalid={hasError('birthYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
-                  </div>
-                </fieldset>
+                <ApplicationDateRow
+                  label="Date of birth"
+                  valueDay={birthDay}
+                  valueMonth={birthMonth}
+                  valueYear={birthYear}
+                  onChangeDay={(value) => { setBirthDay(value); clearError('birthDay'); }}
+                  onChangeMonth={(value) => { setBirthMonth(value); clearError('birthMonth'); }}
+                  onChangeYear={(value) => { setBirthYear(value); clearError('birthYear'); }}
+                  dayError={hasError('birthDay')}
+                  monthError={hasError('birthMonth')}
+                  yearError={hasError('birthYear')}
+                  optionPrefix="birth"
+                />
 
-                <fieldset className={`application-fieldset${hasError('gender') ? ' application-fieldset--error' : ''}`}>
-                  <legend>Gender</legend>
-                  <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${gender === 'male' ? ' is-selected' : ''}${hasError('gender') ? ' is-error' : ''}`} onClick={() => { setGender('male'); clearError('gender'); }}><span className="application-gender-option__dot" aria-hidden="true" />Male</button>
-                    <button type="button" className={`application-gender-option${gender === 'female' ? ' is-selected' : ''}${hasError('gender') ? ' is-error' : ''}`} onClick={() => { setGender('female'); clearError('gender'); }}><span className="application-gender-option__dot" aria-hidden="true" />Female</button>
-                  </div>
-                </fieldset>
+                <ApplicationRadioPillGroup
+                  legend="Gender"
+                  value={gender}
+                  onChange={(value) => { setGender(value); clearError('gender'); }}
+                  options={[
+                    { label: 'Male', value: 'male' },
+                    { label: 'Female', value: 'female' }
+                  ]}
+                  error={hasError('gender')}
+                />
 
                 <div className="application-form-actions application-form-actions--split">
                   <button type="button" className="application-back-button" onClick={goToPreviousStep}>Back</button>
@@ -672,23 +804,24 @@ export function ApplicationStepOneForm() {
               <header className="application-form-card__header"><h1>Passport Details</h1></header>
 
               <form className="application-step-form" onSubmit={submitStepTwo}>
-                <label className="application-field">
-                  <span>Passport</span>
-                  <div className="application-select-wrap">
-                    <span className="application-select-icon" aria-hidden="true">PK</span>
-                    <select value={passportCountry} onChange={(event) => setPassportCountry(event.target.value)}>
-                      <option>Pakistan</option><option>India</option><option>Bangladesh</option><option>United Arab Emirates</option><option>United States</option>
-                    </select>
-                  </div>
-                </label>
+                <ApplicationSelectField
+                  label="Passport"
+                  value={passportCountry}
+                  onChange={setPassportCountry}
+                  options={currentLocationCountryOptions}
+                  iconText={passportCountry.slice(0, 2)}
+                />
 
-                <fieldset className={`application-fieldset${hasError('passportInfoAvailable') ? ' application-fieldset--error' : ''}`}>
-                  <legend>Do you have passport information available?</legend>
-                  <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'yes' ? ' is-selected' : ''}${hasError('passportInfoAvailable') ? ' is-error' : ''}`} onClick={() => { setPassportInfoAvailable('yes'); clearError('passportInfoAvailable'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${passportInfoAvailable === 'no' ? ' is-selected' : ''}${hasError('passportInfoAvailable') ? ' is-error' : ''}`} onClick={() => { setPassportInfoAvailable('no'); clearError('passportInfoAvailable'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
-                  </div>
-                </fieldset>
+                <ApplicationRadioPillGroup
+                  legend="Do you have passport information available?"
+                  value={passportInfoAvailable}
+                  onChange={(value) => { setPassportInfoAvailable(value); clearError('passportInfoAvailable'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('passportInfoAvailable')}
+                />
 
                 {passportInfoAvailable === 'yes' ? (
                   <>
@@ -697,23 +830,33 @@ export function ApplicationStepOneForm() {
                       <input type="text" name="passportNumber" placeholder="P9876543" value={passportNumber} onChange={(event) => { setPassportNumber(event.target.value); clearError('passportNumber'); }} aria-invalid={hasError('passportNumber')} />
                     </label>
 
-                    <div className="application-date-block">
-                      <p>Passport issue date</p>
-                      <div className="application-form-grid application-form-grid--three">
-                        <label className={`application-field${hasError('passportIssueDay') ? ' application-field--error' : ''}`}><span className="sr-only">Issue day</span><select value={passportIssueDay} onChange={(event) => { setPassportIssueDay(event.target.value); clearError('passportIssueDay'); }} aria-invalid={hasError('passportIssueDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`issue-${day}`} value={day}>{day}</option>)}</select></label>
-                        <label className={`application-field${hasError('passportIssueMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Issue month</span><select value={passportIssueMonth} onChange={(event) => { setPassportIssueMonth(event.target.value); clearError('passportIssueMonth'); }} aria-invalid={hasError('passportIssueMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`issue-${month}`} value={month}>{month}</option>)}</select></label>
-                        <label className={`application-field${hasError('passportIssueYear') ? ' application-field--error' : ''}`}><span className="sr-only">Issue year</span><select value={passportIssueYear} onChange={(event) => { setPassportIssueYear(event.target.value); clearError('passportIssueYear'); }} aria-invalid={hasError('passportIssueYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`issue-${year}`} value={year}>{year}</option>)}</select></label>
-                      </div>
-                    </div>
+                    <ApplicationDateRow
+                      label="Passport issue date"
+                      valueDay={passportIssueDay}
+                      valueMonth={passportIssueMonth}
+                      valueYear={passportIssueYear}
+                      onChangeDay={(value) => { setPassportIssueDay(value); clearError('passportIssueDay'); }}
+                      onChangeMonth={(value) => { setPassportIssueMonth(value); clearError('passportIssueMonth'); }}
+                      onChangeYear={(value) => { setPassportIssueYear(value); clearError('passportIssueYear'); }}
+                      dayError={hasError('passportIssueDay')}
+                      monthError={hasError('passportIssueMonth')}
+                      yearError={hasError('passportIssueYear')}
+                      optionPrefix="issue"
+                    />
 
-                    <div className="application-date-block">
-                      <p>Passport expiration date</p>
-                      <div className="application-form-grid application-form-grid--three">
-                        <label className={`application-field${hasError('passportExpiryDay') ? ' application-field--error' : ''}`}><span className="sr-only">Expiry day</span><select value={passportExpiryDay} onChange={(event) => { setPassportExpiryDay(event.target.value); clearError('passportExpiryDay'); }} aria-invalid={hasError('passportExpiryDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`expiry-${day}`} value={day}>{day}</option>)}</select></label>
-                        <label className={`application-field${hasError('passportExpiryMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Expiry month</span><select value={passportExpiryMonth} onChange={(event) => { setPassportExpiryMonth(event.target.value); clearError('passportExpiryMonth'); }} aria-invalid={hasError('passportExpiryMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`expiry-${month}`} value={month}>{month}</option>)}</select></label>
-                        <label className={`application-field${hasError('passportExpiryYear') ? ' application-field--error' : ''}`}><span className="sr-only">Expiry year</span><select value={passportExpiryYear} onChange={(event) => { setPassportExpiryYear(event.target.value); clearError('passportExpiryYear'); }} aria-invalid={hasError('passportExpiryYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`expiry-${year}`} value={year}>{year}</option>)}</select></label>
-                      </div>
-                    </div>
+                    <ApplicationDateRow
+                      label="Passport expiration date"
+                      valueDay={passportExpiryDay}
+                      valueMonth={passportExpiryMonth}
+                      valueYear={passportExpiryYear}
+                      onChangeDay={(value) => { setPassportExpiryDay(value); clearError('passportExpiryDay'); }}
+                      onChangeMonth={(value) => { setPassportExpiryMonth(value); clearError('passportExpiryMonth'); }}
+                      onChangeYear={(value) => { setPassportExpiryYear(value); clearError('passportExpiryYear'); }}
+                      dayError={hasError('passportExpiryDay')}
+                      monthError={hasError('passportExpiryMonth')}
+                      yearError={hasError('passportExpiryYear')}
+                      optionPrefix="expiry"
+                    />
                   </>
                 ) : null}
 
@@ -727,15 +870,13 @@ export function ApplicationStepOneForm() {
             <>
               <header className="application-form-card__header"><h1>Address Details</h1></header>
               <form className="application-step-form" onSubmit={submitStepThree}>
-                <label className="application-field">
-                  <span>Country of residence</span>
-                  <div className="application-select-wrap">
-                    <span className="application-select-icon" aria-hidden="true">PK</span>
-                    <select value={residenceCountry} onChange={(event) => setResidenceCountry(event.target.value)}>
-                      <option>Pakistan</option><option>India</option><option>Bangladesh</option><option>United Arab Emirates</option><option>United States</option>
-                    </select>
-                  </div>
-                </label>
+                <ApplicationSelectField
+                  label="Country of residence"
+                  value={residenceCountry}
+                  onChange={setResidenceCountry}
+                  options={currentLocationCountryOptions}
+                  iconText={residenceCountry.slice(0, 2)}
+                />
                 <p className="application-field-note">The country where you live permanently.</p>
 
                 <div className="application-form-grid application-form-grid--two">
@@ -759,46 +900,61 @@ export function ApplicationStepOneForm() {
             <>
               <header className="application-form-card__header"><h1>Additional Information</h1></header>
               <form className="application-step-form" onSubmit={submitStepFour}>
-                <fieldset className={`application-fieldset${hasError('isEmployed') ? ' application-fieldset--error' : ''}`}>
-                  <legend>Are you employed?</legend>
-                  <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${isEmployed === 'yes' ? ' is-selected' : ''}${hasError('isEmployed') ? ' is-error' : ''}`} onClick={() => { setIsEmployed('yes'); clearError('isEmployed'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${isEmployed === 'no' ? ' is-selected' : ''}${hasError('isEmployed') ? ' is-error' : ''}`} onClick={() => { setIsEmployed('no'); clearError('isEmployed'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
-                  </div>
-                </fieldset>
+                <ApplicationRadioPillGroup
+                  legend="Are you employed?"
+                  value={isEmployed}
+                  onChange={(value) => { setIsEmployed(value); clearError('isEmployed'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('isEmployed')}
+                />
 
-                <fieldset className={`application-fieldset${hasError('hasCriminalOffense') ? ' application-fieldset--error' : ''}`}>
-                  <legend>Have you ever been convicted of a criminal offense?</legend>
-                  <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'yes' ? ' is-selected' : ''}${hasError('hasCriminalOffense') ? ' is-error' : ''}`} onClick={() => { setHasCriminalOffense('yes'); clearError('hasCriminalOffense'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${hasCriminalOffense === 'no' ? ' is-selected' : ''}${hasError('hasCriminalOffense') ? ' is-error' : ''}`} onClick={() => { setHasCriminalOffense('no'); clearError('hasCriminalOffense'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
-                  </div>
-                </fieldset>
+                <ApplicationRadioPillGroup
+                  legend="Have you ever been convicted of a criminal offense?"
+                  value={hasCriminalOffense}
+                  onChange={(value) => { setHasCriminalOffense(value); clearError('hasCriminalOffense'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasCriminalOffense')}
+                />
 
-                <label className={`application-field${hasError('reasonForTrip') ? ' application-field--error' : ''}`}>
-                  <span>Reason for trip</span>
-                  <select value={reasonForTrip} onChange={(event) => { setReasonForTrip(event.target.value); clearError('reasonForTrip'); }} aria-invalid={hasError('reasonForTrip')}>
-                    <option value="">Select an option</option>
-                    {REASON_FOR_TRIP_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-                  </select>
-                </label>
+                <ApplicationSelectField
+                  label="Reason for trip"
+                  value={reasonForTrip}
+                  onChange={(value) => { setReasonForTrip(value); clearError('reasonForTrip'); }}
+                  options={reasonForVisitingAustraliaOptions}
+                  includeEmptyOption="Select an option"
+                  error={hasError('reasonForTrip')}
+                />
 
-                <fieldset className={`application-fieldset${hasError('hasConfirmedTravelPlans') ? ' application-fieldset--error' : ''}`}>
-                  <legend>Do you have confirmed travel plans?</legend>
-                  <div className="application-form-grid application-form-grid--two">
-                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'yes' ? ' is-selected' : ''}${hasError('hasConfirmedTravelPlans') ? ' is-error' : ''}`} onClick={() => { setHasConfirmedTravelPlans('yes'); clearError('hasConfirmedTravelPlans'); }}><span className="application-gender-option__dot" aria-hidden="true" />Yes</button>
-                    <button type="button" className={`application-gender-option${hasConfirmedTravelPlans === 'no' ? ' is-selected' : ''}${hasError('hasConfirmedTravelPlans') ? ' is-error' : ''}`} onClick={() => { setHasConfirmedTravelPlans('no'); clearError('hasConfirmedTravelPlans'); }}><span className="application-gender-option__dot" aria-hidden="true" />No</button>
-                  </div>
-                </fieldset>
+                <ApplicationRadioPillGroup
+                  legend="Do you have confirmed travel plans?"
+                  value={hasConfirmedTravelPlans}
+                  onChange={(value) => { setHasConfirmedTravelPlans(value); clearError('hasConfirmedTravelPlans'); }}
+                  options={[
+                    { label: 'Yes', value: 'yes' },
+                    { label: 'No', value: 'no' }
+                  ]}
+                  error={hasError('hasConfirmedTravelPlans')}
+                />
                 {hasConfirmedTravelPlans === 'yes' ? (
-                  <div className="application-date-block">
-                    <p>Expected arrival date</p>
-                    <div className="application-form-grid application-form-grid--three">
-                      <label className={`application-field${hasError('expectedArrivalDay') ? ' application-field--error' : ''}`}><span className="sr-only">Arrival day</span><select value={expectedArrivalDay} onChange={(event) => { setExpectedArrivalDay(event.target.value); clearError('expectedArrivalDay'); }} aria-invalid={hasError('expectedArrivalDay')}><option value="">Day</option>{DAY_OPTIONS.map((day) => <option key={`arrival-${day}`} value={day}>{day}</option>)}</select></label>
-                      <label className={`application-field${hasError('expectedArrivalMonth') ? ' application-field--error' : ''}`}><span className="sr-only">Arrival month</span><select value={expectedArrivalMonth} onChange={(event) => { setExpectedArrivalMonth(event.target.value); clearError('expectedArrivalMonth'); }} aria-invalid={hasError('expectedArrivalMonth')}><option value="">Month</option>{MONTH_OPTIONS.map((month) => <option key={`arrival-${month}`} value={month}>{month}</option>)}</select></label>
-                      <label className={`application-field${hasError('expectedArrivalYear') ? ' application-field--error' : ''}`}><span className="sr-only">Arrival year</span><select value={expectedArrivalYear} onChange={(event) => { setExpectedArrivalYear(event.target.value); clearError('expectedArrivalYear'); }} aria-invalid={hasError('expectedArrivalYear')}><option value="">Year</option>{YEAR_OPTIONS.map((year) => <option key={`arrival-${year}`} value={year}>{year}</option>)}</select></label>
-                    </div>
-                  </div>
+                  <ApplicationDateRow
+                    label="Expected arrival date"
+                    valueDay={expectedArrivalDay}
+                    valueMonth={expectedArrivalMonth}
+                    valueYear={expectedArrivalYear}
+                    onChangeDay={(value) => { setExpectedArrivalDay(value); clearError('expectedArrivalDay'); }}
+                    onChangeMonth={(value) => { setExpectedArrivalMonth(value); clearError('expectedArrivalMonth'); }}
+                    onChangeYear={(value) => { setExpectedArrivalYear(value); clearError('expectedArrivalYear'); }}
+                    dayError={hasError('expectedArrivalDay')}
+                    monthError={hasError('expectedArrivalMonth')}
+                    yearError={hasError('expectedArrivalYear')}
+                    optionPrefix="arrival"
+                  />
                 ) : null}
 
                 <div className="application-form-actions application-form-actions--split">
